@@ -1,0 +1,23 @@
+{
+ "aggregate_function_based_on": "",
+ "creation": "2022-12-17 19:23:28.209138",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Closure",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Closure\",\"status\",\"=\",\"PSL\",false]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "PSL",
+ "modified": "2023-01-31 12:25:34.853364",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "Closure - PSL",
+ "owner": "mohamedshajith.j@groupteampro.com",
+ "report_function": "Sum",
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

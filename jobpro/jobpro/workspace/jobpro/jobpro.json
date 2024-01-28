@@ -1,0 +1,74 @@
+{
+ "charts": [
+  {
+   "chart_name": "Mobilization Status",
+   "label": "Mobilization Status"
+  }
+ ],
+ "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Jobpro</span>\",\"col\":12}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Mobilization Status\",\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Candidate\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Closure\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer Dashboard\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"SMS Center\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"SMS Settings\",\"col\":3}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"ACGC Dashboard\",\"col\":3}}]",
+ "creation": "2023-01-19 11:07:05.380087",
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "projects",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "JobPRO",
+ "links": [],
+ "modified": "2023-08-16 18:18:15.092132",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "JobPRO",
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 37.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "SMS Center",
+   "link_to": "SMS Center",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Candidate",
+   "link_to": "Candidate",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "ACGC Dashboard",
+   "link_to": "acgc-dashboard",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "SMS Settings",
+   "link_to": "SMS Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Closure",
+   "link_to": "Closure",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Customer Dashboard",
+   "link_to": "Customer Dashboard",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "JobPRO"
+}

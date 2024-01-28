@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SR.####",
+ "creation": "2023-11-20 10:44:00.182697",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "standard_remarks",
+  "next_action_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "standard_remarks",
+   "fieldtype": "Data",
+   "label": "Standard Remarks"
+  },
+  {
+   "fieldname": "next_action_by",
+   "fieldtype": "Link",
+   "label": "Next Action By",
+   "options": "Department"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-20 11:39:21.029895",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "Standard Remarks",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "standard_remarks"
+}

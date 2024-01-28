@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-05-08 11:12:30.752188",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sa_id",
+  "sa_name",
+  "sa_contact_number",
+  "variable_ec",
+  "received_count"
+ ],
+ "fields": [
+  {
+   "fieldname": "sa_id",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SA Id",
+   "options": "SAMS"
+  },
+  {
+   "fetch_from": "sa_id.person_name",
+   "fieldname": "sa_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SA Name"
+  },
+  {
+   "fetch_from": "sa_id.contact_number",
+   "fieldname": "sa_contact_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SA Contact Number"
+  },
+  {
+   "fieldname": "variable_ec",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Variable EC"
+  },
+  {
+   "fieldname": "received_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Received Count"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-05-08 11:25:56.390836",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "SAMS Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

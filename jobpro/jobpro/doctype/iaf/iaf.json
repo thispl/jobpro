@@ -1,0 +1,410 @@
+{
+ "_comments": "[]",
+ "_liked_by": "[]",
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:passport_number",
+ "creation": "2023-02-04 10:36:31.878172",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "passport_number",
+  "date",
+  "column_break_2",
+  "candidate",
+  "candidate_summary",
+  "candidate_name",
+  "client_name",
+  "project",
+  "subject",
+  "task",
+  "position",
+  "dob",
+  "candidate_age",
+  "degree",
+  "specialization",
+  "year_of_passing",
+  "nationality",
+  "column_break_8",
+  "primary_mobile_number",
+  "secondary_mobile_number",
+  "email_id",
+  "expiery_date",
+  "country",
+  "ecr_status",
+  "current_location",
+  "vacinated",
+  "vaccination_name",
+  "candidate_image",
+  "is_married",
+  "current_employer",
+  "interview_notes_section",
+  "india_experience",
+  "overseas_experience",
+  "total_experience",
+  "column_break_23",
+  "ctc_currency",
+  "current_ctc",
+  "expected_ctc",
+  "notice_period_months",
+  "amended_from",
+  "tab_break_41",
+  "status",
+  "column_break_43",
+  "grade",
+  "section_break_45",
+  "comments"
+ ],
+ "fields": [
+  {
+   "fieldname": "candidate_summary",
+   "fieldtype": "Section Break",
+   "label": "Candidate Summary"
+  },
+  {
+   "fetch_from": "candidate.customer",
+   "fieldname": "client_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Client Name",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "candidate.given_name",
+   "fetch_if_empty": 1,
+   "fieldname": "candidate_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Candidate Name",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "candidate.project",
+   "fetch_if_empty": 1,
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "candidate.dob",
+   "fetch_if_empty": 1,
+   "fieldname": "dob",
+   "fieldtype": "Date",
+   "label": "Date of Birth"
+  },
+  {
+   "fetch_from": "candidate.mobile_number",
+   "fetch_if_empty": 1,
+   "fieldname": "primary_mobile_number",
+   "fieldtype": "Data",
+   "label": "Primary Mobile Number",
+   "length": 10,
+   "options": "Phone"
+  },
+  {
+   "fetch_from": "candidate.mobile",
+   "fetch_if_empty": 1,
+   "fieldname": "secondary_mobile_number",
+   "fieldtype": "Data",
+   "label": "Secondary Mobile Number",
+   "length": 10,
+   "options": "Phone"
+  },
+  {
+   "fetch_from": "candidate.mail_id",
+   "fetch_if_empty": 1,
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email ID",
+   "options": "Email"
+  },
+  {
+   "fieldname": "passport_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Passport Number",
+   "length": 8,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fetch_from": "candidate.country",
+   "fetch_if_empty": 1,
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fetch_from": "candidate.passport_expiry_date",
+   "fetch_if_empty": 1,
+   "fieldname": "expiery_date",
+   "fieldtype": "Date",
+   "label": " Passport Expiry Date"
+  },
+  {
+   "fetch_from": "candidate.vaccination_status",
+   "fetch_if_empty": 1,
+   "fieldname": "vacinated",
+   "fieldtype": "Select",
+   "label": "Vaccinated ",
+   "options": "\nDose 1\nDose 2\nDose 3\nNo Vaccination"
+  },
+  {
+   "depends_on": "eval:doc.vacinated == \"Dose 1\" || doc.vacinated == \"Dose 2\"",
+   "fetch_from": "candidate.vaccine_name",
+   "fetch_if_empty": 1,
+   "fieldname": "vaccination_name",
+   "fieldtype": "Link",
+   "label": "Vaccination Name",
+   "options": "Vaccine"
+  },
+  {
+   "fetch_from": "candidate.candidate_image",
+   "fetch_if_empty": 1,
+   "fieldname": "candidate_image",
+   "fieldtype": "Attach Image",
+   "label": "Candidate Image"
+  },
+  {
+   "fieldname": "interview_notes_section",
+   "fieldtype": "Section Break",
+   "label": "Interview Notes"
+  },
+  {
+   "fetch_from": "candidate.ecr_status",
+   "fetch_if_empty": 1,
+   "fieldname": "ecr_status",
+   "fieldtype": "Select",
+   "label": "ECR Status",
+   "options": "\nECR\nECNR"
+  },
+  {
+   "fetch_from": "candidate.india_experience",
+   "fetch_if_empty": 1,
+   "fieldname": "india_experience",
+   "fieldtype": "Int",
+   "label": "India Experience"
+  },
+  {
+   "fetch_from": "candidate.overseas_experience",
+   "fetch_if_empty": 1,
+   "fieldname": "overseas_experience",
+   "fieldtype": "Int",
+   "label": "Overseas Experience"
+  },
+  {
+   "fetch_from": "candidate.total_experience",
+   "fetch_if_empty": 1,
+   "fieldname": "total_experience",
+   "fieldtype": "Read Only",
+   "label": "Total Experience"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "candidate.current_ctc",
+   "fetch_if_empty": 1,
+   "fieldname": "current_ctc",
+   "fieldtype": "Currency",
+   "label": "Current CTC"
+  },
+  {
+   "fetch_from": "candidate.expected_ctc",
+   "fetch_if_empty": 1,
+   "fieldname": "expected_ctc",
+   "fieldtype": "Currency",
+   "label": "Expected CTC"
+  },
+  {
+   "fetch_from": "candidate.currency",
+   "fetch_if_empty": 1,
+   "fieldname": "ctc_currency",
+   "fieldtype": "Link",
+   "label": "CTC Currency",
+   "options": "Currency"
+  },
+  {
+   "fetch_from": "candidate.notice_period",
+   "fetch_if_empty": 1,
+   "fieldname": "notice_period_months",
+   "fieldtype": "Data",
+   "label": "Notice Period (months)"
+  },
+  {
+   "fetch_if_empty": 1,
+   "fieldname": "degree",
+   "fieldtype": "Link",
+   "label": "Highest Degree",
+   "options": "Qualification"
+  },
+  {
+   "fetch_from": "candidate.location",
+   "fetch_if_empty": 1,
+   "fieldname": "current_location",
+   "fieldtype": "Link",
+   "label": "Current Location",
+   "options": "Districts"
+  },
+  {
+   "fetch_from": "candidate.specialization",
+   "fetch_if_empty": 1,
+   "fieldname": "specialization",
+   "fieldtype": "Link",
+   "label": "Specialization",
+   "options": "Specialization"
+  },
+  {
+   "fetch_if_empty": 1,
+   "fieldname": "current_employer",
+   "fieldtype": "Data",
+   "label": "Current Employer"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "candidate",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Candidate",
+   "options": "Candidate",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "candidate.year_of_passing",
+   "fetch_if_empty": 1,
+   "fieldname": "year_of_passing",
+   "fieldtype": "Select",
+   "label": "Year of Passing",
+   "options": "\n1960\n1961\n1962\n1963\n1964\n1965\n1966\n1967\n1968\n1969\n1970\n1971\n1972\n1973\n1974\n1975\n1976\n1977\n1978\n1979\n1980\n1981\n1982\n1983\n1984\n1985\n1986\n1987\n1988\n1989\n1990\n1991\n1992\n1993\n1994\n1995\n1996\n1997\n1998\n1999\n2000\n2001\n2002\n2003\n2004\n2005\n2006\n2007\n2008\n2009\n2010\n2011\n2012\n2013\n2014\n2015\n2016\n2017\n2018\n2019\n2020"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "IAF",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "default": "Indian",
+   "fetch_from": "candidate.nationality",
+   "fieldname": "nationality",
+   "fieldtype": "Link",
+   "label": "Nationality",
+   "options": "Nationality",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "task.subject",
+   "fetch_if_empty": 1,
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Position"
+  },
+  {
+   "default": "0",
+   "fetch_from": "candidate.is_married",
+   "fetch_if_empty": 1,
+   "fieldname": "is_married",
+   "fieldtype": "Check",
+   "label": "Is Married"
+  },
+  {
+   "fetch_from": "candidate.task",
+   "fieldname": "task",
+   "fieldtype": "Link",
+   "label": "Task",
+   "options": "Task",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "project.project_name",
+   "fieldname": "subject",
+   "fieldtype": "Read Only",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "candidate_age",
+   "fieldtype": "Int",
+   "label": "Candidate Age"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "tab_break_41",
+   "fieldtype": "Tab Break",
+   "label": "More Info"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nAttended\nSelected\nShortlisted\nHold\nRejected"
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "grade",
+   "fieldtype": "Data",
+   "label": "Grade"
+  },
+  {
+   "fieldname": "section_break_45",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "comments",
+   "fieldtype": "Text Editor",
+   "label": "Comments"
+  }
+ ],
+ "image_field": "candidate_image",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-03-12 08:54:40.833728",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "IAF",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "candidate_name",
+ "track_changes": 1
+}
