@@ -8,7 +8,8 @@
  "field_order": [
   "airport",
   "country",
-  "airport_code"
+  "airport_code",
+  "location"
  ],
  "fields": [
   {
@@ -27,14 +28,20 @@
    "fieldname": "airport_code",
    "fieldtype": "Data",
    "label": "Airport Code"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-01-18 21:41:55.308516",
+ "modified": "2025-01-07 21:17:24.103309",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Airport",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -51,7 +58,9 @@
   }
  ],
  "quick_entry": 1,
+ "search_fields": "location",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

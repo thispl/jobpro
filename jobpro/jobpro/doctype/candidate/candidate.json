@@ -24,6 +24,8 @@
   "source",
   "column_break_14",
   "interview_status",
+  "submitted_date",
+  "age_of_cv",
   "qr",
   "candidate_summary_section",
   "given_name",
@@ -79,6 +81,8 @@
   "pincode",
   "column_break_65",
   "religion",
+  "jobpro_web_section",
+  "badge",
   "sam_details_tab",
   "agent_name",
   "contact_number",
@@ -142,7 +146,6 @@
   "column_break_24",
   "issued_date",
   "expiry_date",
-  "section_break_119",
   "sa_details_section",
   "sa_organization_name",
   "sa_mail_id",
@@ -212,7 +215,9 @@
   "other_allowances",
   "column_break_189",
   "offer_letter",
-  "total_salary"
+  "total_salary",
+  "section_break_egxd",
+  "payment_details"
  ],
  "fields": [
   {
@@ -220,6 +225,7 @@
    "fieldname": "position",
    "fieldtype": "Data",
    "label": "Position",
+   "length": 100,
    "reqd": 1
   },
   {
@@ -249,25 +255,28 @@
    "fieldname": "mail_id",
    "fieldtype": "Data",
    "label": "Mail ID",
+   "length": 100,
    "options": "Email"
   },
   {
    "fieldname": "skype_id",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Skype ID"
+   "label": "Skype ID",
+   "length": 20
   },
   {
    "fieldname": "alternate_contact",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Alternate Contact",
-   "length": 10
+   "length": 20
   },
   {
    "fieldname": "alternate_mail_id",
    "fieldtype": "Data",
    "label": "Alternate Mail ID",
+   "length": 100,
    "options": "Email"
   },
   {
@@ -277,7 +286,8 @@
   {
    "fieldname": "address",
    "fieldtype": "Data",
-   "label": "Address"
+   "label": "Address",
+   "length": 100
   },
   {
    "fieldname": "location",
@@ -399,7 +409,7 @@
    "fieldname": "year_of_passing",
    "fieldtype": "Select",
    "label": "Year of Passing",
-   "options": "\n1960\n1961\n1962\n1963\n1964\n1965\n1966\n1967\n1968\n1969\n1970\n1971\n1972\n1973\n1974\n1975\n1976\n1977\n1978\n1979\n1980\n1981\n1982\n1983\n1984\n1985\n1986\n1987\n1988\n1989\n1990\n1991\n1992\n1993\n1994\n1995\n1996\n1997\n1998\n1999\n2000\n2001\n2002\n2003\n2004\n2005\n2006\n2007\n2008\n2009\n2010\n2011\n2012\n2013\n2014\n2015\n2016\n2017\n2018\n2019\n2020"
+   "options": "\n1960\n1961\n1962\n1963\n1964\n1965\n1966\n1967\n1968\n1969\n1970\n1971\n1972\n1973\n1974\n1975\n1976\n1977\n1978\n1979\n1980\n1981\n1982\n1983\n1984\n1985\n1986\n1987\n1988\n1989\n1990\n1991\n1992\n1993\n1994\n1995\n1996\n1997\n1998\n1999\n2000\n2001\n2002\n2003\n2004\n2005\n2006\n2007\n2008\n2009\n2010\n2011\n2012\n2013\n2014\n2015\n2016\n2017\n2018\n2019\n2020\n2021\n2022\n2023\n2024"
   },
   {
    "fieldname": "course_type",
@@ -621,6 +631,7 @@
    "fieldname": "sa_mobile_number",
    "fieldtype": "Data",
    "label": "SA Mobile Number",
+   "length": 15,
    "read_only": 1
   },
   {
@@ -632,6 +643,7 @@
    "fieldname": "sa_mail_id",
    "fieldtype": "Data",
    "label": "SA Mail ID",
+   "length": 100,
    "read_only": 1
   },
   {
@@ -639,6 +651,7 @@
    "fieldname": "sa_location",
    "fieldtype": "Data",
    "label": "SA Location",
+   "length": 80,
    "read_only": 1
   },
   {
@@ -646,6 +659,7 @@
    "fieldname": "sa_state",
    "fieldtype": "Data",
    "label": "SA State",
+   "length": 80,
    "read_only": 1
   },
   {
@@ -653,6 +667,7 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Location / District",
+   "length": 100,
    "read_only": 1
   },
   {
@@ -660,19 +675,22 @@
    "fieldname": "temp_state",
    "fieldtype": "Data",
    "label": "State",
+   "length": 20,
    "read_only": 1
   },
   {
    "fieldname": "temp_place_of_issue",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Temp Place of Issue"
+   "label": "Temp Place of Issue",
+   "length": 50
   },
   {
    "fieldname": "temp_interview_location",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Temp Interview Location"
+   "label": "Temp Interview Location",
+   "length": 100
   },
   {
    "fieldname": "section_break_12",
@@ -690,6 +708,7 @@
    "fieldname": "sa_agent_name",
    "fieldtype": "Data",
    "label": "SA Name",
+   "length": 80,
    "read_only": 1
   },
   {
@@ -708,6 +727,7 @@
    "fieldname": "sa_organization_name",
    "fieldtype": "Data",
    "label": "SA Organization Name",
+   "length": 100,
    "read_only": 1
   },
   {
@@ -718,13 +738,13 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "default": "IDB",
+   "default": "Sourced",
    "fieldname": "pending_for",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Candidate Status",
-   "options": "\nIDB\nSourced\nSubmitted\nShortlisted\nLinedup\nClient Offered\nInterviewed\nProposed PSL"
+   "options": "\nIDB\nSourced\nSubmitted(Internal)\nPending QC\nQC Cleared\nSubmit(SPOC)\nSubmitted(Client)\nShortlisted\nLinedup\nLinedup Confirmed\nReported\nInterviewed\nProposed PSL\nResult Pending"
   },
   {
    "fieldname": "attachments_section",
@@ -779,6 +799,7 @@
    "allow_in_quick_entry": 1,
    "fieldname": "project",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Project",
    "options": "Project"
   },
@@ -886,24 +907,28 @@
   {
    "fieldname": "communication_1",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Communication",
    "options": "\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10"
   },
   {
    "fieldname": "confidence",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Confidence",
    "options": "\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10"
   },
   {
    "fieldname": "interest",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Interest",
    "options": "\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10"
   },
   {
    "fieldname": "relevance",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Relevance",
    "options": "\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10"
   },
@@ -929,18 +954,19 @@
   {
    "fieldname": "document_verification_section",
    "fieldtype": "Section Break",
-   "hidden": 1,
    "label": "Document Verification"
   },
   {
    "fieldname": "remarks_2",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Remarks"
   },
   {
    "fieldname": "screened_by",
-   "fieldtype": "Data",
-   "label": "Screened By"
+   "fieldtype": "Link",
+   "label": "Screened By",
+   "options": "User"
   },
   {
    "fieldname": "column_break_133",
@@ -949,6 +975,7 @@
   {
    "fieldname": "rating",
    "fieldtype": "Rating",
+   "hidden": 1,
    "label": "Overall Rating"
   },
   {
@@ -971,6 +998,7 @@
    "fieldname": "age",
    "fieldtype": "Data",
    "label": "Age",
+   "length": 50,
    "options": "Phone",
    "read_only": 1
   },
@@ -997,7 +1025,8 @@
    "fieldname": "service_charge_candidate",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Service Charge (Candidate)"
+   "label": "Service Charge (Candidate)",
+   "length": 20
   },
   {
    "fieldname": "vaccination_status",
@@ -1124,7 +1153,7 @@
    "fieldname": "interview_status",
    "fieldtype": "Select",
    "label": "Interview Status",
-   "options": "Attented\nSelected\nShortlisted\nHold Rejected"
+   "options": "\nAttended\nInterview Completed\nRejected"
   },
   {
    "fieldname": "column_break_14",
@@ -1212,8 +1241,9 @@
   {
    "fieldname": "interview_status1",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Interview Status",
-   "options": "Attented\nSelected\nShortlisted\nHold Rejected"
+   "options": "\nAttended\nSelected\nShortlisted\nHold Rejected"
   },
   {
    "fieldname": "grade",
@@ -1243,10 +1273,6 @@
    "fieldname": "total_salary",
    "fieldtype": "Data",
    "label": "Total Salary"
-  },
-  {
-   "fieldname": "section_break_119",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "whatsapp_number",
@@ -1280,12 +1306,14 @@
   {
    "fieldname": "agent_name",
    "fieldtype": "Data",
-   "label": "Agent Name"
+   "label": "Agent Name",
+   "length": 50
   },
   {
    "fieldname": "contact_number",
    "fieldtype": "Data",
-   "label": "Contact Number"
+   "label": "Contact Number",
+   "length": 15
   },
   {
    "fieldname": "column_break_73",
@@ -1299,13 +1327,15 @@
   {
    "fieldname": "agent_location",
    "fieldtype": "Data",
-   "label": "Location"
+   "label": "Location",
+   "length": 50
   },
   {
    "fetch_from": "project.project_name",
    "fieldname": "project_name",
    "fieldtype": "Data",
    "label": "Project Name",
+   "length": 100,
    "read_only": 1
   },
   {
@@ -1344,7 +1374,8 @@
   {
    "fieldname": "candidate_passport_number",
    "fieldtype": "Data",
-   "label": "Passport Number"
+   "label": "Passport Number",
+   "length": 10
   },
   {
    "fieldname": "odr_tab",
@@ -1354,24 +1385,63 @@
   {
    "fieldname": "temp_passport_number",
    "fieldtype": "Data",
-   "label": "Temp Passport Number"
+   "label": "Temp Passport Number",
+   "length": 9
   },
   {
    "fieldname": "passport_number",
    "fieldtype": "Data",
+   "in_standard_filter": 1,
    "label": "Passport Number",
-   "length": 9
+   "length": 9,
+   "mandatory_depends_on": "eval:doc.pending_for=='Proposed PSL'"
   },
   {
    "fieldname": "source",
    "fieldtype": "Select",
    "label": "Source",
-   "options": "\nA-Portal\nB-Advertisement\nC-Agent"
+   "options": "\nA-Portal\nB-Paper Advertisement\nC-Social Media\nD-Agent\nE-Reference\nREFERPRO"
+  },
+  {
+   "fieldname": "submitted_date",
+   "fieldtype": "Date",
+   "label": "Submitted Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "age_of_cv",
+   "fieldtype": "Data",
+   "label": "Age of CV",
+   "length": 10,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "jobpro_web_section",
+   "fieldtype": "Section Break",
+   "label": "JOBPRO WEB"
+  },
+  {
+   "fieldname": "badge",
+   "fieldtype": "Select",
+   "label": "Badge",
+   "options": "\nHIRED\nOPEN TO WORK"
+  },
+  {
+   "fieldname": "section_break_egxd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "payment_details",
+   "fieldtype": "Table",
+   "label": "Payment Details",
+   "mandatory_depends_on": "eval:doc.pending_for==\"Proposed PSL\"",
+   "options": "candidate Payment Details"
   }
  ],
  "image_field": "candidate_image",
  "links": [],
- "modified": "2023-11-20 13:34:36.597212",
+ "modified": "2025-04-11 17:50:23.955810",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Candidate",

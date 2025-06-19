@@ -1,0 +1,201 @@
+<!-- {% extends "templates/web.html" %} -->
+{% block title %} Candidate Live Status Report {% endblock %}
+{% block head_include %}
+    <style>
+        body {
+            padding: 35px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+
+    {% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            // Create a function to refresh the table data
+            function refreshTable() {
+                opts = {
+                    method: "jobpro.www.candidate_live_status.get_data",
+                }
+                frappe.call(opts).then(res => {
+                    let html = '';
+                    $.each(res, function (i, d) {
+                        $.each(d, function (j, k) {
+                            // Generate table rows only
+                            html += "<tr style='text-align: center; line-height: 1.5;color:black;'>\
+                                <td style='text-align: left;width: 14%;'>" + k['position'] + "</td>\
+                                <td style='width: 5%;'>" + k['linedup'] + "</td>\
+                                <td style='width: 5%;'>" + k['reported'] + "</td>\
+                                <td style='width: 5%;'>" + k['attended'] + "</td>\
+                                <td style='width: 5%;color:red;'>" + k['rp'] + "</td>\
+                                <td style='width: 5%;color:blue;'>" + k['psl'] + "</b></td>\
+                                <td style='width: 5%;color:black;'>" + k['pending'] + "</b></td>\
+                                <td style='width: 5%;color:red;'>" + k['rejected'] + "</b></td>\
+                            </tr>";
+                        });
+                    });
+
+                    $('#table-body').html(html); // Update the tbody with new data
+                });
+                
+            }
+            // Initial load of the table
+            refreshTable();
+
+            // Refresh the table every 10 seconds
+            setInterval(refreshTable, 10000);
+            setInterval(() => {
+  location.reload();
+}, 30000); // Reload every 3 seconds (3000 milliseconds)
+            var table = $('#data-table').DataTable({
+                paging: false,
+                searching: false,
+                ordering:  false,
+                pageLength: 10,
+                // Add more DataTable options as needed
+            });
+        });
+    </script>
+    {% endblock %}
+{% endblock %}
+{%- block content -%}
+{% for row in project_summary %}
+<p style="padding:10px"></p>
+<table id="summary-table">
+    <tr>
+    <td>
+        <div class="small-box bg-secondary shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['linedup']}}</h3>
+                <p>Linedup</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-users  fa-sm" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td>
+    <td>
+        <div class="small-box bg-info shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['reported']}}</h3>
+                <p>Reported</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-walking" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td><td>
+        <div class="small-box bg-primary shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['attended']}}</h3>
+                <p>Attended</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-person-booth" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td><td>
+        <div class="small-box bg-info shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['rp']}}</h3>
+                <p>Interview Pending</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-clock" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td><td>
+        <div class="small-box bg-success shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['psl']}}</h3>
+                <p>Selected</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-check" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td><td>
+        <div class="small-box bg-warning shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['pending']}}</h3>
+                <p style="margin-right: 15px;">Hold</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-lock" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td><td>
+        <div class="small-box bg-danger shadow-lg" >
+            <div class="inner">
+                <h3 class="title">{{row['rejected']}}</h3>
+                <p>Rejected</p> 
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-times" ></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+    </td>
+</tr>
+</table>
+{% endfor %}
+
+<p style="padding:10px"></p>
+
+<table border="1" width="100%" id="data-table" style="font-size: 25px; line-height: 1.5;">
+    <thead>
+        <tr>
+            <td style="background-color:rgb(138, 212, 244)" colspan="8"><center>Candidate Status <b>{{ att_data[0]['date'] }}</b></center></td>
+        </tr>
+        <tr style="line-height: 1.5;background-color:rgb(17, 0, 255)">
+            <td style="width: 14%;color: white;background-color:rgb(17, 0, 255)"><center><b>Position</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>Linedup</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>Reported</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>Attended</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(17, 0, 255)"><center><b>Interview Pending</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(17, 0, 255)"><center><b>Selected</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(17, 0, 255)"><center><b>Hold</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(17, 0, 255)"><center><b>Rejected</b></center></td>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+        {% for row in att_data %}
+        <tr style="text-align: center; line-height: 1.5;color:rgb(11, 12, 11);">
+            <td  style="text-align: left;width: 14%;">{{ row['position'] }}</td>
+            <td style="width: 5%;">{{ row['linedup'] }}</td>
+            <td style="width: 5%;">{{ row['reported'] }}</td>
+            <td style="width: 5%;">{{ row['attended'] }}</td>
+            <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rp'] }}</td>
+            <td style="width: 5%;color: rgb(17, 0, 255);"><b>{{ row['psl'] }}</b></td>
+            <td style="width: 5%;color: rgb(3, 3, 3);">{{ row['pending'] }}</td>
+            <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rejected'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

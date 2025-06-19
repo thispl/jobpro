@@ -1,0 +1,44 @@
+<html>
+<style>
+    .th {
+        background-color: #0f1568;
+        color: white;
+    };
+    
+</style>
+<body>
+    <table border="1">
+        <thead>
+            <tr class="th">
+                <th>S NO</th>
+                <th>Title</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in data %}
+            <tr>
+                <td></td>
+                <td>Project Name</td>
+                <td>{{ d.project_name }}</td><tr>
+                <tr><td></td><td>Date</td><td>{{ d.action_date }}</td></tr>
+                <tr><td>1</td><td>Country</td><td>{{ d.teritory }}</td></tr>
+                <tr><td></td><td>Client</td><td>{{ d.customer }}</td></tr>
+                <tr><td>2</td>Position<td></td><td>{{ d.position }}</td></tr>
+                <tr><td>3</td><td>Major Key Skills</td><td>{{ d.skills }}</td><tr>
+                <tr><td>4</td><td>Experience</td><td>{{ d.exp }}</td></tr>
+                <tr><td>5</td><td>Gulf Experience</td><td>{{ d.gulfexp }}</td></tr>
+                <tr><td>6</td><td>Free Recruitment (Y/N)</td><td>{{ d.recr }}</td></tr>
+                <tr><td>7</td><td>Mode Of Interview</td><td>{{ d.mode }}</td></tr>
+                <tr><td>8</td><td>Food</td><td>{{ d.food }}</td></tr>
+                <tr><td>9</td><td>Accomodation</td><td>{{ d.accomodation }}</td></tr>
+                <tr><td>10</td><td>Transportation</td><td>{{ d.transport }}</td></tr>
+                <tr><td>11</td><td>Visa Type</td><td>{{ d.visa_type }}</td></tr>
+                <tr><td>12</td><td>Contract Period</td><td>{{ d.contract }}</td></tr>
+                <tr><td>13</td><td>Category<td><td>{{ d.category }}</td><tr>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

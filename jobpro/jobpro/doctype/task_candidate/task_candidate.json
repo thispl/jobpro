@@ -53,7 +53,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Candidate Status",
-   "options": "\nIDB\nSourced\nSubmitted\nShortlisted\nLinedup\nInterviewed\nProposed PSL"
+   "options": "\nIDB\nSourced\nSubmitted(Internal)\nSubmitted(Client)\nShortlisted\nLinedup\nLinedup Confirmed\nInterviewed\nProposed PSL\nPending QC\nQC Cleared\nResult Pending\nSubmit(SPOC)"
   },
   {
    "fieldname": "current_location",
@@ -125,7 +125,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-06-09 12:11:30.204567",
+ "modified": "2025-06-12 13:01:10.762731",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Task Candidate",
@@ -134,5 +134,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

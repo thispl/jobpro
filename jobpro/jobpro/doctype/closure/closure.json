@@ -15,6 +15,7 @@
   "given_name",
   "mobile",
   "email_id",
+  "check",
   "column_break_6",
   "candidate_owner",
   "passport_no",
@@ -28,9 +29,11 @@
   "drop_comment_section",
   "remark",
   "column_break_20",
-  "status",
   "standard_remarks",
+  "status",
   "next_action_by",
+  "next_action_modfied_date",
+  "last_updated_on",
   "status_sb_section",
   "onboarded",
   "project_summary_section",
@@ -61,6 +64,8 @@
   "associate_service_charge",
   "column_break_30",
   "client_payment_company_currency",
+  "candidate_payment_company_currenc",
+  "custom_so_expected_on",
   "column_break_42",
   "billing_currency",
   "candidate_si",
@@ -74,7 +79,6 @@
   "item",
   "column_break_32",
   "description",
-  "section_break_22",
   "section_break_39",
   "part_payment_collection",
   "sc_amount_tab",
@@ -118,7 +122,6 @@
   "sol_reference_number",
   "column_break_90",
   "sol_uploaded_date",
-  "section_break_100",
   "premedical_section",
   "premedical_not_applicable",
   "pm_initiated_date",
@@ -170,6 +173,11 @@
   "column_break_155",
   "final_medical_original_at",
   "final_medical_hospital_location",
+  "biometric_tab",
+  "biometric_date",
+  "column_break_q48n",
+  "column_break_dkqr",
+  "biometric_completed",
   "visa_stamping_section",
   "vs_initiated_date",
   "vs_expected_date",
@@ -207,7 +215,10 @@
   "column_break_175",
   "drop_approved_by",
   "certificate_attestation_section",
-  "is_required"
+  "is_required",
+  "candidate_feedback_tab",
+  "candidate_feedback_form",
+  "candidate_google_review"
  ],
  "fields": [
   {
@@ -255,7 +266,8 @@
   {
    "fieldname": "expected_doj",
    "fieldtype": "Date",
-   "label": "Expected DoJ"
+   "label": "Expected DoJ",
+   "mandatory_depends_on": "eval:doc.status==\"PSL\""
   },
   {
    "fieldname": "column_break_6",
@@ -373,7 +385,7 @@
    "fieldname": "candidate_service_charge",
    "fieldtype": "Currency",
    "label": "Candidate SC",
-   "options": "Currency\n",
+   "options": "billing_currency",
    "read_only": 1
   },
   {
@@ -494,7 +506,8 @@
    "fieldname": "mobile",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Mobile / WhatsAPP"
+   "label": "Mobile / WhatsAPP",
+   "length": 20
   },
   {
    "depends_on": "eval:doc.payment != \"Candidate\" && doc.payment != \"Associate\"",
@@ -530,16 +543,7 @@
    "default": "0",
    "fieldname": "so_created",
    "fieldtype": "Check",
-   "label": "SO Created"
-  },
-  {
-   "default": "PSL",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "options": "\nPSL\nSales Order\nOffer Letter\nVisa\nPremedical\nPCC\nMOH Approval\nCertificate Attestation\nFinal Medical\nVisa Stamping\nEmigration\nTicket\nOnboarding\nOnboarded\nDropped\nWaitlisted",
+   "label": "SO Created",
    "read_only": 1
   },
   {
@@ -613,7 +617,8 @@
   {
    "fieldname": "sol_reference_number",
    "fieldtype": "Data",
-   "label": "SOL Reference Number"
+   "label": "SOL Reference Number",
+   "length": 40
   },
   {
    "fieldname": "sol_expiry_date",
@@ -658,7 +663,8 @@
   {
    "fieldname": "so_confirmed_date",
    "fieldtype": "Date",
-   "label": "SO Confirmed Date"
+   "label": "SO Confirmed Date",
+   "read_only": 1
   },
   {
    "fetch_from": "project.account_manager",
@@ -771,10 +777,6 @@
    "label": "Billing Currency",
    "options": "Currency",
    "reqd": 1
-  },
-  {
-   "fieldname": "section_break_22",
-   "fieldtype": "Section Break"
   },
   {
    "fieldname": "description",
@@ -894,6 +896,7 @@
    "fieldname": "sa_mobile_number",
    "fieldtype": "Data",
    "label": "SA Mobile Number",
+   "length": 40,
    "read_only": 1
   },
   {
@@ -908,6 +911,7 @@
    "fieldname": "sa_state",
    "fieldtype": "Data",
    "label": "SA State",
+   "length": 30,
    "read_only": 1
   },
   {
@@ -953,11 +957,8 @@
   {
    "fieldname": "moh_uploaded_date",
    "fieldtype": "Data",
-   "label": "MOH Uploaded Date"
-  },
-  {
-   "fieldname": "section_break_100",
-   "fieldtype": "Section Break"
+   "label": "MOH Uploaded Date",
+   "length": 20
   },
   {
    "default": "0",
@@ -1025,7 +1026,8 @@
   {
    "fieldname": "vaccination_status",
    "fieldtype": "Data",
-   "label": "Vaccination Status"
+   "label": "Vaccination Status",
+   "length": 30
   },
   {
    "fieldname": "vaccination_certificate",
@@ -1136,7 +1138,8 @@
   {
    "fieldname": "interview_location",
    "fieldtype": "Data",
-   "label": "Interview Location"
+   "label": "Interview Location",
+   "length": 40
   },
   {
    "default": "0",
@@ -1160,7 +1163,6 @@
    "default": "0",
    "fieldname": "onboarded",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Onboarded"
   },
   {
@@ -1187,7 +1189,8 @@
   {
    "fieldname": "pm_initiated_date",
    "fieldtype": "Data",
-   "label": "PM Initiated Date"
+   "label": "PM Initiated Date",
+   "length": 20
   },
   {
    "fieldname": "pm_expected_date",
@@ -1250,7 +1253,7 @@
    "fieldname": "associate_service_charge",
    "fieldtype": "Currency",
    "label": "Associate SC",
-   "options": "Currency",
+   "options": "billing_currency",
    "read_only": 1
   },
   {
@@ -1335,11 +1338,89 @@
   {
    "fieldname": "section_break_2",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "biometric_tab",
+   "fieldtype": "Tab Break",
+   "label": "Biometric"
+  },
+  {
+   "fieldname": "biometric_date",
+   "fieldtype": "Date",
+   "label": "Biometric Date"
+  },
+  {
+   "fieldname": "column_break_q48n",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dkqr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "biometric_completed",
+   "fieldtype": "Check",
+   "label": "Biometric Completed"
+  },
+  {
+   "default": "PSL",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nPSL\nSales Order\nOffer Letter\nVisa\nPremedical\nPCC\nMOH Approval\nCertificate Attestation\nFinal Medical\nBiometric\nVisa Stamping\nEmigration\nTicket\nOnboarding\nOnboarded\nPending for Conclusion\nDropped\nWaitlisted"
+  },
+  {
+   "fieldname": "candidate_feedback_tab",
+   "fieldtype": "Tab Break",
+   "label": " Candidate Feedback"
+  },
+  {
+   "fieldname": "candidate_feedback_form",
+   "fieldtype": "Attach",
+   "label": " Candidate Feedback Form"
+  },
+  {
+   "fieldname": "candidate_google_review",
+   "fieldtype": "Data",
+   "label": " Candidate Google Review"
+  },
+  {
+   "fieldname": "custom_so_expected_on",
+   "fieldtype": "Data",
+   "label": "SO Expected On",
+   "length": 20,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Client\" && doc.payment != \"Associate\" && doc.billing_currency != \"INR\"",
+   "fieldname": "candidate_payment_company_currenc",
+   "fieldtype": "Currency",
+   "label": "Candidate Payment Company Currenc"
+  },
+  {
+   "fieldname": "next_action_modfied_date",
+   "fieldtype": "Date",
+   "label": "Next Action Modfied Date",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "check",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Check"
+  },
+  {
+   "fieldname": "last_updated_on",
+   "fieldtype": "Date",
+   "label": "Last Updated On",
+   "mandatory_depends_on": "eval:!(doc.status==\"Dropped\" || doc.status==\"Arrived\")\r\n"
   }
  ],
  "image_field": "photo",
  "links": [],
- "modified": "2023-11-29 09:44:11.326819",
+ "modified": "2025-05-29 11:48:59.562280",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Closure",

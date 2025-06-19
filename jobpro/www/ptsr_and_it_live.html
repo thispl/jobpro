@@ -1,0 +1,434 @@
+<html>
+<head>
+    <h1 class="page-title">PTSR & IT-SW Live Status Report</h1>
+    <style>
+        body {
+            padding: 35px;
+        }
+        table {
+            width: 90%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: rgb(24, 17, 132);
+            color: white;
+        }
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .slide {
+    position: relative; /* Ensures elements are positioned relative to this container */
+    
+}
+/* Alternating row colors */
+tbody tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light gray */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #e6e6ff; /* Light blue */
+}
+
+/* Add a hover effect for better readability */
+tbody tr:hover {
+    background-color: #d1e0ff !important; /* Highlight on hover */
+}
+
+.slide-image {
+    position: absolute;
+    top: 10px;   /* Adjust as needed */
+    left: 10px;  /* Puts the image in the left corner */
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+}
+/* Ensure equal width for VAC, SP, FP, SL, PSL, LP columns */
+th:nth-child(6), td:nth-child(6),
+th:nth-child(7), td:nth-child(7),
+th:nth-child(8), td:nth-child(8),
+th:nth-child(9), td:nth-child(9),
+th:nth-child(10), td:nth-child(10),
+th:nth-child(11), td:nth-child(11) {
+    width: 12%; /* Adjust as needed to fit your table */
+    min-width: 100px; /* Ensures a minimum width */
+}
+
+th:nth-child(4), td:nth-child(4) {
+    width: 55%; /* Adjust as needed */
+    min-width: 100px;
+}
+        .page-title {
+    text-align: center;
+    margin-top: 20px; /* Adjust as needed */
+}
+        .summary-content {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.slide-image-container-it img {
+    display: none; /* Initially hidden */
+    margin-top: 50px; 
+}
+
+.slide-image-container img {
+    display: block; /* PTSR image shown initially */
+    margin-top: 50px; 
+}
+.summary-item {
+    font-size: 24px; /* Bigger font */
+    font-weight: bold;
+    color: rgb(229, 227, 247); /* Text color */
+    background: #f0f0f0; /* Light grey background */
+    padding: 15px 20px;
+    border-radius: 8px; /* Rounded corners */
+    text-align: center;
+    min-width: 100px; /* Ensure consistent size */
+}
+.summary-item:nth-child(1) { background: #dc143c; } /* VAC - Light Red */
+.summary-item:nth-child(2) { background: #0b4b8f;} /* SP - Light Green */
+.summary-item:nth-child(3) { background: rgb(37, 22, 247);} /* FP - Light Blue */
+.summary-item:nth-child(4) { background: rgb(49, 46, 92);} /* SL - Light Yellow */
+.summary-item:nth-child(5) { background: #34a1e5;} /* PSL - Light Pink */
+.summary-item:nth-child(6) { background: #fa9508;} /* LP - Light Cyan */
+
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="summary-box">
+        <div class="summary-content" id="summary-container">
+            <!-- Default PTSR summary items -->
+            <div class="summary-item"><strong id="summary-label-1">VAC:</strong> <span id="summary-value-1">0</span></div>
+            <div class="summary-item"><strong id="summary-label-2">SP:</strong> <span id="summary-value-2">0</span></div>
+            <div class="summary-item"><strong id="summary-label-3">FP:</strong> <span id="summary-value-3">0</span></div>
+            <div class="summary-item"><strong id="summary-label-4">SL:</strong> <span id="summary-value-4">0</span></div>
+            <div class="summary-item"><strong id="summary-label-5">PSL:</strong> <span id="summary-value-5">0</span></div>
+            <div class="summary-item"><strong id="summary-label-6">LP:</strong> <span id="summary-value-6">0</span></div>
+        </div>
+    </div>
+
+    {% set grand_totals = namespace(vac=0, sp=0, fp=0, sl=0, psl=0, lp=0) %}
+
+    {% set project_list = [] %}
+    {% for customer in ptsr_data %}
+        {% for project in customer.projects %}
+            {% set _ = project_list.append({'customer': customer, 'project': project}) %}
+        {% endfor %}
+    {% endfor %}
+    
+    {% set project_batches = project_list | batch(1, fill_with=None) %}
+    <div class="slide-image-container">
+        {% if project_batches %}
+        <img src="/file/e0f6fffac7/Screenshot from 2023-03-03 19-57-30.png" class="slide-image">
+        {% endif %}
+    </div>
+    {% set ns = namespace(serial_no=0) %}
+    {% for batch in project_batches %}
+
+    <div class="slide {% if loop.first %}active{% endif %}" id="ptsr-slide-{{ loop.index }}">
+        <table id="ptsr-table-{{ loop.index }}">
+            <thead>
+                <tr>
+                    <th>Sl NO</th>
+                    <th>Customer Name / Project Name</th>
+                    <th>Project Priority</th>
+                    <th>Task</th>
+                    <th>Task Priority</th>
+                    <th>VAC</th>
+                    <th >SP</th>
+                    <th >FP</th>
+                    <th >SL</th>
+                    <th >PSL</th>
+                    <th >LP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set batch_totals = namespace(vac=0, sp=0, fp=0, sl=0, psl=0, lp=0) %}
+    
+                {% for item in batch if item %}
+                    {% set customer = item.customer %}
+                    {% set project = item.project %}
+                    <tr class="group-header">
+                        <td colspan="5" style="background-color: #cce5f5; font-weight: bold; text-align: left; padding: 10px;">
+                            {{ customer.customer_name }}--{{ project.territory }}
+                        </td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_vac }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_sp }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_fp }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_sl }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_psl }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_lp }}</td>
+                    </tr>
+                    {% set task_count = project.tasks | length %}
+                    {% for task in project.tasks %}
+                        <tr>
+                            {% if loop.index == 1 %}
+                                {% set ns.serial_no = ns.serial_no + 1 %}
+                                <td rowspan="{{ task_count }}">{{ ns.serial_no }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.project_name }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.project_priority }}</td>
+                            {% endif %}
+                            <td>{{ task.task }}</td>
+                            <td>{{ task.task_priority }}</td>
+                            <td>{{ task.vac }}</td>
+                            <td>{{ task.sp }}</td>
+                            <td>{{ task.fp }}</td>
+                            <td>{{ task.sl }}</td>
+                            <td>{{ task.psl }}</td>
+                            <td>{{ task.lp }}</td>
+    
+                            {% set batch_totals.vac = batch_totals.vac + task.vac %}
+                            {% set batch_totals.sp = batch_totals.sp + task.sp %}
+                            {% set batch_totals.fp = batch_totals.fp + task.fp %}
+                            {% set batch_totals.sl = batch_totals.sl + task.sl %}
+                            {% set batch_totals.psl = batch_totals.psl + task.psl %}
+                            {% set batch_totals.lp = batch_totals.lp + task.lp %}
+    
+                            {% set grand_totals.vac = grand_totals.vac + task.vac %}
+                            {% set grand_totals.sp = grand_totals.sp + task.sp %}
+                            {% set grand_totals.fp = grand_totals.fp + task.fp %}
+                            {% set grand_totals.sl = grand_totals.sl + task.sl %}
+                            {% set grand_totals.psl = grand_totals.psl + task.psl %}
+                            {% set grand_totals.lp = grand_totals.lp + task.lp %}
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+    
+                <!-- Batch Total Row -->
+                <tr style="background-color: #d1d1d1; font-weight: bold;">
+                    <td colspan="5">Batch Total</td>
+                    <td>{{ batch_totals.vac }}</td>
+                    <td>{{ batch_totals.sp }}</td>
+                    <td>{{ batch_totals.fp }}</td>
+                    <td>{{ batch_totals.sl }}</td>
+                    <td>{{ batch_totals.psl }}</td>
+                    <td>{{ batch_totals.lp }}</td>
+                </tr>
+    
+                <!-- Grand Total Row for Last Batch -->
+                {% if loop.last %}
+                <tr style="background-color:rgb(24, 17, 132); font-weight: bold;color: white;">
+                    <td colspan="5">Overall Grand Total</td>
+                    <td>{{ grand_totals.vac }}</td>
+                    <td>{{ grand_totals.sp }}</td>
+                    <td>{{ grand_totals.fp }}</td>
+                    <td>{{ grand_totals.sl }}</td>
+                    <td>{{ grand_totals.psl }}</td>
+                    <td>{{ grand_totals.lp }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+    
+
+    {% set ns = namespace(serial_no=0, total_cr=0, total_hold=0, total_open=0, total_overdue=0, total_pr=0, total_working=0, total_grand=0) %}
+    {% set formattedDate = frappe.utils.get_datetime(frappe.utils.now()).strftime('%d-%m-%Y') %}
+
+
+    {% set itsw_batches = itsr | batch(40, fill_with=None) %}
+    <div class="slide-image-container-it">
+        {% if  itsw_batches %}
+        <img src="/file/600521bae6/872824daa5IT-SW (1).png" class="slide-image">
+        {% endif %}
+    </div>
+{% for batch in itsw_batches %}
+<div class="slide" id="itsw-slide-{{ loop.index }}">
+    <table id="itsw-table-{{ loop.index }}">
+        <thead>
+            <tr>
+                <th colspan="7" style="background: rgb(24, 17, 132); color: white; text-align: center;">Project Details</th>
+                <th colspan="2" style="background: rgb(24, 17, 132); color: white; text-align: right;">Date</th>
+                <th colspan="1" style="background: rgb(24, 17, 132); color: white; text-align: right;">{{ formattedDate}}</th>
+            </tr>
+            <tr>
+                <th>Sl No</th>
+                <th>Project</th>
+                <th>Project Type</th>
+                <th>Open</th>
+                <th>Working</th>
+                <th>PR</th>
+                <th>CR</th>
+                <th>Overdue</th>
+                <th>Hold</th>
+                <th>Grand Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set row_count = 0 %}
+            {% for row in batch if row %}
+            {% set row_count = row_count + 1 %}
+            {% set ns.serial_no = ns.serial_no + 1 %}
+            <tr>
+                <td>{{ ns.serial_no }}</td>
+                <td>{{ row['project_name'] }}</td>
+                <td>{{ row['type'] }}</td>
+                <td>{{ row['open'] }}</td>
+                <td>{{ row['working'] }}</td>
+                <td>{{ row['pending_review'] }}</td>
+                <td>{{ row['client_review'] }}</td>
+                <td>{{ row['overdue'] }}</td>
+                <td>{{ row['hold'] }}</td>
+                <td>{{ row['total'] }}</td>
+            </tr>
+            {% set ns.total_open = ns.total_open + (row['open'] | int) %}
+            {% set ns.total_working = ns.total_working + (row['working'] | int) %}
+            {% set ns.total_pr = ns.total_pr + (row['pending_review'] | int) %}
+            {% set ns.total_cr = ns.total_cr + (row['client_review'] | int) %}
+            {% set ns.total_overdue = ns.total_overdue + (row['overdue'] | int) %}
+            {% set ns.total_hold = ns.total_hold + (row['hold'] | int) %}
+            {% set ns.total_grand = ns.total_grand + (row['total'] | int) %}
+            
+            {% endfor %}
+            
+            <!-- Final Grand Total Row at the End of Last Slide -->
+            {% if loop.last %}
+            <tr style="background-color: #d1d1d1; font-weight: bold;">
+                <td colspan="3">Grand Total</td>
+                <td>{{ ns.total_open }}</td>
+                <td>{{ ns.total_working }}</td>
+                <td>{{ ns.total_pr }}</td>
+                <td>{{ ns.total_cr }}</td>
+                <td>{{ ns.total_overdue }}</td>
+                <td>{{ ns.total_hold }}</td>
+                <td>{{ ns.total_grand }}</td>
+            </tr>
+            {% endif %}
+
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+    
+
+    <script>
+        let slides = document.querySelectorAll(".slide");
+        let currentSlide = 0;
+        const slideInterval = 15000;
+
+        function showNextSlide() {
+            slides[currentSlide].classList.remove("active");
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add("active");
+            updateSummary();
+            updateImage();
+        }
+        function updateSummary() {
+    let activeSlide = slides[currentSlide];
+    let isITSW = activeSlide.id.includes("itsw-slide"); 
+    let table = activeSlide.querySelector("table tbody");
+    let rows = table.getElementsByTagName("tr");
+    let summaryRow = null;
+    let batchTotalRow = null;
+    let grandTotalRow = null;
+    for (let i = rows.length - 1; i >= 0; i--) {
+        let rowText = rows[i].textContent.trim().toLowerCase(); 
+
+        if (rowText.includes("grand total")) {
+            grandTotalRow = rows[i]; 
+        }
+        if (rowText.includes("batch total")) {
+            batchTotalRow = rows[i]; 
+        }
+        
+    }
+
+    if (isITSW && grandTotalRow) {
+        summaryRow = grandTotalRow;
+    } else if (!isITSW && batchTotalRow) {
+        summaryRow = batchTotalRow;
+    }
+    if (summaryRow) {
+        console.log("Selected Summary Row:", summaryRow.textContent);
+    } else {
+        if(summaryRow==null){
+        document.getElementById("summary-label-1").textContent = "Open:";
+        document.getElementById("summary-label-2").textContent = "Working:";
+        document.getElementById("summary-label-3").textContent = "PR:";
+        document.getElementById("summary-label-4").textContent = "CR:";
+        document.getElementById("summary-label-5").textContent = "Overdue:";
+        document.getElementById("summary-label-6").textContent = "Hold:";
+        document.getElementById(`summary-value-1`).textContent = "0"; 
+        document.getElementById(`summary-value-2`).textContent = "0"; 
+        document.getElementById(`summary-value-3`).textContent = "0"; 
+        document.getElementById(`summary-value-4`).textContent = "0"; 
+        document.getElementById(`summary-value-5`).textContent = "0"; 
+        document.getElementById(`summary-value-6`).textContent = "0"; 
+        return;
+        }
+    }
+    let cells = summaryRow.getElementsByTagName("td");
+    if (isITSW) {
+        document.getElementById("summary-label-1").textContent = "Open:";
+        document.getElementById("summary-label-2").textContent = "Working:";
+        document.getElementById("summary-label-3").textContent = "PR:";
+        document.getElementById("summary-label-4").textContent = "CR:";
+        document.getElementById("summary-label-5").textContent = "Overdue:";
+        document.getElementById("summary-label-6").textContent = "Hold:";
+    } 
+    else{
+        document.getElementById("summary-label-1").textContent = "VAC:";
+        document.getElementById("summary-label-2").textContent = "SP:";
+        document.getElementById("summary-label-3").textContent = "FP:";
+        document.getElementById("summary-label-4").textContent = "SL:";
+        document.getElementById("summary-label-5").textContent = "PSL:";
+        document.getElementById("summary-label-6").textContent = "LP:";
+    }
+
+    if(isITSW){
+    if (cells.length >= 7) { 
+        let startIndex = cells.length - 7; 
+        for (let i = 0; i < 7; i++) {
+            document.getElementById(`summary-value-${i + 1}`).textContent = cells[startIndex + i].textContent.trim();
+        }
+    } else {
+        console.log("Warning: Not enough columns found in summary row.");
+    }
+    }
+    
+    else{
+        let startIndex = cells.length - 6; 
+        for (let i = 0; i < 6; i++) {
+            document.getElementById(`summary-value-${i + 1}`).textContent = cells[startIndex + i].textContent.trim();
+        }
+        }
+    
+
+}
+function updateImage() {
+    let isITSW = slides[currentSlide].id.includes("itsw-slide");
+
+    let ptsrImage = document.querySelector(".slide-image-container img");
+    let itswImage = document.querySelector(".slide-image-container-it img");
+
+    if (isITSW) {
+        ptsrImage.style.display = "none";
+        itswImage.style.display = "block";
+    } else {
+        ptsrImage.style.display = "block";
+        itswImage.style.display = "none";
+    }
+}
+document.addEventListener("DOMContentLoaded", function() {
+    updateSummary();
+    setTimeout(updateSummary, 500);
+});
+
+setInterval(showNextSlide, slideInterval);
+
+    </script>
+</body>
+</html>

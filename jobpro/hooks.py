@@ -84,11 +84,24 @@ app_license = "MIT"
 # Hook on document methods and events
 doc_events = {
     "Candidate": {
-        "on_update": "jobpro.jobpro.doctype.candidate.candidate.create_closure"
+        # "on_update": "jobpro.jobpro.doctype.candidate.candidate.create_closure",
+        "on_update": ["jobpro.jobpro.doctype.candidate.candidate.create_closure_with_payment"],
+
+        "validate": ["jobpro.custom.update_sams_by"],
     },
     "IAF Form": {
         "on_update": "teampro.teampro.doctype.iaf_form.iaf_form.update_candidate"
-    }
+    },
+    "Closure":{
+        "after_insert":"jobpro.custom.on_creation_of_psl_mail",
+        "validate":"jobpro.jobpro.doctype.closure.closure.visa_validate",
+    },
+    # "Daily Monitor":{
+    #     "after_insert":"teampro.custom.get_allocated_tasks"
+    # }
+    # 'Appointment':{
+    #     "after_insert":"jobpro.custom.update_address_details",
+    # }
 }
 # doc_events = {
 # 	"*": {

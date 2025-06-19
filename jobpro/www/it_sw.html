@@ -1,0 +1,100 @@
+{% block title %} IT-SW Live Status Report {% endblock %}
+{% block head_include %}
+    <style>
+        body {
+            padding: 35px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+
+    {% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            // Create a function to refresh the table data
+            function refreshTable() {
+                opts = {
+                    method: "jobpro.www.ptsr_and_it_live.ptis_live_report",
+                }
+                frappe.call(opts).then(res => {
+                    let html = '';
+                    $.each(res, function (i, d) {
+                        $.each(d, function (j, k) {
+                            // Generate table rows only
+                            html += "<tr style='text-align: center; line-height: 1.5;color:black;'>\
+                                <td style='text-align: left;width: 14%;'>" + k['project_name'] + "</td>\
+                                <td style='width: 5%;'>" + k['type'] + "</td>\
+                                <td style='width: 5%;'>" + k['client_review'] + "</td>\
+                                <td style='width: 5%;'>" + k['hold'] + "</td>\
+                                <td style='width: 5%;'>" + k['open'] + "</td>\
+                                <td style='width: 5%;'>" + k['overdue'] + "</b></td>\
+                                <td style='width: 5%;'>" + k['pending_review'] + "</b></td>\
+                                <td style='width: 5%;'>" + k['working'] + "</b></td>\
+                                <td style='width: 5%;'>" + k['total'] + "</b></td>\
+                            </tr>";
+                        });
+                    });
+
+                    $('#table-body').html(html); // Update the tbody with new data
+                });
+                
+            }
+            // Initial load of the table
+            refreshTable();
+
+            // Refresh the table every 10 seconds
+            setInterval(refreshTable, 10000);
+            setInterval(() => {
+  location.reload();
+}, 30000); // Reload every 3 seconds (3000 milliseconds)
+            var table = $('#data-table').DataTable({
+                paging: false,
+                searching: false,
+                ordering:  false,
+                pageLength: 10,
+                // Add more DataTable options as needed
+            });
+        });
+    </script>
+    {% endblock %}
+{% endblock %}
+{%- block content -%}
+
+<p style="padding:10px"></p>
+
+<table border="1" width="100%" id="data-table" style="font-size: 25px; line-height: 1.5;">
+    <thead>
+        <tr style="line-height: 1.5;background-color:rgb(49, 46, 92)">
+            <td style="width: 14%;color: white;background-color:rgb(49, 46, 92)"><center><b>Project</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>Project Type</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>CR</b></center></td>
+            <td style="width: 5%;color: white;"><center><b>Hold</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(49, 46, 92)"><center><b>Open</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(49, 46, 92)"><center><b>Overdue</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(49, 46, 92)"><center><b>PR</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(49, 46, 92)"><center><b>Working</b></center></td>
+            <td style="width: 5%;color: white;background-color:rgb(49, 46, 92)"><center><b>Grand Total</b></center></td>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+        {% for row in itsr %}
+        <tr style="text-align: center; line-height: 1.5;color:rgb(11, 12, 11);">
+            <td  style="text-align: left;width: 14%;">{{ row['project_name'] }}</td>
+            <td style="width: 5%;">{{ row['type'] }}</td>
+            <td style="width: 5%;">{{ row['client_review'] }}</td>
+            <td style="width: 5%;">{{ row['hold'] }}</td>
+            <td style="width: 5%;">{{ row['open'] }}</td>
+            <td style="width: 5%;">{{ row['overdue'] }}</td>
+            <td style="width: 5%;">{{ row['pending_review'] }}</td>
+            <td style="width: 5%;">{{ row['working'] }}</td>
+            <td style="width: 5%;">{{ row['total'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

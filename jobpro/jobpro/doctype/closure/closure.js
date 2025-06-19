@@ -7,6 +7,25 @@ frappe.ui.form.on('Closure', {
 	   
 	
 	// },
+	custom_local_mobile_number(frm){
+		if(!frm.doc.territory=='Iraq'){
+			frm.set_df_property("custom__emergency_contact_number_in_india","reqd",1)
+			frm.set_df_property("candidate_google_review","reqd",1)
+		}
+		if(frm.doc.custom__emergency_contact_number_in_india && frm.doc.candidate_google_review && frm.doc.custom_local_mobile_number){
+			frm.set_value("status","Arrived")
+			frm.add_child("custom_history",{
+				'status':frm.doc.status,
+				'date':frappe.datetime.now_datetime(),
+				'status_moved_by':frappe.session.user,
+			})
+			frm.refresh_field('custom_history')
+		}
+		else{
+			frm.set_value("status","Onboarded")
+		}
+
+	},
 	payment: function (frm) {
 		if (frm.doc.payment == 'Client') {
 			frm.set_value('candidate_service_charge', 0)
@@ -28,6 +47,7 @@ frappe.ui.form.on('Closure', {
 		}
 	},
 	onload: function (frm) {
+				
 		var so_created = 'No'
 		if(frm.doc.so_created){
 			so_created = 'Yes'
@@ -78,7 +98,536 @@ frappe.ui.form.on('Closure', {
 		});
 	},
 
+	status:function(frm){
+		// console.log("inside history")
+		// frm.add_child("custom_history",{
+		// 	'status':frm.doc.status,
+		// 	'date':frappe.datetime.now_datetime(),
+		// 	'status_moved_by':frappe.session.user,
+		// })
+		// frm.refresh_field('custom_history')
+		// frm.set_value("custom_status_transition",frappe.datetime.now_datetime())
+		// frm.set_value("custom_modified_status",frm.doc.status)
+		if(frm.doc.status=="Dropped"){
+			frappe.call({
+				method: 'jobpro.custom.send_mail_to_drop',
+				args:{
+					name:frm.doc.name
+				},
+				callback: function(r) {
+
+				}
+			});
+		}
+	},
+	// pp_original_at:function(frm){
+	// 	if(frm.doc.pp_original_at=="TEAMPRO"){
+	// 		frappe.call({
+	// 			method: 'jobpro.custom.send_mail_to_candidate',
+	// 			args: {
+	// 				candidate_id:frm.doc.candidate
+	// 			},
+	// 			callback: function(r) {
+	// 			}
+	// 		});
+	// 	}
+	// 	else if(frm.doc.pp_original_at=="Candidate"){
+	// 		frappe.call({
+	// 			method: 'jobpro.custom.send_mail_to_candidate_pass_return',
+	// 			args: {
+	// 				candidate_id:frm.doc.candidate
+	// 			},
+	// 			callback: function(r) {
+	// 			}
+	// 		});
+	// 	}
+	// },
+	// custom_country_code:function(frm){
+	// 	let countryCode = frm.doc.custom_country_code.match(/\+\d+/)[0];
+    //     if (countryCode) {
+    //         frm.set_value('custom_local_mobile_number', `${countryCode}`);
+    //     }
+	// },
 	refresh: function (frm) {
+		
+		if(frm.doc.status=="PSL"){
+			// let parent_territory=''
+			// frappe.db.get_value("Territory", frm.doc.territory, "parent_territory", (r) => {
+			// 	if(r.message){
+			// 		parent_territory=r.message
+			// 	}
+			// })
+			if(frm.doc.territory=="Qatar"){
+			if(!frm.doc.passport || !frm.doc.photo){
+				frm.add_custom_button(__("PSL"), function () {
+				let d = new frappe.ui.Dialog({
+					title: 'PSL Attachment',
+					fields: [
+						{
+							label: 'Passport(as pre visa specification)',
+							fieldtype: 'Attach',
+							fieldname: 'passport',
+							reqd:1
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Client Offer Letter'
+									}
+								};
+							}
+						},
+
+						{
+							fieldtype: 'Column Break',
+							fieldname: 'custom_col',
+						},
+						{
+							label: 'Photo(as pre visa specification)',
+							fieldtype: 'Attach',
+							fieldname: 'photo',
+							reqd:1
+						},
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("passport",values.passport)
+					frm.set_value("photo",values.photo)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+				
+			}
+		}
+		if(frm.doc.status=="Client Offer Letter"){
+			if(frm.doc.territory=="Qatar"){
+				if(frm.doc.passport && frm.doc.photo){
+				frm.add_custom_button(__("Client Offer Letter"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Client Offer Letter Attachment',
+					fields: [
+						{
+							label: 'Client Offer Letter',
+							fieldtype: 'Attach',
+							fieldname: 'offer_letter',
+							reqd:1
+						},
+						
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Signed Offer Letter'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("offer_letter",values.offer_letter)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+			}
+		}
+		if(frm.doc.status=="Signed Offer Letter"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Signed Offer Letter"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Signed Offer Letter Attachment',
+					fields: [
+						{
+							label: 'Signed Offer Letter',
+							fieldtype: 'Attach',
+							fieldname: 'sol',
+							reqd:1
+						},
+						
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'PCC'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("sol",values.sol)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="PCC"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("PCC"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'PCC Attachment',
+					fields: [
+						{
+							label: 'PCC',
+							fieldtype: 'Attach',
+							fieldname: 'pcc',
+						},
+						{
+							label: 'PCC Not Applicable',
+							fieldtype: 'Check',
+							fieldname: 'pcc_not_applicable',
+						},
+						
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Visa'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("pcc",values.pcc)
+					frm.set_value("pcc_not_applicable",values.pcc_not_applicable)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="Visa"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Visa"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Visa Attachment',
+					fields: [
+						{
+							label: 'Visa',
+							fieldtype: 'Attach',
+							fieldname: 'visa',
+							reqd:1,
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Emigration'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("visa",values.visa)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="Emigration"){	
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Emigration"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Emigration Attachment',
+					fields: [
+						{
+							label: 'ECR Status',
+							fieldtype: 'Select',
+							fieldname: 'ecr_status',
+							options:'\nECR\nECNR',
+						},
+						{
+							label: 'Emigration',
+							fieldtype: 'Attach',
+							fieldname: 'emigration',
+						},
+						{
+							label: 'Emigration Not Applicable',
+							fieldtype: 'Check',
+							fieldname: 'emigration_not_applicable',
+						},
+						{
+							label: 'Candidate Feedback Form',
+							fieldtype: 'Attach',
+							fieldname: 'candidate_feedback_form',
+							reqd:1
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Ticket'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("ecr_status",values.ecr_status)
+					frm.set_value("emigration",values.emigration)
+					frm.set_value("emigration_not_applicable",values.emigration_not_applicable)
+					frm.set_value("candidate_feedback_form",values.candidate_feedback_form)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="Ticket"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Ticket"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Ticket Attachment',
+					fields: [
+						{
+							label: 'Ticket',
+							fieldtype: 'Attach',
+							fieldname: 'ticket',
+							reqd:1,
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Onboarding'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("ticket",values.ticket)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="Onboarding"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Onboarded"), function () {
+
+				let d = new frappe.ui.Dialog({
+					title: 'Onboarded Attachment',
+					fields: [
+						{
+							label: 'Onboarded',
+							fieldtype: 'Check',
+							fieldname: 'onboarded',
+							reqd:1,
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Onboarded'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("onboarded",values.onboarded)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.status=="Onboarded"){
+			if(frm.doc.territory=="Qatar"){
+				frm.add_custom_button(__("Arrived"), function () {
+				let d = new frappe.ui.Dialog({
+					title: 'Arrived Attachment',
+					fields: [
+						{
+							label: 'Emergency Contact Number in India',
+							fieldtype: 'Data',
+							fieldname: 'custom__emergency_contact_number_in_india',
+							reqd:1,
+						},
+						{
+							label: 'Candidate Google Review',
+							fieldtype: 'Data',
+							fieldname: 'candidate_google_review',
+							reqd:1,
+						},
+						{
+							label: 'Local Mobile Number',
+							fieldtype: 'Phone',
+							fieldname: 'custom_local_mobile_number',
+							reqd:1,
+						},
+						{
+							label: 'Next Action',
+							fieldtype: 'Link',
+							fieldname: 'standard_remarks',
+							options:"Standard Remarks",
+							reqd:1,
+							get_query: () => {
+								return {
+									filters: {
+										status: 'Arrived'
+									}
+								};
+							}
+						}
+
+					],
+					primary_action_label: 'Yes',
+					primary_action() {
+					let values = d.get_values();
+					frm.set_value("custom__emergency_contact_number_in_india",values.custom__emergency_contact_number_in_india)
+					frm.set_value("candidate_google_review",values.candidate_google_review)
+					frm.set_value("custom_local_mobile_number",values.custom_local_mobile_number)
+					frm.set_value("standard_remarks",values.standard_remarks)
+						frm.save();
+						d.hide();
+					},
+					secondary_action_label: 'No',
+					secondary_action() {
+						d.hide();
+					}
+				});
+				d.show();
+
+        		},("Status"));}
+		}
+		if(frm.doc.custom__emergency_contact_number_in_india && frm.doc.candidate_google_review && frm.doc.custom_local_mobile_number){
+		}
 		frappe.call({
 			method: "jobpro.jobpro.doctype.closure.closure.get_status",
 			args: {
@@ -106,6 +655,7 @@ frappe.ui.form.on('Closure', {
 		
 		if (frm.doc.so_created) {
 			if(frm.doc.status == 'Onboarding'){
+				if (!frappe.user.has_role("Customer User")) { 
 				frm.add_custom_button(__("Onboard"),
 			
 				function () {
@@ -118,12 +668,16 @@ frappe.ui.form.on('Closure', {
 						}
 						}
 					frm.set_value("status", "Onboarded")
+					frm.set_value("onboarded",1)
+					frm.save()
 				}
 			).addClass('btn btn-success');
+		}
 			}
 			
 		}
 		if (frm.doc.status != 'Dropped'){
+			if (frappe.user.has_role("HOD")){
 			frm.add_custom_button(__("Drop"),
 			function () {
 				
@@ -158,19 +712,23 @@ frappe.ui.form.on('Closure', {
 			
 		).addClass('btn btn-primary');
 		}
-
+		}
+		
 		if (frm.doc.status == "Dropped"){
+			if (!frappe.user.has_role("Customer User")) { 
 			frm.add_custom_button(__("Re-Open"),
 			function () {
 				frm.set_value("status", "PSL")
 				frm.save()
 			}
 		).addClass('btn btn-primary');
+	}
 		}
 		
 		
 		// frm.toggle_display("part_payment_collection", frm.doc.so_created == 1)
 		if (frm.doc.sa_owner) {
+			if (!frappe.user.has_role("Customer User")) { 
 			frm.add_custom_button(__("SA Candidate"), function () {
 				frappe.msgprint(
 					"SA ID : " + frm.doc.sa_owner,
@@ -178,8 +736,11 @@ frappe.ui.form.on('Closure', {
 				)
 			}).addClass('btn btn-success');
 		}
+		}
 		if (frm.doc.ecr_status == "ECR") {
+			if (!frappe.user.has_role("Customer User")) { 
 			frm.add_custom_button(__("ECR")).addClass('btn btn-success');
+			}
 		}
 		frm.refresh_fields();
 		if (!frm.doc.so_created) {
@@ -203,6 +764,19 @@ frappe.ui.form.on('Closure', {
 				});
 
 			}
+			// if (frm.doc.status == "PSL"){
+			// frappe.call({
+			// 			method: 'jobpro.custom.on_creation_of_psl_mail',
+			// 			args:{
+			// 				name:frm.doc.name,
+			// 				status:frm.doc.status,
+			// 				customer_name:frm.doc.customer
+			// 			},
+			// 			callback: function(r) {
+		
+			// 			}
+			// 		});
+			// 	}
 			if (frm.doc.status != "PSL") {
 				// if (frm.doc.mobile && frm.doc.candidate_owner && frm.doc.posting_date && frm.doc.payment &&
 				// 	 frm.doc.expected_doj && frm.doc.customer && frm.doc.project && frm.doc.territory && frm.doc.task && frm.doc.date_of_birth && frm.doc.irf
@@ -210,7 +784,7 @@ frappe.ui.form.on('Closure', {
 				// if( frm.doc.ob_custodian && frm.doc.passport_no &&  frm.doc.offer_letter && frm.doc.sol && frm.doc.photo
 				// 	frm.doc.ecr_status && frm.doc.passport && frm.doc.place_of_issue && frm.doc.issued_date && frm.doc.expiry_date ){
 
-
+				if (!frappe.user.has_role("Customer User")) { 
 				cur_frm.add_custom_button(__("Sale Order"), function () {
 					if (frm.doc.payment == 'Client' && frm.doc.client_si <= 0) {
 						msgprint("Please Enter Client Service Charge Value")
@@ -279,9 +853,10 @@ frappe.ui.form.on('Closure', {
 
 							})
 					}
-					cur_frm.set_df_property("so_created", 1);
+					cur_frm.set_df_property("so_created", 1);	
 
 				}).addClass('btn btn-primary');
+			}
 				// }
 				// }
 			}
@@ -323,6 +898,9 @@ frappe.ui.form.on('Closure', {
 			// 	cur_frm.set_df_property("visa_stamping_section", "hidden", 0);
 			// }
 			if (frm.doc.ecr_status == "ECR"){
+				cur_frm.set_df_property("section_break_79", "hidden", 0);
+			}
+			if(frm.doc.ecr_status == "ECNR" && !frm.doc.territory=='Iraq'){
 				cur_frm.set_df_property("section_break_79", "hidden", 0);
 			}
 			if (frm.doc.emigration || frm.doc.emigration_not_applicable) {
@@ -556,10 +1134,55 @@ frappe.ui.form.on('Closure', {
 		// 	frappe.validated = false;
 		// }
 	// },
+	
+	// custom_local_mobile_number: function(frm) {
+	// 	let mobile_number = frm.doc.custom_local_mobile_number;
+	// 	if (mobile_number.startsWith('+')) {
+	// 		mobile_number = mobile_number.substring(1);
+	// 	var regex = /[^0-9]/g;
+	// 	if (regex.test(frm.doc.custom_local_mobile_number) === true) {
+	// 		console.log(mobile_number)
+	// 		frappe.msgprint(__("Mobile No.: Only Numbers are allowed"));
+	// 		frappe.validated = false;
+	// 	}
+	// 	if (custom_local_mobile_number.length >12 || custom_local_mobile_number.length <11 ) {
+	// 		frappe.throw(__("Mobile Number must be 9 digits long excluding the country code."));
+	// 		frappe.validated = false;
+	// 	}
+	// 	}
+		
+	// },
+	
 	validate(frm) {
-		if(frm.doc.territory == 'UAE'){
+		if(frm.doc.so_confirmed_date){
+			frm.set_value("so_created",1)
+		}
+		if(frm.doc.custom__emergency_contact_number_in_india && frm.doc.candidate_google_review && frm.doc.custom_local_mobile_number){
+			frm.set_value("status","Arrived")
+			// frm.add_child("custom_history",{
+			// 	'status':frm.doc.pending_for,
+			// 	'sourced_date':frappe.datetime.now_datetime(),
+			// 	'sourced_by':frappe.session.user,
+			// 	'project':frm.doc.project,
+			// 	'task':frm.doc.task,
+			// })
+			// frm.refresh_field('custom_history')
+		}
+		
+			if(frm.doc.territory == 'UAE'){
 			frm.set_df_property('visa_state','reqd',1)
 		}
+		if(frm.doc.visa){
+	        frm.set_value('visa_status','Visa Received')
+	    }
+	    else{
+	        frm.set_value('visa_status','Visa Pending')
+	    }
+		// if(frm.doc.customer){
+		// 	if(frm.doc.customer=="Vectrus Global Support Services LLP"){
+		// 		frm.set_value("so_created",1)
+		// 	}
+		// }
 		// if(frm.doc.territory != India)
 		// if (frm.doc.candidate_service_charge <= 0 && frm.doc.associate_service_charge ) {
 		// 	frappe.msgprint(__("Atleast one DEC/SI has to be filled"));
@@ -579,6 +1202,31 @@ frappe.ui.form.on('Closure', {
 			// 	frappe.validated = false;
 			// }
 		}
+		// if(frm.doc.custom__emergency_contact_number_in_india){
+		// var regex = /[^0-9]/g;
+		// if (regex.test(frm.doc.custom__emergency_contact_number_in_india) === true){
+		// 	frappe.msgprint(__("Mobile No.: Only Numbers are allowed."));
+		// 	frappe.validated = false;
+		// }
+		// var len = frm.doc.custom__emergency_contact_number_in_india
+		// if(len.length > 10 || len.length < 9){
+		// 	frappe.throw("Mobile Number must be 10 digits")
+		// 	frappe.validated = false;
+		// }
+		// }
+
+		// if(frm.doc.custom_local_mobile_number){
+		// 	var regex = /[^0-9]/g;
+		// 	if (regex.test(frm.doc.custom_local_mobile_number) === true){
+		// 		frappe.msgprint(__("Mobile No.: Only Numbers are allowed."));
+		// 		frappe.validated = false;
+		// 	}
+		// 	var len = frm.doc.custom_local_mobile_number
+		// 	if(len.length > 9 || len.length <= 8){
+		// 		frappe.throw("Mobile Number must be 9 digits")
+		// 		frappe.validated = false;
+		// 	}
+		// 	}
 		// if(frm.doc.payment=="Candidate" ){
 	    //     if (frm.doc.outstanding_amount > 0 ){
 		// 		// frm.set_value("ticket","")
@@ -630,4 +1278,13 @@ frappe.ui.form.on('Closure', {
 			}
 		}
 	},
+	custom_medical_proof: function (frm) {
+		if (frm.doc.territory === "KSA" && !frm.doc.custom_mofa_number) {
+			if (frm.doc.custom_medical_proof) {
+				frm.set_value('custom_medical_proof', null);
+			}
+			frappe.throw("First add 'MOFA Number' before attaching the 'Proof'");
+		}
+	},
+	
 });

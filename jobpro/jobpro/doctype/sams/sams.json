@@ -40,14 +40,40 @@
   "aadhar",
   "gst_number",
   "gst",
+  "column_break_y0he",
+  "business_card",
+  "column_break_zcal",
+  "video_of_office",
   "column_break_34",
-  "if_owns_ttc_phote",
   "company_pan",
   "pan",
   "project_allocated_section",
   "project_allocation",
   "section_break_40",
   "project_allocated",
+  "trade_centre_section",
+  "own",
+  "rented",
+  "column_break_jjgg",
+  "trade_centre_video",
+  "column_break_bk4p",
+  "if_owns_ttc_phote",
+  "section_break_unpl",
+  "test_facilities",
+  "address1",
+  "owner_details",
+  "number_of_staffs",
+  "online_portal_section",
+  "yes",
+  "column_break_1xu0",
+  "no",
+  "column_break_eigi",
+  "column_break_imzo",
+  "column_break_jvua",
+  "column_break_fitc",
+  "column_break_dwzy",
+  "section_break_iyde",
+  "hod_observation",
   "section_break_41",
   "remarks"
  ],
@@ -127,15 +153,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "SA Owner",
-   "options": "User",
-   "reqd": 1
+   "options": "User"
   },
   {
    "fieldname": "sa_status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "SA Status",
-   "options": "\nLead\nContact\nResponding\nActive\nReliable\nDo Not Contact",
+   "options": "\nLead\nContact\nResponding\nActive\nReliable\nDo Not Contact\nTrusted\nDraft",
    "reqd": 1
   },
   {
@@ -243,7 +268,7 @@
   {
    "fieldname": "if_owns_ttc_phote",
    "fieldtype": "Attach",
-   "label": "If Owns TTC - Photo"
+   "label": "Trade Center Photo"
   },
   {
    "depends_on": "sa_is_an_organization",
@@ -285,15 +310,139 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "trade_centre_section",
+   "fieldtype": "Section Break",
+   "label": "Trade Centre"
+  },
+  {
+   "default": "0",
+   "fieldname": "own",
+   "fieldtype": "Check",
+   "label": "Own"
+  },
+  {
+   "default": "0",
+   "fieldname": "rented",
+   "fieldtype": "Check",
+   "label": "Rented"
+  },
+  {
+   "fieldname": "address1",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "trade_centre_video",
+   "fieldtype": "Attach",
+   "label": "Trade Centre Video"
+  },
+  {
+   "depends_on": "eval:doc.rented==1;",
+   "fieldname": "owner_details",
+   "fieldtype": "Small Text",
+   "label": "Owner Details"
+  },
+  {
+   "fieldname": "number_of_staffs",
+   "fieldtype": "Int",
+   "label": "Number of Staffs"
+  },
+  {
+   "fieldname": "online_portal_section",
+   "fieldtype": "Section Break",
+   "label": "Online Portal"
+  },
+  {
+   "default": "0",
+   "fieldname": "yes",
+   "fieldtype": "Check",
+   "label": "Yes"
+  },
+  {
+   "fieldname": "column_break_1xu0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "no",
+   "fieldtype": "Check",
+   "label": "No"
+  },
+  {
+   "fieldname": "column_break_eigi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_imzo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_jvua",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_fitc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dwzy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_iyde",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "hod_observation",
+   "fieldtype": "Small Text",
+   "label": "HOD Observation"
+  },
+  {
+   "fieldname": "column_break_jjgg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_bk4p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_unpl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "test_facilities",
+   "fieldtype": "Small Text",
+   "label": "Test Facilities"
+  },
+  {
+   "fieldname": "business_card",
+   "fieldtype": "Attach",
+   "label": "Business Card"
+  },
+  {
+   "fieldname": "video_of_office",
+   "fieldtype": "Attach",
+   "label": "Video of Office"
+  },
+  {
+   "fieldname": "column_break_y0he",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_zcal",
+   "fieldtype": "Column Break"
   }
  ],
  "image_field": "sa_photo",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-11-26 10:56:58.511859",
+ "modified": "2024-08-20 18:17:36.729802",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "SAMS",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -311,6 +460,7 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "person_name",
  "track_changes": 1
 }

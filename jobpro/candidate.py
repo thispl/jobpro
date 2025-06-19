@@ -34,14 +34,25 @@ def update_api(**args):
 
 # def file_list(candidate):
 # 	pdf = frappe.db.get_all('File', {'attached_to_doctype': 'Candidate', 'attached_to_name': candidate.name}, ['*'])
-# 	frappe.errprint("HI")
 
 @frappe.whitelist()
 def get_data(passport_number):
-	# frappe.errprint("HIII")
 	ps_id = frappe.db.get_all("Candidate",{'passport_number':passport_number},['given_name','candidate_image','nationality','ecr_status_candidate','date_of_birth','age','vaccination_status','vaccine_name','is_married','location','country','mail_id','mobile_number','mobile','highest_degree','specialization','year_of_passing','india_experience','overseas_experience','irf','passport','biometric_details','vacination_attachment','dob'])
 	if ps_id:
-		# frappe.errprint(ps_id) 
 		return ps_id
 
+@frappe.whitelist()
+def basic_update(basic,name):
+	doc_closure=frappe.db.get_value("Closure",{"candidate":name},["name"])
+	frappe.db.set_value("Closure",doc_closure,"basic__ctc",basic)
+
+@frappe.whitelist()
+def food_update(food,name):
+	doc_closure=frappe.db.get_value("Closure",{"candidate":name},["name"])
+	frappe.db.set_value("Closure",doc_closure,"food_allowance",food)
+
+@frappe.whitelist()
+def oa_update(oa,name):
+	doc_closure=frappe.db.get_value("Closure",{"candidate":name},["name"])
+	frappe.db.set_value("Closure",doc_closure,"other_allowance",oa)
 

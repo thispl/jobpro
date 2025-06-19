@@ -1,0 +1,243 @@
+<html>
+<head>
+    <title>PTSR & IT-SW Live Status Report</title>
+    <style>
+        body {
+            padding: 35px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: rgb(24, 17, 132);
+            color: white;
+        }
+        .slide {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Live Status Report</h1>
+
+    {% set grand_totals = namespace(vac=0, sp=0, fp=0, sl=0, psl=0, lp=0) %}
+
+    {% set project_list = [] %}
+    {% for customer in ptsr_data %}
+        {% for project in customer.projects %}
+            {% set _ = project_list.append({'customer': customer, 'project': project}) %}
+        {% endfor %}
+    {% endfor %}
+
+    {% set project_batches = project_list | batch(1, fill_with=None) %}
+    {% set ns = namespace(serial_no=0) %}
+    {% for batch in project_batches %}
+    <div class="slide {% if loop.first %}active{% endif %}" id="ptsr-slide-{{ loop.index }}">
+        <h2>PTSR Live Status</h2>
+        <table id="ptsr-table-{{ loop.index }}">
+            <thead>
+                <tr>
+                    <th>Sl NO</th>
+                    <th>Customer Name / Project Name</th>
+                    <th>Project Priority</th>
+                    <th>AM Remark</th>
+                    <th>PM Remark</th>
+                    <th>SPOC Remark</th>
+                    <th>Expected Value</th>
+                    <th>Expected PSL</th>
+                    <th>Sourcing Status</th>
+                    <th>Territory</th>
+                    <th>Task</th>
+                    <th>Task Priority</th>
+                    <th>VAC</th>
+                    <th>SP</th>
+                    <th>FP</th>
+                    <th>SL</th>
+                    <th>PSL</th>
+                    <th>LP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set batch_totals = namespace(vac=0, sp=0, fp=0, sl=0, psl=0, lp=0) %}
+
+                {% for item in batch if item %}
+                    {% set customer = item.customer %}
+                    {% set project = item.project %}
+                    <tr class="group-header">
+                        <td colspan="12" style="background-color: #cce5f5; font-weight: bold; text-align: left; padding: 10px;">
+                            {{ customer.customer_name }}
+                        </td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_vac }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_sp }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_fp }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_sl }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_psl }}</td>
+                        <td style="background-color: #cce5f5; font-weight: bold;">{{ customer.tot_lp }}</td>
+                    </tr>
+                    {% set task_count = project.tasks | length %}
+                    {% for task in project.tasks %}
+                        <tr>
+                            {% if loop.index == 1 %}
+                                {% set ns.serial_no = ns.serial_no + 1 %}
+                                <td rowspan="{{ task_count }}">{{ ns.serial_no }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.project_name }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.project_priority }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.remark }}</td>
+                                <td rowspan="{{ task_count }}">{{project.account_manager_remark}}</td>
+                                <td rowspan="{{ task_count }}">{{ project.custom_spoc_remark }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.expected_value }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.expected_psl }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.sourcing_statu }}</td>
+                                <td rowspan="{{ task_count }}">{{ project.territory }}</td>
+                            {% endif %}
+                            <td>{{ task.task }}</td>
+                            <td>{{ task.task_priority }}</td>
+                            <td>{{ task.vac }}</td>
+                            <td>{{ task.sp }}</td>
+                            <td>{{ task.fp }}</td>
+                            <td>{{ task.sl }}</td>
+                            <td>{{ task.psl }}</td>
+                            <td>{{ task.lp }}</td>
+
+                            {% set batch_totals.vac = batch_totals.vac + task.vac %}
+                            {% set batch_totals.sp = batch_totals.sp + task.sp %}
+                            {% set batch_totals.fp = batch_totals.fp + task.fp %}
+                            {% set batch_totals.sl = batch_totals.sl + task.sl %}
+                            {% set batch_totals.psl = batch_totals.psl + task.psl %}
+                            {% set batch_totals.lp = batch_totals.lp + task.lp %}
+
+                            {% set grand_totals.vac = grand_totals.vac + task.vac %}
+                            {% set grand_totals.sp = grand_totals.sp + task.sp %}
+                            {% set grand_totals.fp = grand_totals.fp + task.fp %}
+                            {% set grand_totals.sl = grand_totals.sl + task.sl %}
+                            {% set grand_totals.psl = grand_totals.psl + task.psl %}
+                            {% set grand_totals.lp = grand_totals.lp + task.lp %}
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+
+                <!-- Batch Total Row -->
+                <tr style="background-color: #d1d1d1; font-weight: bold;">
+                    <td colspan="12">Batch Total</td>
+                    <td>{{ batch_totals.vac }}</td>
+                    <td>{{ batch_totals.sp }}</td>
+                    <td>{{ batch_totals.fp }}</td>
+                    <td>{{ batch_totals.sl }}</td>
+                    <td>{{ batch_totals.psl }}</td>
+                    <td>{{ batch_totals.lp }}</td>
+                </tr>
+
+                <!-- Grand Total Row for Last Batch -->
+                {% if loop.last %}
+                <tr style="background-color:rgb(24, 17, 132); font-weight: bold;color: white;">
+                    <td colspan="12">Overall Grand Total</td>
+                    <td>{{ grand_totals.vac }}</td>
+                    <td>{{ grand_totals.sp }}</td>
+                    <td>{{ grand_totals.fp }}</td>
+                    <td>{{ grand_totals.sl }}</td>
+                    <td>{{ grand_totals.psl }}</td>
+                    <td>{{ grand_totals.lp }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+
+        </table>
+    </div>
+    {% endfor %}
+
+    {% set ns = namespace(serial_no=0, total_cr=0, total_hold=0, total_open=0, total_overdue=0, total_pr=0, total_working=0, total_grand=0) %}
+    {% set formattedDate = frappe.utils.get_datetime(frappe.utils.now()).strftime('%d-%m-%Y') %}
+
+
+    {% set itsw_batches = itsr | batch(15, fill_with=None) %}
+{% for batch in itsw_batches %}
+<div class="slide" id="itsw-slide-{{ loop.index }}">
+    <h2>IT-SW Live Status</h2>
+    <table id="itsw-table-{{ loop.index }}">
+        <thead>
+            <tr>
+                <th colspan="7" style="background: rgb(24, 17, 132); color: white; text-align: center;">Project Details</th>
+                <th colspan="2" style="background: rgb(24, 17, 132); color: white; text-align: right;">Date</th>
+                <th colspan="1" style="background: rgb(24, 17, 132); color: white; text-align: right;">{{ formattedDate}}</th>
+            </tr>
+            <tr>
+                <th>Sl No</th>
+                <th>Project</th>
+                <th>Project Type</th>
+                <th>CR</th>
+                <th>Hold</th>
+                <th>Open</th>
+                <th>Overdue</th>
+                <th>PR</th>
+                <th>Working</th>
+                <th>Grand Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in batch if row %}
+            {% set ns.serial_no = ns.serial_no + 1 %}
+            <tr>
+                <td>{{ ns.serial_no }}</td>
+                <td>{{ row['project_name'] }}</td>
+                <td>{{ row['type'] }}</td>
+                <td>{{ row['client_review'] }}</td>
+                <td>{{ row['hold'] }}</td>
+                <td>{{ row['open'] }}</td>
+                <td>{{ row['overdue'] }}</td>
+                <td>{{ row['pending_review'] }}</td>
+                <td>{{ row['working'] }}</td>
+                <td>{{ row['total'] }}</td>
+            </tr>
+            {% set ns.total_cr = ns.total_cr + (row['client_review'] | int) %}
+            {% set ns.total_hold = ns.total_hold + (row['hold'] | int) %}
+            {% set ns.total_open = ns.total_open + (row['open'] | int) %}
+            {% set ns.total_overdue = ns.total_overdue + (row['overdue'] | int) %}
+            {% set ns.total_pr = ns.total_pr + (row['pending_review'] | int) %}
+            {% set ns.total_working = ns.total_working + (row['working'] | int) %}
+            {% set ns.total_grand = ns.total_grand + (row['total'] | int) %}
+            {% endfor %}
+            {% if loop.last %}
+            <tr style="background-color: #d1d1d1; font-weight: bold;">
+                <td colspan="3">Grand Total</td>
+                <td>{{ ns.total_cr }}</td>
+                <td>{{ ns.total_hold }}</td>
+                <td>{{ ns.total_open }}</td>
+                <td>{{ ns.total_overdue }}</td>
+                <td>{{ ns.total_pr }}</td>
+                <td>{{ ns.total_working }}</td>
+                <td>{{ ns.total_grand }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+    
+
+    <script>
+        let slides = document.querySelectorAll(".slide");
+        let currentSlide = 0;
+        const slideInterval = 15000;
+
+        function showNextSlide() {
+            slides[currentSlide].classList.remove("active");
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add("active");
+        }
+
+        setInterval(showNextSlide, slideInterval);
+    </script>
+</body>
+</html>

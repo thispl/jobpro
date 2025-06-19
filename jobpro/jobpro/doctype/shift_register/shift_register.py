@@ -9,10 +9,10 @@ from datetime import timedelta
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, getdate, get_datetime
-from erpnext.hr.doctype.shift_assignment.shift_assignment import get_actual_start_end_datetime_of_shift, get_employee_shift
-from erpnext.hr.doctype.employee_checkin.employee_checkin import mark_attendance_and_link_log, calculate_working_hours
-from erpnext.hr.doctype.attendance.attendance import mark_attendance
-from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
+from hrms.hr.doctype.shift_assignment.shift_assignment import get_actual_start_end_datetime_of_shift, get_employee_shift
+from hrms.hr.doctype.employee_checkin.employee_checkin import mark_attendance_and_link_log, calculate_working_hours
+from hrms.hr.doctype.attendance.attendance import mark_attendance
+from erpnext.setup.doctype.employee.employee import get_holiday_list_for_employee
 from datetime import date
 from datetime import datetime
 from calendar import monthrange
@@ -59,7 +59,6 @@ class ShiftRegister(Document):
 		#Permission Count and Late Entry Mark
 		import calendar
 		count = 1
-		frappe.errprint(logs)
 		now_date = (logs[0].time).date()
 		month = calendar.monthrange(now_date.year, now_date.month)
 		start_date = date(now_date.year, now_date.month, 1)

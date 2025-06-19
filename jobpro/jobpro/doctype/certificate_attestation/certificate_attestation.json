@@ -1,0 +1,312 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "CA.#####",
+ "creation": "2025-01-31 09:52:34.672476",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "html_1",
+  "details_section",
+  "candidate_name",
+  "mobile",
+  "country",
+  "column_break_zhps",
+  "passport_number",
+  "email",
+  "status",
+  "section_break_pqsp",
+  "supplier_name",
+  "attestation_document",
+  "next_action_on",
+  "column_break_scwp",
+  "cost",
+  "original_certificate",
+  "remarks",
+  "payment_summary_tab",
+  "payment",
+  "customer",
+  "client_si",
+  "associate_si",
+  "associate_sc",
+  "column_break_qzqa",
+  "client_payment_company_currency",
+  "candidate_payment_company_currency",
+  "custom_so_expected_on",
+  "due_date",
+  "column_break_kgkl",
+  "billing_currency",
+  "candidate_si",
+  "candidate_service_charge",
+  "section_break_axvj",
+  "collection_status",
+  "outstanding_amount",
+  "associate",
+  "column_break_mjur",
+  "so_confirmed_date",
+  "so_created",
+  "collection_details_section",
+  "part_payment_collection"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "candidate_name",
+   "fieldtype": "Data",
+   "label": "Candidate Name"
+  },
+  {
+   "fieldname": "mobile",
+   "fieldtype": "Phone",
+   "label": "Mobile"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fieldname": "column_break_zhps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "passport_number",
+   "fieldtype": "Data",
+   "label": "Passport Number"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "In Progress\nCompleted"
+  },
+  {
+   "fieldname": "section_break_pqsp",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "label": "Supplier Name",
+   "options": "SAMS"
+  },
+  {
+   "fieldname": "attestation_document",
+   "fieldtype": "Attach",
+   "label": "Attestation Document"
+  },
+  {
+   "fieldname": "next_action_on",
+   "fieldtype": "Date",
+   "label": "Next Action On"
+  },
+  {
+   "fieldname": "column_break_scwp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Currency",
+   "label": "Cost"
+  },
+  {
+   "fieldname": "original_certificate",
+   "fieldtype": "Select",
+   "label": "Original Certificate",
+   "options": "\nSupplier\nCandidate\nTeampro"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "payment_summary_tab",
+   "fieldtype": "Tab Break",
+   "label": "Payment Summary"
+  },
+  {
+   "fieldname": "payment",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Payment From",
+   "options": "\nClient\nCandidate\nBoth\nAssociate",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Candidate\" && doc.payment != \"Associate\"",
+   "fieldname": "client_si",
+   "fieldtype": "Currency",
+   "label": "Client SI"
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Candidate\" && doc.payment != \"Client\" && doc.payment != \"Both\" ",
+   "fieldname": "associate_si",
+   "fieldtype": "Currency",
+   "label": "Associate SI"
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Candidate\" && doc.payment != \"Client\" && doc.payment != \"Both\" ",
+   "fieldname": "associate_sc",
+   "fieldtype": "Currency",
+   "label": "Associate SC"
+  },
+  {
+   "fieldname": "column_break_qzqa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "client_payment_company_currency",
+   "fieldtype": "Currency",
+   "label": "Client Payment Company Currency"
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Client\" && doc.payment != \"Associate\"",
+   "fieldname": "candidate_payment_company_currency",
+   "fieldtype": "Currency",
+   "label": "Candidate Payment Company Currency"
+  },
+  {
+   "fieldname": "custom_so_expected_on",
+   "fieldtype": "Data",
+   "label": "SO Expected On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_kgkl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "billing_currency",
+   "fieldtype": "Link",
+   "label": "Billing Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Client\" && doc.payment != \"Associate\" && doc.payment != \"Both\"",
+   "fieldname": "candidate_si",
+   "fieldtype": "Currency",
+   "label": "Candidate SI"
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Client\" && doc.payment != \"Associate\" && doc.payment != \"Both\"",
+   "fieldname": "candidate_service_charge",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Candidate SC",
+   "options": "billing_currency"
+  },
+  {
+   "fieldname": "section_break_axvj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "YTS",
+   "depends_on": "eval:doc.payment != \"Client\"",
+   "fieldname": "collection_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Candidate Collection Status",
+   "options": "YTS\nPartially Paid\nPAID",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.payment != \"Client\"",
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Candidate Outstanding",
+   "options": "Currency\n"
+  },
+  {
+   "depends_on": "eval:doc.payment == \"Associate\"",
+   "fieldname": "associate",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Associate Name",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_mjur",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "so_confirmed_date",
+   "fieldtype": "Date",
+   "label": "SO Confirmed Date",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "so_created",
+   "fieldtype": "Check",
+   "label": "SO Created",
+   "read_only": 1
+  },
+  {
+   "fieldname": "collection_details_section",
+   "fieldtype": "Section Break",
+   "label": "Collection Details"
+  },
+  {
+   "depends_on": "eval:doc.candidate_si >0",
+   "fieldname": "part_payment_collection",
+   "fieldtype": "Table",
+   "label": "Collection Details",
+   "options": "Part Payment Collection"
+  },
+  {
+   "fieldname": "html_1",
+   "fieldtype": "HTML"
+  },
+  {
+   "depends_on": "eval:doc.payment==\"Client\"",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-02-04 19:04:45.797630",
+ "modified_by": "Administrator",
+ "module": "jobPRO",
+ "name": "Certificate Attestation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
