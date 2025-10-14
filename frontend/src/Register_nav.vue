@@ -1,14 +1,20 @@
 <template>
   <div class="bg-white mt-0 shadow-lg shadow-gray-600">
-        <div class="mx-10 flex md:justify-end items-center mr-[50px] md:p-6">
-            <img class="md:hidden" src="https://i.postimg.cc/6qY40bGc/Whats-App-Image-2024-09-30-at-11-38-34-75256763-removebg-preview.png" alt="jobpro" width="60px">
-            <img class="hidden md:block md:w-[140px] lg:w-[180px] fixed left-[5%] logo-depth" src="https://i.postimg.cc/6p66m14h/TEAMPRO.png" width="180px" alt="Teampro Logo" />
-            <div class="flex mr-24 md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse register">
+    <!-- Tab and Desktop -->
+    <div class="mx-10 flex md:justify-end items-center mr-[50px] md:p-6">
+      <img class="hidden md:block md:w-[140px] lg:w-[180px] fixed left-[5%] logo-depth" src="https://i.postimg.cc/6p66m14h/TEAMPRO.png" width="180px" alt="Teampro Logo" />
+      <div class="hidden md:block flex mr-24 md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse register">
         <p class="text-[#05264e] font-medium tracking-wide ml-[-180px] reg-class">Already Registered ? <router-link to="login" class="font-semibold" style="color: #05264e;">Login</router-link> here</p>
       </div>
-            <img class="hidden md:block md:w-[70px] lg:w-[75px] fixed right-[5%] logo-depth" src="https://i.postimg.cc/6qY40bGc/Whats-App-Image-2024-09-30-at-11-38-34-75256763-removebg-preview.png" alt="jobpro" width="75px">
-        </div>
+      <img class="hidden md:block md:w-[70px] lg:w-[75px] fixed right-[5%] logo-depth" src="https://i.postimg.cc/6qY40bGc/Whats-App-Image-2024-09-30-at-11-38-34-75256763-removebg-preview.png" alt="jobpro" width="75px">
     </div>
+    <!-- Mobile -->
+      <div class="md:hidden mx-10 flex md:justify-end items-center relative">
+          <img class="" src="./assets/Inter/jobpro.png" alt="jobpro" width="60px">
+          <!-- <img class="w-[140px] ml-[-30px] logo-depth" src="./assets/Inter/teampro.png" alt="Teampro Logo" /> -->
+            <p class="text-[#05264e] font-medium text-sm ml-auto">Already Registered ? <router-link to="login" class="font-semibold" style="color: #05264e;">Login</router-link> here</p>
+      </div>
+  </div>
 </template>
     
     <script setup>

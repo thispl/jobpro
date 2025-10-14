@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="https://erp.teamproit.com/file/a8e74e5eaf/49183d6afbjobpro.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JOBPRO</title>
+
+    <script type="module" crossorigin src="assets/jobpro/frontend/assets/index-BB0Z5mvg.js"></script>
+    <link rel="stylesheet" crossorigin href="assets/jobpro/frontend/assets/index-CzM8zJT6.css">
+
+    <style>
+  #splash-screen {
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.3s ease;
+  }
+
+  #splash-screen img {
+    width: 250px;
+    margin-bottom: 10px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  #splash-screen p {
+    font-family: sans-serif;
+    font-size: 16px;
+    color: #666;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.02);
+      /* opacity: 0.5; */
+    }
+  }
+</style>
+
+
+  </head>
+
+  <body>
+    <div id="splash-screen">
+      <img src="https://i.postimg.cc/3JyRDgdL/Artboard-2.png" alt="Loading..." />
+    </div>
+
+    <div id="app"></div>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splash-screen');
+    const hasVisited = localStorage.getItem('visited');
+    const splashDuration = hasVisited ? 3000 : 7000;
+
+    if (!hasVisited) {
+      localStorage.setItem('visited', 'true');
+    }
+
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
+      setTimeout(() => splash.remove(), 300);
+    }, splashDuration);
+  });
+
+      window.csrf_token = '{{ csrf_token }}';
+    </script>
+  </body>
+</html>
+

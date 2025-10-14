@@ -121,40 +121,42 @@ def load_candidates(task):
     # LEFT JOIN `tabCandidate Task` ON `tabCandidate`.name = `tabCandidate Task`.parent
     # WHERE `tabCandidate Task`.task = '%s' """%(task),as_dict=True)
     return candidates
-@frappe.whitelist()
-def update_task():
-    candidate=frappe.get_all("Candidate")
-    for cand in candidate:
-        doc = frappe.get_doc("Candidate",cand.name)
-        if doc.candidate_task:
-            for d in doc.candidate_task:
-                print(doc.name)
-                if d.customer:
-                    frappe.db.set_value('Candidate',doc.name,'customer',d.customer)
-                if d.project:
-                    frappe.db.set_value('Candidate',doc.name,'project',d.project)
-                if d.task:
-                    frappe.db.set_value('Candidate',doc.name,'task',d.task)
-                if d.pending_for:
-                    frappe.db.set_value('Candidate',doc.name,'pending_for',d.pending_for)
-                if d.interview_date:
-                    frappe.db.set_value('Candidate',doc.name,'interview_date',d.interview_date)
-                if d.offer_letter:
-                    frappe.db.set_value('Candidate',doc.name,'offer_letter',d.offer_letter)
-                if d.territory:
-                    frappe.db.set_value('Candidate',doc.name,'territory',d.territory)
-                if d.basic:
-                    frappe.db.set_value('Candidate',doc.name,'basic',d.basic)
-                if d.food:
-                    frappe.db.set_value('Candidate',doc.name,'food',d.food)
-                if d.other_allowance:
-                    frappe.db.set_value('Candidate',doc.name,'other_allowances',d.other_allowance)
-                if d.interview_location:
-                    frappe.db.set_value('Candidate',doc.name,'interview_location',d.interview_location)
-                if d.expected_doj:
-                    frappe.db.set_value('Candidate',doc.name,'expected_doj',d.expected_doj)
-                if d.subject:
-                    frappe.db.set_value('Candidate',doc.name,'position',d.subject)
+# @frappe.whitelist()
+# def update_task():
+#     candidate=frappe.get_all("Candidate")
+#     for cand in candidate:
+#         doc = frappe.get_doc("Candidate",cand.name)
+#         if doc.candidate_task:
+#             for d in doc.candidate_task:
+#                 print(doc.name)
+#                 if d.customer:
+#                     frappe.db.set_value('Candidate',doc.name,'customer',d.customer)
+#                 if d.project:
+#                     frappe.db.set_value('Candidate',doc.name,'project',d.project)
+#                 if d.task:
+#                     frappe.db.set_value('Candidate',doc.name,'task',d.task)
+#                 if d.pending_for:
+#                     frappe.db.set_value('Candidate',doc.name,'pending_for',d.pending_for)
+#                 if d.interview_date:
+#                     frappe.db.set_value('Candidate',doc.name,'interview_date',d.interview_date)
+#                 if d.offer_letter:
+#                     frappe.db.set_value('Candidate',doc.name,'offer_letter',d.offer_letter)
+#                 if d.territory:
+#                     frappe.db.set_value('Candidate',doc.name,'territory',d.territory)
+#                 if d.basic:
+#                     frappe.db.set_value('Candidate',doc.name,'basic',d.basic)
+#                 if d.food:
+#                     frappe.db.set_value('Candidate',doc.name,'food',d.food)
+#                 if d.other_allowance:
+#                     frappe.db.set_value('Candidate',doc.name,'other_allowances',d.other_allowance)
+#                 if d.interview_location:
+#                     frappe.db.set_value('Candidate',doc.name,'interview_location',d.interview_location)
+#                 if d.expected_doj:
+#                     frappe.db.set_value('Candidate',doc.name,'expected_doj',d.expected_doj)
+#                 if d.subject:
+#                     frappe.db.set_value('Candidate',doc.name,'position',d.subject)
+
+
 
 @frappe.whitelist()
 def sa_candidate(task,project):
@@ -414,15 +416,15 @@ def update_sams():
 #         attendance = frappe.db.sql("""select name,employee,employee_name,shift,late_entry from `tabAttendance` where late_entry = 1 and employee = %s and attendance_date between %s and %s""",(emp.name,start_date,end_date),as_dict = 1)
 #         count = len(attendance)
 
-@frappe.whitelist()
-def update_task(project,status):
-    # for p in project:
-    task = frappe.get_all("Task",{"project":project})
-    for t in task:
-        if(status == "Completed"):
-            t.status = frappe.db.set_value("Task",t.name,"status","Completed")
-        elif(status=="Cancelled"):
-            t.status = frappe.db.set_value("Task",t.name,"status","Cancelled")
+# @frappe.whitelist()
+# def update_task(project,status):
+#     # for p in project:
+#     task = frappe.get_all("Task",{"project":project})
+#     for t in task:
+#         if(status == "Completed"):
+#             t.status = frappe.db.set_value("Task",t.name,"status","Completed")
+#         elif(status=="Cancelled"):
+#             t.status = frappe.db.set_value("Task",t.name,"status","Cancelled")
            
 # @frappe.whitelist()
 # def check_package_list(customer):    
@@ -517,6 +519,8 @@ def update_task_counts(doc,method):
         if task_status in ('Completed', 'Cancelled'):
             # if pps == 0:
             frappe.db.set_value('Task',doc.task, 'sp', 0)
+            frappe.db.set_value('Task',doc.task, 'fp', 0)
+
         else:
             vac = frappe.db.get_value('Task', doc.task, 'vac')
             prop = frappe.db.get_value('Task',doc.task, 'prop')
@@ -910,46 +914,48 @@ def fp_candidate_list_send_mail_to_spoc():
             )
 
 
-@frappe.whitelist() 
-def update_task():
-    project=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
-    for i in project:
-        tasks = frappe.get_all("Task", {'status': ('in', ['Open', 'Working','Overdue','Pending Review']),'project':i.name},['*'])
-        for j in tasks:
-            submitted_client = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Submitted(Client)'}) or 0
-            print(submitted_client)
-            submitted_spoc = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Submit(SPOC)'}) or 0          
-            psl = frappe.db.count('Candidate', {'task': j.name, 'pending_for': ('in', ('Client Offered', 'Proposed PSL'))}) or 0
-            # shortlisted = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Shortlisted'}) or 0
-            # linedup = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Linedup'}) or 0
-            interviewed = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Interviewed'}) or 0
-            # result_pending = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Result Pending'}) or 0
-            total=(submitted_client + interviewed + submitted_spoc)
-            # frappe.db.set_value('Task', j.name, 'psl', psl)
-            frappe.db.set_value('Task', j.name, 'fp',total)
-            # frappe.db.set_value('Task', j.name, 'sl', shortlisted)
-            # frappe.db.set_value('Task', j.name, 'custom_lp',linedup)
-            # task_status = frappe.db.get_value('Task',j.name, 'status')
-            # if task_status in ('Completed', 'Cancelled'):
-            #     frappe.db.set_value('Task', j.name, 'sp', 0)
-            # else:
-            #     vac = frappe.db.get_value('Task', j.name, 'vac')
-            #     prop = frappe.db.get_value('Task', j.name, 'prop')
-            #     pps = (vac - psl) * prop - (submitted_client + submitted_spoc +interviewed + shortlisted +linedup)
-            #     frappe.db.set_value('Task', j.name, 'sp', pps)
+# @frappe.whitelist() 
+# def update_task():
+#     project=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
+#     for i in project:
+#         tasks = frappe.get_all("Task", {'status': ('in', ['Open', 'Working','Overdue','Pending Review']),'project':i.name},['*'])
+#         for j in tasks:
+#             submitted_client = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Submitted(Client)'}) or 0
+#             print(submitted_client)
+#             submitted_spoc = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Submit(SPOC)'}) or 0          
+#             psl = frappe.db.count('Candidate', {'task': j.name, 'pending_for': ('in', ('Client Offered', 'Proposed PSL'))}) or 0
+#             # shortlisted = frappe.db.count('Candidate', {'task': j.name, 'pending_for':'Shortlisted'}) or 0
+#             # linedup = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Linedup'}) or 0
+#             interviewed = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Interviewed'}) or 0
+#             # result_pending = frappe.db.count('Candidate', {'task': j.name, 'pending_for': 'Result Pending'}) or 0
+#             total=(submitted_client + interviewed + submitted_spoc)
+#             # frappe.db.set_value('Task', j.name, 'psl', psl)
+#             frappe.db.set_value('Task', j.name, 'fp',total)
+#             # frappe.db.set_value('Task', j.name, 'sl', shortlisted)
+#             # frappe.db.set_value('Task', j.name, 'custom_lp',linedup)
+#             # task_status = frappe.db.get_value('Task',j.name, 'status')
+#             # if task_status in ('Completed', 'Cancelled'):
+#             #     frappe.db.set_value('Task', j.name, 'sp', 0)
+#             # else:
+#             #     vac = frappe.db.get_value('Task', j.name, 'vac')
+#             #     prop = frappe.db.get_value('Task', j.name, 'prop')
+#             #     pps = (vac - psl) * prop - (submitted_client + submitted_spoc +interviewed + shortlisted +linedup)
+#             #     frappe.db.set_value('Task', j.name, 'sp', pps)
 
-@frappe.whitelist() 
-def update_project():
-    project=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
-    for i in project:
-        tot_fp=frappe.db.sql("""SELECT sum(fp) as fp from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
-        tot_psl=frappe.db.sql("""SELECT sum(psl) as psl from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
-        tot_sl=frappe.db.sql("""SELECT sum(sl) as sl from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
-        tot_sp=frappe.db.sql("""SELECT sum(sp) as sp from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
-        frappe.db.set_value("Project",i.name,'tfp',tot_fp['fp'])
-        frappe.db.set_value("Project",i.name,'tpsl',tot_psl['psl'])
-        frappe.db.set_value("Project",i.name,'tsl',tot_sl['sl'])
-        frappe.db.set_value("Project",i.name,'tsp',tot_sp['sp'])
+
+
+# @frappe.whitelist() 
+# def update_project():
+#     project=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
+#     for i in project:
+#         tot_fp=frappe.db.sql("""SELECT sum(fp) as fp from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
+#         tot_psl=frappe.db.sql("""SELECT sum(psl) as psl from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
+#         tot_sl=frappe.db.sql("""SELECT sum(sl) as sl from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
+#         tot_sp=frappe.db.sql("""SELECT sum(sp) as sp from `tabTask` where project=%s group by project""",(i.name),as_dict=True)[0]
+#         frappe.db.set_value("Project",i.name,'tfp',tot_fp['fp'])
+#         frappe.db.set_value("Project",i.name,'tpsl',tot_psl['psl'])
+#         frappe.db.set_value("Project",i.name,'tsl',tot_sl['sl'])
+#         frappe.db.set_value("Project",i.name,'tsp',tot_sp['sp'])
         
 
 @frappe.whitelist() 
@@ -1209,7 +1215,7 @@ def send_mail_to_candidate(candidate_id):
     TEAMPRO""".format(candidate['given_name'],candidate['position'],candidate['territory'],candidate['interview_location'],candidate['interview_date'],candidate['passport_number'])
     frappe.sendmail(
         # recipients=[candidate_mail],
-        recipients=["sangeetha.a@groupteampro.com"],
+        recipients=["abdulla.pi@groupteampro.com"],
         subject=subject,
         message=message,
     )
@@ -2752,6 +2758,7 @@ def get_data_grouped_by_position(args):
 @frappe.whitelist()
 def update_sa_details_in_task(doc,method):
     if doc.name and doc.service=="REC-I":
+        
         tasks = frappe.db.get_all("Task", filters={"project":doc.name}, fields=["name"])
         # pro=frappe.get_doc("Project",project)
         for task in tasks:
@@ -2765,16 +2772,24 @@ def update_sa_details_in_task(doc,method):
                             "sa_id": row.sa_id,
                             "sa_name": row.sa_name,
                             "sa_contact_number": row.sa_contact_number,
-                            "variable_ec": row.variable_ec,
-                            "received_count": row.received_count,
                         },
                     )
-
-            # Save the task document to persist changes
+            # if doc.custom_criteria_table:
+            #     for d in doc.custom_criteria_table:
+            #         if d.updated==0:
+            #             task_doc.append(
+            #                 "custom_criteria_table",
+            #                 {
+            #                     "scheduling_criteria": d.scheduling_criteria,
+            #                     "scheduling_parameter": d.scheduling_parameter,
+            #                 },
+            #             )
             task_doc.save()
             frappe.db.commit()
             task_doc.reload()
-        
+        # if doc.custom_criteria_table:
+        #     for d in doc.custom_criteria_table:
+        #         d.updated=1
 
 
 
@@ -2924,7 +2939,7 @@ def sales_ami_team_dsr_daily():
         '''
         for i in appointment_list:
             short_code = frappe.db.get_value("Employee", {"user_id": i.next_contact_by}, "short_code")
-            data+='<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="2" style="text-align: left; padding-left: 50px;">{}</td><td colspan="2">{}</td><td colspan="7">{}</td></tr>'.format(short_code,i.custom_name12,i.app_status,i.custom_details1)
+            data+='<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="2" style="text-align: left; padding-left: 50px;">{}</td><td colspan="2">{}</td><td colspan="7">{}</td></tr>'.format(short_code,i.app_status,i.custom_details1)
     data += '<tr style="text-align:center;"><td colspan="11"><b>Non Updated Followup</b></td></tr>'
     data += '''
         <tr style="background-color: #0f1568; color: white; text-align:center;">
@@ -3047,7 +3062,7 @@ Please find the below DSR for {} for your kind reference and action.<br><br>
             # short_code = frappe.db.get_value("Employee", {"user_id": i.owner}, "short_code")
             # data+='<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="1" style="text-align: left; padding-left: 50px;">{}</td><td colspan="2">{}</td><td colspan="7">{}</td></tr>'.format(short_code,i.name,i.status,i.custom_remarks)
             short_code = frappe.db.get_value("Employee", {"user_id": i.next_contact_by}, "short_code")
-            data+='<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="2" style="text-align: left; padding-left: 50px;">{}</td><td colspan="2">{}</td><td colspan="7">{}</td></tr>'.format(short_code,i.custom_name12,i.app_status,i.custom_details1)
+            data+='<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="2" style="text-align: left; padding-left: 50px;">{}</td><td colspan="2">{}</td><td colspan="7">{}</td></tr>'.format(short_code,i.app_status,i.custom_details1)
 
         data += '<tr style="text-align:center;"><td colspan="11"><b>Non Updated Followup</b></td></tr>'
         data += '''
@@ -3888,3 +3903,368 @@ def check_holiday(date, emp):
             return True
     else:
         return False  
+
+# @frappe.whitelist()
+# def update_cl_status():
+#     frappe.db.set_value("Closure","CL03671","onboarded",0)
+#     frappe.db.set_value("Closure","CL03671","status","PSL")
+
+# @frappe.whitelist()
+# def update_closure_payment():
+#     filename='6b690874f457375Closure.csv'
+#     from frappe.utils.file_manager import get_file
+#     filepath = get_file(filename)
+#     pps = read_csv_content(filepath[1])
+#     ind=0
+#     for pp in pps:
+#         if pp[1]=="Candidate":
+#             print(pp[0])
+#             frappe.db.set_value("Closure",pp[0],"client_payment_company_currency",0)
+#             frappe.db.set_value("Closure",pp[0],"client_si",0)
+#             ind+=1
+#         if pp[1]=="Client":
+#             frappe.db.set_value("Closure",pp[0],"candidate_payment_company_currenc",0)
+#             frappe.db.set_value("Closure",pp[0],"candidate_si",0)
+#             print(pp[0])
+#     print(ind)
+
+# @frappe.whitelist()
+# def update_source_closure():
+#     closure=frappe.db.get_all("Closure",{"nationality":"Indian"},["name","candidate"])
+#     ind=1
+#     for i in closure:
+#         source=''
+#         if i.candidate:
+#             source=frappe.db.get_value("Candidate",{"name":i.candidate},["source"])
+#             if source:
+#                 frappe.db.set_value("Closure",i.name,"custom_source",source)
+#                 ind+=1
+#                 print(i.name)
+#                 print(i.candidate)
+#                 print(source)
+#     print(ind)
+
+# @frappe.whitelist()
+# def updatde_vm_status():
+#     frappe.db.set_value("VM Stock Register","VM000002","status","GRN Received")
+
+# @frappe.whitelist()
+# def update_cl_local():
+#     frappe.db.set_value("Closure","CL03859","remark","07/08 : Arrived")
+#     frappe.db.set_value("Closure","CL03859","custom_next_follow_up_on",None)
+
+@frappe.whitelist()
+def update_profile_submission(name=None,date=None,count=None,task=None):
+    task=frappe.get_doc("Task",task)
+    task.append("custom_project_plan_",{
+        "date":date,
+        "count":count
+    })
+    task.save()
+
+@frappe.whitelist()
+def update_st_count_proj(project=None,name=None):
+    if project:
+        doc=frappe.get_doc("Candidate",name)
+        proj = frappe.get_doc("Project", project)
+        if proj.custom_profile_submission:
+            task_rows = {}
+            for i in proj.custom_profile_submission:
+                task_rows.setdefault(i.task, []).append(i)
+
+            for task, rows in task_rows.items():
+                rows.sort(key=lambda x: x.date)
+                previous_date = None
+                for i in rows:
+                    current_date = i.date
+
+                    if previous_date:
+                        if doc.custom_status_transition:
+                            candidate_count = frappe.db.sql("""
+                                SELECT COUNT(DISTINCT c.name)
+                                FROM `tabCandidate` c
+                                INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                                WHERE DATE(cs.sourced_date) > %s
+                                AND DATE(cs.sourced_date) <= %s
+                                AND cs.task = %s
+                                AND cs.project = %s
+                                AND cs.status = %s
+                            """, (previous_date, current_date, task, doc.project, "Submit(SPOC)"))
+                    else:
+                        if doc.custom_status_transition:
+                            candidate_count = frappe.db.sql("""
+                                SELECT COUNT(DISTINCT c.name)
+                                FROM `tabCandidate` c
+                                INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                                WHERE DATE(cs.sourced_date) <= %s
+                                AND cs.task = %s
+                                AND cs.project = %s
+                                AND c.status = %s
+                            """, (current_date, task, doc.project, "Submit(SPOC)"))
+
+                    i.achieved = candidate_count[0][0] if candidate_count else 0
+                    previous_date = current_date
+
+            proj.save()
+
+
+
+# @frappe.whitelist()
+# def update_fp_count_proj(doc,method):
+#     if doc.name:
+#         if doc.custom_profile_submission:
+#             task_rows = {}
+#             for i in doc.custom_profile_submission:
+#                 task_rows.setdefault(i.task, []).append(i)
+
+#             for task, rows in task_rows.items():
+#                 rows.sort(key=lambda x: x.date)
+#                 previous_date = None
+#                 for i in rows:
+#                     current_date = i.date
+#                     candidate_count = frappe.db.sql("""
+#                             SELECT COUNT(DISTINCT c.name)
+#                             FROM `tabCandidate` c
+#                             WHERE c.task = %s
+#                             AND c.project = %s
+#                             AND c.pending_for in (%s,%s,%s)
+#                         """, (task, doc.name, "Submit(SPOC)","Submitted(Client)","Interviewed"))
+#                     if previous_date:
+#                         candidate_achieved_count = frappe.db.sql("""
+#                                 SELECT COUNT(DISTINCT c.name)
+#                                 FROM `tabCandidate` c
+#                                 INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+#                                 WHERE DATE(cs.sourced_date) > %s
+#                                 AND DATE(cs.sourced_date) <= %s
+#                                 AND cs.task = %s
+#                                 AND cs.project = %s
+#                                 AND cs.status = %s
+#                             """, (previous_date, current_date, task, doc.name, "Submit(SPOC)"))
+#                     else:
+#                         candidate_achieved_count = frappe.db.sql("""
+#                                 SELECT COUNT(DISTINCT c.name)
+#                                 FROM `tabCandidate` c
+#                                 INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+#                                 WHERE DATE(cs.sourced_date) <= %s
+#                                 AND cs.task = %s
+#                                 AND cs.project = %s
+#                                 AND cs.status = %s
+#                             """, (current_date, task, doc.name, "Submit(SPOC)"))
+
+#                     i.fp = candidate_count[0][0] if candidate_count else 0
+#                     i.achieved = candidate_achieved_count[0][0] if candidate_achieved_count else 0
+#                     previous_date = current_date
+
+
+import frappe
+
+@frappe.whitelist()
+def update_proj_position(doc, method=None):
+    frappe.enqueue(
+        update_fp_count_proj,
+        queue="long",
+        timeout=36000,
+        is_async=True,
+        now=False,
+        job_name=f"Project Update {doc.name}",
+        enqueue_after_commit=True,
+        project_name=doc.name
+    )
+
+@frappe.whitelist()
+def update_fp_count_proj(project_name):
+    project_doc = frappe.get_doc("Project", project_name)
+
+    if not project_doc.custom_profile_submission:
+        return "No profile submissions found"
+
+    task_rows = {}
+    for row in project_doc.custom_profile_submission:
+        task_rows.setdefault(row.task, []).append(row)
+
+    for task, rows in task_rows.items():
+        rows.sort(key=lambda x: x.date)
+        previous_date = None
+
+        for row in rows:
+            current_date = row.date
+            candidate_count = frappe.db.sql("""
+                SELECT COUNT(DISTINCT c.name)
+                FROM `tabCandidate` c
+                WHERE c.task = %s
+                AND c.project = %s
+                AND c.pending_for IN ('Submit(SPOC)','Submitted(Client)','Interviewed')
+            """, (task, project_doc.name))[0][0]
+            if previous_date:
+                candidate_achieved_count = frappe.db.sql("""
+                    SELECT COUNT(DISTINCT c.name)
+                    FROM `tabCandidate` c
+                    INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                    WHERE DATE(cs.sourced_date) > %s
+                    AND DATE(cs.sourced_date) <= %s
+                    AND cs.task = %s
+                    AND cs.project = %s
+                    AND cs.status = 'Submit(SPOC)'
+                """, (previous_date, current_date, task, project_doc.name))[0][0]
+            else:
+                candidate_achieved_count = frappe.db.sql("""
+                    SELECT COUNT(DISTINCT c.name)
+                    FROM `tabCandidate` c
+                    INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                    WHERE DATE(cs.sourced_date) <= %s
+                    AND cs.task = %s
+                    AND cs.project = %s
+                    AND cs.status = 'Submit(SPOC)'
+                """, (current_date, task, project_doc.name))[0][0]
+
+            row.fp = candidate_count or 0
+            row.achieved = candidate_achieved_count or 0
+            previous_date = current_date
+    return f"Project {project_name} FP counts updated"
+
+
+
+# def create_scheduled_event():
+# 	job = frappe.db.exists('Scheduled Job Type', 'update_proj_position_value')
+# 	if not job:
+# 		sjt = frappe.new_doc("Scheduled Job Type")
+# 		sjt.update({
+# 			"method": 'jobpro.custom.update_proj_position_value',
+# 			"frequency": 'Cron',
+# 			"cron_format": '45 23 * * *'
+# 		})
+# 		sjt.save(ignore_permissions=True)
+
+
+
+@frappe.whitelist()
+def update_proj_position_value():
+    frappe.enqueue(
+        update_count_proj,
+        queue="long",
+        timeout=36000,
+        is_async=True,
+        now=False,
+        job_name=f"Project Update",
+        enqueue_after_commit=True,
+    )
+
+
+@frappe.whitelist()
+def update_count_proj():
+    projects = frappe.get_all(
+        "Project",
+        filters={"status": ["in", ["Open", "Enquiry", "Draft", "Kick OFF", "Working", "Overdue"]]},
+        pluck="name",  
+    )
+    # projects = ["PROJ-1869"]
+    for project_name in projects:
+        project_doc = frappe.get_doc("Project", project_name)
+
+        if not project_doc.custom_profile_submission:
+            continue  
+        task_rows = {}
+        for row in project_doc.custom_profile_submission:
+            task_rows.setdefault(row.task, []).append(row)
+
+        for task, rows in task_rows.items():
+            rows.sort(key=lambda x: x.date)
+            previous_date = None
+
+            for row in rows:
+                current_date = row.date
+
+                candidate_count = frappe.db.sql("""
+                    SELECT COUNT(DISTINCT c.name)
+                    FROM `tabCandidate` c
+                    WHERE c.task = %s
+                    AND c.project = %s
+                    AND c.pending_for IN ('Submit(SPOC)','Submitted(Client)','Interviewed')
+                """, (task, project_doc.name))[0][0]
+
+                if previous_date:
+                    candidate_achieved_count = frappe.db.sql("""
+                        SELECT COUNT(DISTINCT c.name)
+                        FROM `tabCandidate` c
+                        INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                        WHERE DATE(cs.sourced_date) > %s
+                        AND DATE(cs.sourced_date) <= %s
+                        AND cs.task = %s
+                        AND cs.project = %s
+                        AND cs.status = 'Submit(SPOC)'
+                    """, (previous_date, current_date, task, project_doc.name))[0][0]
+                else:
+                    candidate_achieved_count = frappe.db.sql("""
+                        SELECT COUNT(DISTINCT c.name)
+                        FROM `tabCandidate` c
+                        INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
+                        WHERE DATE(cs.sourced_date) <= %s
+                        AND cs.task = %s
+                        AND cs.project = %s
+                        AND cs.status = 'Submit(SPOC)'
+                    """, (current_date, task, project_doc.name))[0][0]
+                # print(candidate_achieved_count)
+                
+
+                row.achieved = candidate_achieved_count or 0
+                previous_date = current_date
+
+        project_doc.save(ignore_permissions=True)
+
+    frappe.db.commit()
+
+# @frappe.whitelist()
+# def update_cist_closure():
+#     start="2025-10-08 00:00:00"
+#     end="2025-10-08 23:59:59"
+#     ind=0
+#     closure=frappe.db.get_all("Closure",{"owner":"divya.p@groupteampro.com","creation":("between",[start,end])},"name")
+#     for i in closure:
+#         frappe.db.set_value("Closure",i.name,"customer","Vectrus Global Support Services LLP")
+#         ind+=1
+#     print(ind)
+
+
+# def create_scheduled_event():
+# 	job = frappe.db.exists('Scheduled Job Type', 'update_sla_value')
+# 	if not job:
+# 		sjt = frappe.new_doc("Scheduled Job Type")
+# 		sjt.update({
+# 			"method": 'jobpro.custom.update_sla_value',
+# 			"frequency": 'Cron',
+# 			"cron_format": '50 23 * * *'
+# 		})
+# 		sjt.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def update_sla_value():
+    frappe.enqueue(
+        update_expired_sla,
+        queue="long",
+        timeout=36000,
+        is_async=True,
+        now=False,
+        job_name=f"Project Update",
+        enqueue_after_commit=True,
+    )
+
+
+def update_expired_sla():
+    docs = frappe.get_all("Customer", fields=["name"])
+    # docs =frappe.db.get_all("Customer",{'name':'Test'},'name')
+    
+    for d in docs:
+        doc = frappe.get_doc("Customer", d.name)
+        updated = False
+        
+        if doc.custom_sla_details:
+            for row in doc.custom_sla_details:
+                if row.sla_to_date:
+                    sla_to_date = getdate(row.sla_to_date)  
+                    if sla_to_date < getdate(today()):       
+                        row.status = "Expired"
+                        updated = True
+        
+        if updated:
+            doc.save()

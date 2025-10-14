@@ -85,7 +85,7 @@ app_license = "MIT"
 doc_events = {
     "Candidate": {
         # "on_update": "jobpro.jobpro.doctype.candidate.candidate.create_closure",
-        "on_update": ["jobpro.jobpro.doctype.candidate.candidate.create_closure_with_payment"],
+        "on_update": ["jobpro.jobpro.doctype.candidate.candidate.create_closure_with_payment","teampro.custom.update_task_count"],
 
         "validate": ["jobpro.custom.update_sams_by"],
     },

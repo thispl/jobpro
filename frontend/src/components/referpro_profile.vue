@@ -116,7 +116,13 @@
   </div>
 </div>
 <div class="bg-[#efeff5] sticky bottom-0 pb-5 mt-5 md:mt-[-20px] mb-0">
-  <div @click="handleSaveChanges()" class="relative mx-[4%] text-white font-medium shadow-md text-center rounded-sm py-2 bg-gradient-to-r hover:cursor-pointer from-blue-800 to-blue-500 text-white p-6 rounded-md">
+  <div @click="handleSaveChanges()" :class="[
+    'relative mx-[4%] text-white font-medium shadow-md text-center rounded-sm py-2 p-6 rounded-md hover:cursor-pointer',
+    loading ? 'bg-gradient-to-r from-blue-800 to-blue-500' : 
+    (saveButtonMessage !== 'Save Changes' && saveButtonMessage !== 'Saved'
+      ? 'bg-gradient-to-r from-red-800 to-red-500'
+      : 'bg-gradient-to-r from-blue-800 to-blue-500')
+  ]">
      
     <div v-if="loading" class="text-center loader-style">
       </div>
@@ -132,7 +138,7 @@ export default {
   name: "ReferProProfile",
   data() {
     return {
-      mobilePlaceHolderData: "Date of Birth",
+      mobilePlaceHolderData: "Date of Birth (DD-MM-YYYY)",
       editBankDetails: true,
       editBankDetailsColor: "#05264e",
       editPersonalDetails: true,
@@ -193,7 +199,13 @@ export default {
             this.ifscCode = data.ifsc_code || "";
             this.primaryMobile = data.primary_mobile || "";
             this.secondaryMobile = data.secondary_mobile || "";
-            this.dob = data.dob || "";
+            const originalDate = data.date_of_birth || "";
+            if (originalDate) {
+                const [year, month, day] = originalDate.split("-");
+                this.dob = `${day}-${month}-${year}`;
+            } else {
+                this.dob = "";
+            }
             this.passportID = data.passport_id || "";
             this.aadhaarID = data.aadhaar_id || "";
             this.streetName = data.street_name || "";
@@ -211,23 +223,6 @@ export default {
     },
     async handleSaveChanges() {
       this.loading = true;
-      const data = {
-        email: this.emailID,
-        account_number: this.accountNumber,
-        ifsc_code: this.ifscCode,
-        name: this.fullName,
-        primary_mobile: this.primaryMobile,
-        secondary_mobile: this.secondaryMobile,
-        dob: this.dob,
-        passport_id: this.passportID,
-        aadhaar_id: this.aadhaarID,
-        street_name: this.streetName,
-        city: this.city,
-        state: this.state,
-        postal_code: this.postalCode,
-        country: this.country
-      };
-
       try {
         const response = await apiService.update_referpro_profile_data(
           this.emailID,
@@ -247,7 +242,6 @@ export default {
         );
 
         if (response.status === 200) {
-          console.log('Profile updated successfully');
           this.saveButtonMessage = response.data.message;
           this.loading = false;
         }

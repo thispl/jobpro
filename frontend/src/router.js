@@ -26,7 +26,7 @@ const routes = [
   {
     path: '/find-a-job',
     name: 'Home_jobs',
-    component: () => import("@/pages/FindAJob.vue"),
+    component: () => import("./FindAJob.vue"),
   },
   {
     path: '/recruiters',
@@ -70,7 +70,7 @@ const routes = [
   },
   {
     path: '/referpro',
-    component: Referpro,  
+    component: () => import('@/pages/Referpro.vue'),  
     children: [
       {
         path: '',
@@ -113,7 +113,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/'),
+  history: createWebHistory('jobpro_web'),
   routes,
 });
 

@@ -1,7 +1,7 @@
 <template>
-  <div :class="{'opacity-[0.5]': loading}" class="">
+  <div :class="{'opacity-[0.5]': loading}" class="h-[100vh]" style="">
     <div v-if="!isLoggedIn && !success" class="mob-margin flex justify-center mt-20 fade-section">
-      <div v-if="loginBox" class="bg-white rounded-sm shadow-lg shadow-gray-600 w-[400px]">
+      <div v-if="loginBox" class="bg-white rounded-lg shadow-lg shadow-gray-600 w-[400px] mx-2">
         <div class="mx-10">
           <h1 class="font-semibold text-xl mt-6" style="color: #05264e;">Login</h1>
           <!-- OTP LOGIN -->
@@ -9,8 +9,8 @@
             <form class="mt-10 mb-10" @submit.prevent="handleOtpLogin">
               <div class="relative">
                 <label for="otp" class="text-md font-semibold" style="color: #05264e;">Mobile Number </label><br>
-                <input type="tel" v-model="phone" id="phone" name="phone" pattern="[0-9]{10}" required placeholder="Enter your 10 digit mobile number" class="border-gray-400 rounded-sm text-sm p-3 pl-10 mt-2 w-full mb-4" style="color: #7680a2;"><br>
-                <p class="absolute top-[40px] pl-2.5 mt-0.5 text-[#05264e] text-[15px] font-medium">+91</p>
+                <input type="tel" v-model="phone" id="phone" name="phone" pattern="[0-9]{10}" required placeholder="Enter your mobile number" class="border-gray-400 rounded-md text-sm p-3 pl-10 mt-2 w-full mb-4 font-medium text-[#05264e]"><br>
+                <p class="absolute top-[38px] md:top-[40px] pl-2.5 mt-0.5 text-[#05264e] text-[15px] font-medium">+91</p>
                 <p class="text-sm text-[#7680a2]">You will receive an OTP on this number</p>
                 <input type="submit" class="mt-10 text-white bg-blue-700 hover:bg-blue-800 focus:ring-1 font-medium rounded-sm text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 w-full" style="font-size: 15px;" value="Get OTP" />
                 <p @click="emailLogin = true, otpLogin = false" class="cursor-pointer mt-5 text-[#007be0] focus:ring-1 font-medium rounded-sm text-sm px-4 py-2.5 text-center border border-[#007be0] hover:scale-105 w-full transition-all">Use Email to Login</p>
@@ -28,10 +28,10 @@
           <div v-if="emailLogin">
             <form class="mt-5 mb-10" @submit.prevent="handleLogin">
               <label for="email" class="text-md font-semibold" style="color: #05264e;">Email ID </label><span class="text-red-500">*</span><br>
-              <input type="text" v-model="email" id="email" name="email" placeholder="Enter Email ID" class="border-gray-400 rounded-sm text-sm p-3 mt-2 w-full mb-4" style="color: #7680a2;" required><br>
+              <input type="text" v-model="email" id="email" name="email" placeholder="Enter Email ID" class="border-gray-400 rounded-md text-sm p-3 mt-2 w-full mb-4 font-medium text-[#05264e]" required><br>
               <label for="password" class="text-md font-semibold" style="color: #05264e;">Password </label><span class="text-red-500">*</span><br>
               <div class="relative w-full">
-                <input :type="show ? 'text' : 'password'" v-model="password" id="password" name="password" placeholder="Enter Password" class="border-gray-400 border rounded-sm text-sm p-3 mt-2 w-full pr-14" style="color: #7680a2;" required><br>
+                <input :type="show ? 'text' : 'password'" v-model="password" id="password" name="password" placeholder="Enter Password" class="border-gray-400 border rounded-md text-sm p-3 mt-2 w-full pr-14 font-medium text-[#05264e]" required><br>
                 <svg v-if="!show" @click="togglePassword" class="h-5 w-5 absolute right-5 top-5" fill="#7680a2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
                     <path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c8.4-19.3 10.6-41.4 4.8-63.3c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zM373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5L373 389.9z" />
                 </svg>
@@ -57,7 +57,7 @@
             <form class="mt-5 mb-10" @submit.prevent="handleOtpVerification">
               <p class="text-sm text-[#7680a2] leading-5 mb-5">We have sent a 6 digit OTP to your mobile<br> number +91 {{ this.phone }}</p>
               <label for="email" class="text-[15px] font-semibold" style="color: #05264e;">One Time Passcode </label><br>
-              <div class="flex justify-center item-center font-sans">
+              <div class="flex justify-center item-center">
                 <div class="flex gap-4">
                   <input v-for="(digit, index) in otp" :key="index" v-model="otp[index]" placeholder="*" maxlength="1" @input="handleOtp(index)" :ref="`otp-${index}`" 
                   class="w-10 h-10 rounded-sm mt-6 transition-all font-medium text-center text-[#007be0]" :disabled="disabled[index]"/>
@@ -78,7 +78,7 @@
       <button @click="handleLogout" class="mx-auto mt-4 bg-red-500 text-white py-2 px-4 rounded">Logout</button>
     </div>
 
-    <div v-if="!isLoggedIn && success" class="text-center mt-[100px]">
+    <div v-if="!isLoggedIn && success" class="text-center mt-[100px] mx-8">
           <h1 class="text-xl font-semibold" style="color: #05264e;">Password Email Sent</h1>
           <p class="text-md mt-3 font-medium" style="color: #05264e;">Password reset instructions have been sent to your email</p>
     </div>
@@ -91,7 +91,7 @@
         <h2 class="text-md font-semibold" style="color: #05264e;">Forgot Password</h2>
         <form @submit.prevent="submitForgotPassword" id="forgotPassword" class="mt-3">
           <label for="email" class="text-sm font-semibold" style="color: #05264e;">Email ID </label><span class="text-red-500"></span><br>
-          <input type="email" v-model="forgotPassword.email" placeholder="Enter your email" class="mb-1 border-gray-400 rounded-sm text-sm p-3 w-full mt-1" style="color: #7680a2;" required />
+          <input type="email" v-model="forgotPassword.email" placeholder="Enter your email" class="mb-1 border-gray-400 rounded-md text-sm p-3 w-full mt-1 font-medium text-[#05264e]" required />
           <p v-if="errorField=='mail'" class="text-red-500 text-sm font-medium my-3">{{ error }}</p>
           <button type="submit" class="mt-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-1 font-medium rounded-sm text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400 w-full" style="font-size: 15px;">Confirm</button>
         </form>
@@ -105,7 +105,7 @@
   </div>
   <div v-if="successfull" class="success-message absolute right-[50px] top-[90%]">
     <div class="bg-gradient-to-r from-[#0bda51] to-[#0bda51] rounded-sm shadow-xl h-10 pt-2 w-[250px] ">
-      <p class="text-white font-semibold font-sans text-center">Password Updated Successfully</p>
+      <p class="text-white font-semibold text-center">Password Updated Successfully</p>
     </div>
   </div>
   <div class="g_id_signin" data-onsuccess="onSignIn"></div>
@@ -227,7 +227,6 @@ export default {
           usr: this.email,
           pwd: this.password,
         });
-        console.log(response.data.message)
         if (response.status === 200 && response.data.message) {
           localStorage.setItem('authToken', response.data.message);
           localStorage.setItem('fullName', response.data.full_name);

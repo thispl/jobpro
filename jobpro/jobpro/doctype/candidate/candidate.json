@@ -39,6 +39,7 @@
   "column_break_8",
   "candidate_image",
   "sa_agent",
+  "sa_agent_name",
   "nationality",
   "ecr_status_candidate",
   "gender",
@@ -146,12 +147,12 @@
   "column_break_24",
   "issued_date",
   "expiry_date",
+  "expiry_period",
   "sa_details_section",
   "sa_organization_name",
   "sa_mail_id",
   "sa_mobile_number",
   "column_break_46",
-  "sa_agent_name",
   "sa_location",
   "sa_state",
   "highest_qualification_section",
@@ -409,7 +410,7 @@
    "fieldname": "year_of_passing",
    "fieldtype": "Select",
    "label": "Year of Passing",
-   "options": "\n1960\n1961\n1962\n1963\n1964\n1965\n1966\n1967\n1968\n1969\n1970\n1971\n1972\n1973\n1974\n1975\n1976\n1977\n1978\n1979\n1980\n1981\n1982\n1983\n1984\n1985\n1986\n1987\n1988\n1989\n1990\n1991\n1992\n1993\n1994\n1995\n1996\n1997\n1998\n1999\n2000\n2001\n2002\n2003\n2004\n2005\n2006\n2007\n2008\n2009\n2010\n2011\n2012\n2013\n2014\n2015\n2016\n2017\n2018\n2019\n2020\n2021\n2022\n2023\n2024"
+   "options": "\n1960\n1961\n1962\n1963\n1964\n1965\n1966\n1967\n1968\n1969\n1970\n1971\n1972\n1973\n1974\n1975\n1976\n1977\n1978\n1979\n1980\n1981\n1982\n1983\n1984\n1985\n1986\n1987\n1988\n1989\n1990\n1991\n1992\n1993\n1994\n1995\n1996\n1997\n1998\n1999\n2000\n2001\n2002\n2003\n2004\n2005\n2006\n2007\n2008\n2009\n2010\n2011\n2012\n2013\n2014\n2015\n2016\n2017\n2018\n2019\n2020\n2021\n2022\n2023\n2024\n2025"
   },
   {
    "fieldname": "course_type",
@@ -631,7 +632,7 @@
    "fieldname": "sa_mobile_number",
    "fieldtype": "Data",
    "label": "SA Mobile Number",
-   "length": 15,
+   "length": 20,
    "read_only": 1
   },
   {
@@ -744,7 +745,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Candidate Status",
-   "options": "\nIDB\nSourced\nSubmitted(Internal)\nPending QC\nQC Cleared\nSubmit(SPOC)\nSubmitted(Client)\nShortlisted\nLinedup\nLinedup Confirmed\nReported\nInterviewed\nProposed PSL\nResult Pending"
+   "options": "\nIDB\nSourced\nPending QC\nSubmit(SPOC)\nSubmitted(Client)\nShortlisted\nLinedup\nLinedup Confirmed\nReported\nInterviewed\nProposed PSL\nResult Pending"
   },
   {
    "fieldname": "attachments_section",
@@ -847,7 +848,8 @@
    "in_list_view": 1,
    "label": "Primary Mobile Number",
    "length": 14,
-   "options": "Phone"
+   "options": "Phone",
+   "reqd": 1
   },
   {
    "fieldname": "institutes",
@@ -1437,11 +1439,16 @@
    "label": "Payment Details",
    "mandatory_depends_on": "eval:doc.pending_for==\"Proposed PSL\"",
    "options": "candidate Payment Details"
+  },
+  {
+   "fieldname": "expiry_period",
+   "fieldtype": "Data",
+   "label": "Expiry Period"
   }
  ],
  "image_field": "candidate_image",
  "links": [],
- "modified": "2025-04-11 17:50:23.955810",
+ "modified": "2025-10-08 19:05:08.526335",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Candidate",

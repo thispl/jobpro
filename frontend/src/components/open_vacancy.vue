@@ -1,18 +1,18 @@
 <template>
-    <div class="flex m-10 gap-10">
-        <div v-if="!shimmerLoadingTask" class="w-[40%]">
-            <div v-for="task in filteredTasks" :key="task.name">
+    <div class="flex flex-col md:flex-row  mt-10 mx-5 mb-10 md:m-10 gap-10 ">
+        <div v-if="!shimmerLoadingTask" class=" w-[100%]   md:w-[40%]">
+            <div v-for="task in filteredTasks" :key="task.name" class="mb-8">
                 <div 
-                    @click="key = task.name; fetchTaskDetails(task.name)" 
+                    @click="key = task.name , extend=!extend ; fetchTaskDetails(task.name)" 
                     :class="[
-                        'cursor-pointer border rounded-md bg-white px-5 relative pt-2 scroll-smooth mb-5 shadow-lg hover:shadow-gray-600',
-                        'transition duration-500 ease-in-out transform',
-                        task.name === key ? 'scale-105' : 'scale-100'
+                        'cursor-pointer border rounded-md bg-white  px-5 relative pt-2 scroll-smooth mb-5 shadow-lg hover:shadow-gray-600',
+                        'transition duration-500 ease-in-out transform', 
+                        task.name === key && extend ? 'scale-105' : 'scale-100'
                     ]"
                     >
 
-                    <div class="flex">
-                        <h1 class="pt-3 text-md font-sans text-gray-900 font-bold min-h-16 capitalize" style="color: #05264e;">{{ task.subject }}</h1>
+                    <div class="flex ">
+                        <h1  class="pt-3 text-md font-sans text-gray-900 font-bold min-h-10 md:min-h-16 capitalize" style="color: #05264e;">{{ task.subject }}</h1>
                     </div>
                     <div class="flex">
                         <img v-if="task.custom_country_flag" :src="task.custom_country_flag" :alt="flag-task.name" class="image-size mr-2" />
@@ -50,6 +50,158 @@
                             <p class="mt-0.5">OT</p>
                         </div>
                     </div>
+
+                   <Transition name="fade" mode="out-in">
+                    <div  v-if="task.name === key && extend" class="md:hidden">
+                     <h2 class="text-sm  pt-3 font-semibold text-gray-700">{{ task.customer }}</h2>
+
+
+                     <div class="mt-3 rounded-md p-3 bg-[#efeff5]">
+                <div class="m-2 ml-0">
+                    <div class="flex flex-wrap text-sm text-[#001d4e] gap-3 font-semibold">
+                        <h1 class="font-semibold text-[#000048] text-md">Job Highlights</h1>
+                    </div>
+                    <ul class="font-medium mt-1.5 text-[13px] text-gray-700 pl-2 list-disc pl-6">
+                        <li>Qualification: {{ task.qualification_type }}<span v-if="task.specialization"> (need specialization in {{ task.specialization }})</span></li>
+                                <li v-if="task.minimum_experience>0">Experience: <span>{{ task.minimum_experience }}<span v-if="task.maximum_experience>0">-{{ task.maximum_experience }}</span> years of experience</span></li>
+                                <li v-else>Experience: <span>Fresher</span></li>
+                                <li v-if="task.gulf_experience>0">Gulf Experience: <span class="">{{ task.gulf_experience }} years of experience</span></li>
+                            </ul>
+                </div>
+            </div>
+
+
+            <div class="pt-6 p-2 text-[13px] text-[#000048] font-semibold max-h-[300px] overflow-y-scroll">
+                <h1 class="font-semibold text-[#000048] text-md">Job Description</h1>
+                <p class="pt-2 px-2 text-gray-800 text-[13px] font-medium" v-html="task.description"></p>
+                <h1 class="font-semibold text-[#000048] text-md mt-6">Job Benefits</h1>
+
+                <div class="flex justify-center flex-wrap text-center w-[90%] gap-10 mt-5">
+                            <!-- Working Hours -->
+                            <div class="w-[100%] flex  justify-start gap-4 ">
+                                <div class="flex justify-center  mt-2">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 512 512">
+                                        <path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120l0 136c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2 280 120c0-13.3-10.7-24-24-24s-24 10.7-24 24z" />
+                                    </svg>
+                                </div>
+
+                                <div class=" flex flex-col items-start">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Working Hours</p>
+                                <p v-if="task.working_days!='Others'" class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.working_days}} of work each day </p>
+                                <p v-else class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.other_working_hours}} of work each day </p>
+                                </div>
+                            </div>
+                            <!-- Transportation -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-3">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 448 512">
+                                        <path d="M224 0C348.8 0 448 35.2 448 80l0 16 0 320c0 17.7-14.3 32-32 32l0 32c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-32-192 0 0 32c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-32c-17.7 0-32-14.3-32-32L0 96 0 80C0 35.2 99.2 0 224 0zM64 128l0 128c0 17.7 14.3 32 32 32l256 0c17.7 0 32-14.3 32-32l0-128c0-17.7-14.3-32-32-32L96 96c-17.7 0-32 14.3-32 32zM80 400a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm288 0a32 32 0 1 0 0-64 32 32 0 1 0 0 64z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Transportation</p>
+                                <p v-if="task.transportation=='Allowance'" class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.transportation_allowance}} will be provided as allowance </p>
+                                <p v-else class="mt-1   text-sm text-[#70756f] font-medium text-start">Transportation will be <span class="lowercase">{{ task.transportation}}</span></p>
+                                </div>
+                            </div>
+                            <!-- Contract Period -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 640 512">
+                                        <path d="M323.4 85.2l-96.8 78.4c-16.1 13-19.2 36.4-7 53.1c12.9 17.8 38 21.3 55.3 7.8l99.3-77.2c7-5.4 17-4.2 22.5 2.8s4.2 17-2.8 22.5l-20.9 16.2L512 316.8 512 128l-.7 0-3.9-2.5L434.8 79c-15.3-9.8-33.2-15-51.4-15c-21.8 0-43 7.5-60 21.2zm22.8 124.4l-51.7 40.2C263 274.4 217.3 268 193.7 235.6c-22.2-30.5-16.6-73.1 12.7-96.8l83.2-67.3c-11.6-4.9-24.1-7.4-36.8-7.4C234 64 215.7 69.6 200 80l-72 48 0 224 28.2 0 91.4 83.4c19.6 17.9 49.9 16.5 67.8-3.1c5.5-6.1 9.2-13.2 11.1-20.6l17 15.6c19.5 17.9 49.9 16.6 67.8-2.9c4.5-4.9 7.8-10.6 9.9-16.5c19.4 13 45.8 10.3 62.1-7.5c17.9-19.5 16.6-49.9-2.9-67.8l-134.2-123zM16 128c-8.8 0-16 7.2-16 16L0 352c0 17.7 14.3 32 32 32l32 0c17.7 0 32-14.3 32-32l0-224-80 0zM48 320a16 16 0 1 1 0 32 16 16 0 1 1 0-32zM544 128l0 224c0 17.7 14.3 32 32 32l32 0c17.7 0 32-14.3 32-32l0-208c0-8.8-7.2-16-16-16l-80 0zm32 208a16 16 0 1 1 32 0 16 16 0 1 1 -32 0z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Contract Period</p>
+                                <p v-if="task.contract_period_year>0" class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.contract_period_year}} years<span v-if="task.contract_period__month>0">& {{ task.contract_period__month }} months</span> of contract </p>
+                                </div>
+                            </div>
+                            <!-- Joining Ticket -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-3">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 576 512">
+                                        <path d="M482.3 192c34.2 0 93.7 29 93.7 64c0 36-59.5 64-93.7 64l-116.6 0L265.2 495.9c-5.7 10-16.3 16.1-27.8 16.1l-56.2 0c-10.6 0-18.3-10.2-15.4-20.4l49-171.6L112 320 68.8 377.6c-3 4-7.8 6.4-12.8 6.4l-42 0c-7.8 0-14-6.3-14-14c0-1.3 .2-2.6 .5-3.9L32 256 .5 145.9c-.4-1.3-.5-2.6-.5-3.9c0-7.8 6.3-14 14-14l42 0c5 0 9.8 2.4 12.8 6.4L112 192l102.9 0-49-171.6C162.9 10.2 170.6 0 181.2 0l56.2 0c11.5 0 22.1 6.2 27.8 16.1L365.7 192l116.6 0z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Flight Ticket</p>
+                                <p v-if="task.joining_ticket!='Reimbursable'" class="mt-1 text-sm text-[#70756f] font-medium text-start">Ticket will be booked by {{ task.joining_ticket }}</p>
+                                <p v-else class="mt-1 text-sm text-[#70756f] font-medium text-start">Ticket cost will be repaid</p>
+                                </div>
+                            </div>
+                            <!-- Food -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2 ">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 448 512">
+                                        <path d="M416 0C400 0 288 32 288 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-128 0-112 0-208c0-17.7-14.3-32-32-32zM64 16C64 7.8 57.9 1 49.7 .1S34.2 4.6 32.4 12.5L2.1 148.8C.7 155.1 0 161.5 0 167.9c0 45.9 35.1 83.6 80 87.7L80 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7c0-6.4-.7-12.8-2.1-19.1L191.6 12.5c-1.8-8-9.3-13.3-17.4-12.4S160 7.8 160 16l0 134.2c0 5.4-4.4 9.8-9.8 9.8c-5.1 0-9.3-3.9-9.8-9L127.9 14.6C127.2 6.3 120.3 0 112 0s-15.2 6.3-15.9 14.6L83.7 151c-.5 5.1-4.7 9-9.8 9c-5.4 0-9.8-4.4-9.8-9.8L64 16zm48.3 152l-.3 0-.3 0 .3-.7 .3 .7z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Food</p>
+                                <p v-if="task.food=='Allowance'" class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.food_allowance }} will be provided as food allowance</p>
+                                <p v-else class="mt-1 text-sm text-[#70756f] font-medium text-start">Food cost will be <span class="lowercase">{{ task.food }}</span></p>
+                                </div>
+                            </div>
+                            <!-- Accomodation -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 384 512">
+                                        <path d="M48 0C21.5 0 0 21.5 0 48L0 464c0 26.5 21.5 48 48 48l96 0 0-80c0-26.5 21.5-48 48-48s48 21.5 48 48l0 80 96 0c26.5 0 48-21.5 48-48l0-416c0-26.5-21.5-48-48-48L48 0zM64 240c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zm112-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM80 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16zm80 16c0-8.8 7.2-16 16-16l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32zM272 96l32 0c8.8 0 16 7.2 16 16l0 32c0 8.8-7.2 16-16 16l-32 0c-8.8 0-16-7.2-16-16l0-32c0-8.8 7.2-16 16-16z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Accommodation</p>
+                                <p v-if="task.accommodation=='Allowance'" class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.accommodation_allowance }} will be provided as food allowance</p>
+                                <p v-else class="mt-1 text-sm text-[#70756f] font-medium text-start">Accomodation cost will be <span class="lowercase">{{ task.accommodation }}</span></p>
+                                </div>
+                            </div>
+                            <!-- OT -->
+                            <div class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 384 512">
+                                        <path d="M32 0C14.3 0 0 14.3 0 32S14.3 64 32 64l0 11c0 42.4 16.9 83.1 46.9 113.1L146.7 256 78.9 323.9C48.9 353.9 32 394.6 32 437l0 11c-17.7 0-32 14.3-32 32s14.3 32 32 32l32 0 256 0 32 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l0-11c0-42.4-16.9-83.1-46.9-113.1L237.3 256l67.9-67.9c30-30 46.9-70.7 46.9-113.1l0-11c17.7 0 32-14.3 32-32s-14.3-32-32-32L320 0 64 0 32 0zM96 75l0-11 192 0 0 11c0 19-5.6 37.4-16 53L112 128c-10.3-15.6-16-34-16-53zm16 309c3.5-5.3 7.6-10.3 12.1-14.9L192 301.3l67.9 67.9c4.6 4.6 8.6 9.6 12.1 14.9L112 384z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Over Time</p>
+                                <p v-if="task.over_time=='Applicable'" class="mt-1 text-sm text-[#70756f] font-medium text-start">Over time is <span class="lowercase">{{ task.over_time }}</span></p>
+                                <p v-else class="mt-1 text-sm text-[#70756f] font-medium text-start">Over time is <span class="lowercase">{{ task.over_time }}</span></p>
+                                </div>
+                            </div>
+                            <!-- Other Allowance -->
+                            <div v-if="task.any_other_allowance" class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2 ">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 448 512">
+                                        <path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Other Allowance</p>
+                                <p class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.any_other_allowance }}</p>
+                                </div>
+                            </div>
+                            <!-- Visa Type -->
+                            <div v-if="task.visa_type" class="w-[100%]  flex  justify-start gap-4">
+                                <div class="flex justify-center mt-2">
+                                    <svg class="h-13 w-13 rounded-full py-3 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 0 576 512">
+                                        <path d="M470.1 231.3s7.6 37.2 9.3 45H446c3.3-8.9 16-43.5 16-43.5-.2 .3 3.3-9.1 5.3-14.9l2.8 13.4zM576 80v352c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V80c0-26.5 21.5-48 48-48h480c26.5 0 48 21.5 48 48zM152.5 331.2L215.7 176h-42.5l-39.3 106-4.3-21.5-14-71.4c-2.3-9.9-9.4-12.7-18.2-13.1H32.7l-.7 3.1c15.8 4 29.9 9.8 42.2 17.1l35.8 135h42.5zm94.4 .2L272.1 176h-40.2l-25.1 155.4h40.1zm139.9-50.8c.2-17.7-10.6-31.2-33.7-42.3-14.1-7.1-22.7-11.9-22.7-19.2 .2-6.6 7.3-13.4 23.1-13.4 13.1-.3 22.7 2.8 29.9 5.9l3.6 1.7 5.5-33.6c-7.9-3.1-20.5-6.6-36-6.6-39.7 0-67.6 21.2-67.8 51.4-.3 22.3 20 34.7 35.2 42.2 15.5 7.6 20.8 12.6 20.8 19.3-.2 10.4-12.6 15.2-24.1 15.2-16 0-24.6-2.5-37.7-8.3l-5.3-2.5-5.6 34.9c9.4 4.3 26.8 8.1 44.8 8.3 42.2 .1 69.7-20.8 70-53zM528 331.4L495.6 176h-31.1c-9.6 0-16.9 2.8-21 12.9l-59.7 142.5H426s6.9-19.2 8.4-23.3H486c1.2 5.5 4.8 23.3 4.8 23.3H528z" />
+                                    </svg>
+                                </div>
+                                <div class=" flex flex-col items-start  ">
+                                <p class="mt-4 text-[#05264e] text-md font-semibold">Visa Type</p>
+                                <p class="mt-1 text-sm text-[#70756f] font-medium text-start">{{ task.visa_type }}</p>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+
+
+
+
+
+                    </div>
+                   </Transition>
+
                     <div v-if="iClick && task.name == findTask" class="flex mt-1">
                         <p v-if="task.salary_type != 'Confidential'" class="pt-1"><span class="text-[10px] text-blue-600 font-bold">INR</span> <span class="text-blue-600 text-xs font-bold">{{ conAmt }}</span><span class="text-xs text-gray-600 font-semibold">/month</span></p>
                     </div>
@@ -67,7 +219,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="shimmerLoadingTask" class="w-[40%]">
+        <div v-if="shimmerLoadingTask" class=" w-[100%] md:w-[40%]">
             <div class="flex flex-col gap-5">
                 <div v-for="n in 3" :key="n" class="bg-[white] p-5 shadow-lg min-h-[233px] max-h-[233px] shadow-gray-600 rounded-lg">
                     <div class="bg-gray-300 rounded-md h-6 w-[70%] animate-pulse"></div>
@@ -88,7 +240,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="shimmerLoadingDescription" class="w-[60%] bg-white max-h-[530px] sticky top-3 shadow-lg shadow-gray-600 rounded-lg p-5">
+        <div v-if="shimmerLoadingDescription" class="w-[60%] hidden md:block bg-white max-h-[530px] sticky top-3 shadow-lg shadow-gray-600 rounded-lg p-5">
             <div class="bg-gray-300 rounded-md h-8 w-[50%] animate-pulse"></div>
             <div class="bg-gray-300 rounded-md h-7 mt-2 w-[70%] animate-pulse"></div>
             <div class="bg-gray-300 rounded-md h-24 mt-4 w-[100%] animate-pulse"></div>
@@ -101,7 +253,7 @@
             <div class="bg-gray-300 rounded-md h-6 ml-5 mt-2 w-[90%] animate-pulse"></div>
             <div class="bg-gray-300 rounded-md h-6 ml-5 mt-2 w-[40%] animate-pulse"></div>
         </div>
-        <div v-if="!shimmerLoadingDescription" class="w-[60%] bg-white shadow-lg max-h-[530px] sticky top-3 shadow-gray-600 rounded-lg p-5">
+        <div v-if="!shimmerLoadingDescription" class="w-[60%] hidden md:block bg-white shadow-lg max-h-[530px] sticky top-3 shadow-gray-600 rounded-lg p-5">
             <div class="mt-1">
                 <h1 class="text-2xl font-semibold text-[#05264e]">{{ task.subject }}</h1>
                 <h2 class="text-xl pt-3 font-semibold text-gray-700">{{ task.customer }}</h2>
@@ -235,6 +387,7 @@ import { inject } from 'vue';
 export default {
     data() {
         return {
+            extend:false,
             taskDetails: [],
             selectedCategory: null,
             serviceFilter: ['REC-I', 'REC-D'],

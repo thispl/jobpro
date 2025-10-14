@@ -13,26 +13,103 @@ import base64
 from PIL import Image
 from io import BytesIO
 from erpnext.setup.utils import get_exchange_rate
+from frappe.utils.data import date_diff, now_datetime, nowdate, today, add_days
 
 class Candidate(Document):
+    def before_insert(self):
+        if self.task:
+            task = frappe.get_doc('Task', self.task)
+            if task.get("custom_criteria_table"):
+                for row in task.custom_criteria_table:
+                    self.append("custom_criteria", {
+                        "scheduling_parameter": row.scheduling_parameter,
+                        "scheduling_criteria": row.scheduling_criteria
+                    })
+        self.append('custom_status_transition',{
+            'status':self.pending_for,
+            'sourced_date':now_datetime(),
+            'sourced_by':self.candidate_created_by,
+            'project':self.project,
+            'task':self.task,
+            'position':self.position
+        })
+        
+    def after_insert(self):
+        
+        avail_mail = None
+        avail_mob = None
+        
+        if self.mail_id or self.mobile_number:
+        
+            if self.mail_id:
+                
+                avail_mail = frappe.db.sql(
+                "SELECT name FROM `tabUser` WHERE email = %s ORDER BY creation",
+                (self.mail_id,),
+                as_dict=True
+            )
+                
+            if self.mobile_number:
+                avail_mob = frappe.db.sql(
+                    "SELECT name FROM `tabUser` WHERE mobile_no = %s ORDER BY creation",
+                    (self.mobile_number,),
+                    as_dict=True
+                )
+            
+            if avail_mob:
+                return
+                # frappe.db.set_value("User", avail_mob[0].name, "mobile_no", "")
+                    # frappe.errprint(avail_mob[0].name)
+
+            
+
+            elif avail_mail:
+                return
+                # frappe.db.set_value("User", avail_mail[0].name, "first_name", self.given_name)
+                # frappe.db.set_value("User", avail_mail[0].name, "mobile_no", self.mobile_number)
+                # frappe.db.set_value("User", avail_mail[0].name, "role_profile_name", "JOBPRO")
+            else:
+                if self.mail_id and self.mail_id.strip():
+                    user = frappe.new_doc("User")
+                    user.first_name = self.given_name
+                    user.email = self.mail_id
+                    user.mobile_no = self.mobile_number
+                    user.role_profile_name = "JOBPRO"
+                    user.insert(ignore_permissions=True)
+                    
+                    reset_link = f"http://139.5.190.19:8080/frontend/reset-password?user={self.mail_id}"
+                    message = f"""
+                    <p style="color: #05264e; font-weight: 700; font-size: 15px;">Dear {self.given_name},</p>
+                    <p>Please click the link below to Set password for your account:</p>
+                    <button style="border: 0px solid black; border-radius: 8px; color: white; padding: 3px; width: 140px; background-color: #0070cc;"><a href="{reset_link}" target="_blank" style="color: white; text-align: center; text-decoration: none;">Reset Password</a></button>
+                    <p>If you did not request to set a password, please ignore this email.</p>
+                    <p style="color: #0070cc;">Best regards,<br>Jobpro Team</p>
+                    """
+                    frappe.sendmail(
+                        recipients=[self.mail_id],
+                        subject="Set Your Password",
+                        message=message,
+                        reference_doctype="User",
+                        reference_name=self.given_name,
+                        delayed=False,
+                    )    
+            
+
     def validate(self):
-        if self.custom_client_si:
+        if not self.custom_client_si ==None:
             if self.custom_billing_currency == "INR":
                 self.custom_client_payment_company_currency = self.custom_client_si
             else:
                 conversion = get_exchange_rate(self.custom_billing_currency, "INR")
-                conversion_amt=conversion * self.custom_client_si
-                self.custom_client_payment_company_currency =conversion_amt
+                # conversion_amt=conversion * self.custom_client_si
+                # self.custom_client_payment_company_currency =conversion_amt
         if self.custom_candidate_si:
             if self.custom_billing_currency == "INR":
                 self.custom_candidate_payment_company_currency = self.custom_candidate_si
             else:
                 conversion = get_exchange_rate(self.custom_billing_currency, "INR")
-                conversion_amt=conversion * self.custom_candidate_si
-                self.custom_candidate_payment_company_currency =conversion_amt
-        # if frappe.db.exists("Candidate",{'passport_number':self.passport_number,'project':self.project,'name':('!=', self.name)}):
-        #     frappe.throw("Candidate Already Exists with Same Passport Number in Same Project")
-        # candidate = frappe.get_doc('Candidate',{"mobile_number":self.mobile_number})
+                # conversion_amt=conversion * self.custom_candidate_si
+                # self.custom_candidate_payment_company_currency =conversion_amt
         input_str = 'QR data'
         qr = qrcode.make(input_str)
         temp = BytesIO()
@@ -304,3 +381,23 @@ def create_closure_with_payment(doc,method):
         closure.save(ignore_permissions=True)   
         frappe.db.commit()
 
+@frappe.whitelist()
+def update_sa_details_task(task=None, sa_agent=None):
+    if sa_agent and task:
+        if frappe.db.exists("Task", task):
+            task_doc = frappe.get_doc("Task", task)
+            found = False
+            if task_doc.sa_detail:
+                for i in task_doc.sa_detail:
+                    if i.sa_id == sa_agent:
+                        i.received_count += 1
+                        found = True
+                        break  
+            if not found:
+                task_doc.append("sa_detail", {
+                    "sa_id": sa_agent,
+                    "received_count": 1
+                })
+            task_doc.save(ignore_permissions=True)
+            frappe.db.commit()
+            return "Updated successfully"

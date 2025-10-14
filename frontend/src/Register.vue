@@ -1,7 +1,7 @@
 <template>
     <div :class="{'opacity-[0.5]': loading}">
-        <div class="w-10/12 mt-14 mx-auto text-center font-sans flex md:gap-14">
-            <div class="fade-section sticky top-[100px]">
+        <div class="md:w-10/12 mt-14 mx-4.5 md:mx-auto text-center font-sans flex md:gap-14 pb-3 md:pb-16">
+            <div class="fade-section hidden md:block sticky top-[100px]">
                 <div class="border rounded-md p-5 bg-white shadow-lg shadow-gray-600 register-class" style="width: 330px;">
                     <img src="https://i.postimg.cc/RZxmRNMy/register-jobpro.png" class="bg-gray-50 mx-auto w-44 rounded-full" />
                     <h1 class="font-bold text-2xl mt-3" style="color: #05264e;">On register, you can </h1>
@@ -13,30 +13,30 @@
                 </div>
             </div>
             <div class="w-full fade-section mainjob-div">
-                <div class="bg-white rounded-md pl-10 p-5 shadow-lg shadow-gray-600 text-left">
-                    <h1 class="font-bold text-2xl mt-3" style="color: #05264e;">Create your JOBPRO profile</h1>
+                <div class="bg-white rounded-md p-10 shadow-lg shadow-gray-600 text-left">
+                    <h1 class="font-semibold md:font-bold text-xl md:text-2xl mt-3" style="color: #05264e;">Create your JOBPRO profile</h1>
                     <p class="text-md font-semibold mt-3" style="color: #7680a2;">Search & apply to jobs from India's No.1 Job Site</p>
                     <div class="flex gap-10">
                         <form @submit.prevent="submitUser" id="newUser" class="mt-5">
                             <label for="full_name" class="text-md font-semibold " style="color: #05264e;">Full name </label><span class="text-red-500">*</span><br />
-                            <input type="text" v-model="newUser.full_name" name="full_name" placeholder="What is your name ?" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 mt-2 w-2/3 mb-3 name-box" required /><br />
+                            <input type="text" v-model="newUser.full_name" name="full_name" placeholder="What is your name ?" class="border text-[#05264e] font-medium rounded-lg text-sm p-3 mt-2 w-full mb-3" required /><br />
                             <label for="email" class="text-md font-semibold " style="color: #05264e;">Email ID </label><span class="text-red-500">*</span><br />
-                            <input type="text" v-model="newUser.email" name="email" placeholder="Tell us your Email ID" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 mt-2 w-2/3 mb-3 mail-box" required /><br />
+                            <input type="text" v-model="newUser.email" name="email" placeholder="Tell us your Email ID" class="border text-[#05264e] font-medium rounded-lg text-sm p-3 mt-2 w-full mb-3" required /><br />
                             <p v-if="errorField=='email'" class="text-red-500 mb-3 text-sm font-medium">{{ error }}</p>
                             <label for="password" class="text-md font-semibold " style="color: #05264e;">Password </label><span class="text-red-500">*</span><br />
-                            <input type="password" v-model="newUser.password" name="password" placeholder="(minimum 8 characters)" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 mt-2 w-2/3 mb-3 pwd-box" required /><br />
-                            <div class="relative mb-3">
+                            <input type="password" v-model="newUser.password" name="password" placeholder="(minimum 8 characters)" class="border text-[#05264e] font-medium rounded-lg text-sm p-3 mt-2 w-full mb-3" required /><br />
+                            <div class="relative mb-3 w-full">
                                 <label for="mobile_no" class="text-md font-semibold" style="color: #05264e;">Phone </label>
                                 <span class="text-red-500">*</span><br />
-                                <input type="tel" v-model="newUser.mobile_no" id="phone" name="mobile_no" placeholder="Enter your mobile number" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 mt-2 pl-10 mt-2 w-[140%] phone-box" required />
+                                <input type="tel" ref="phoneInput" v-model="newUser.mobile_no" id="phone" name="mobile_no" placeholder="Enter your mobile number" class="border text-[#05264e] font-medium rounded-lg text-sm p-3 pl-10 mt-2" required />
                             </div>
                             <!-- <div class="relative">
                                 <label for="mobile_no" class="text-md font-semibold " style="color: #05264e;">Phone </label><span class="text-red-500">*</span><br />
-                                <input type="tel" v-model="newUser.mobile_no" name="mobile_no" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 pl-10 mt-2 w-2/3 mb-3 phone-box" required /><br />
+                                <input type="tel" v-model="newUser.mobile_no" name="mobile_no" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 pl-10 mt-2 w-full mb-3 phone-box" required /><br />
                                 <p class="absolute top-[40px] pl-2.5 mt-0.5 text-[#05264e] text-[15px] font-medium">+91</p>
                             </div> -->
                             
-                            <p v-if="errorField=='mobile'" class="text-red-500   text-sm font-medium">{{ error }}</p>
+                            <p v-if="errorField=='mobile'" class="text-red-500 text-sm font-medium">{{ error }}</p>
                             <div v-if="newUser.source">
                                 <label for="source" class="text-md font-semibold mt-3" style="color: #05264e;">
                                 Source
@@ -50,9 +50,9 @@
                                 'text-white': newUser.source !== '',
                                 'cursor-not-allowed': isReadOnly
                                 }" 
-                                class="border font-medium rounded-lg text-sm p-3 mt-2 w-2/3 mb-3 font-sans source-box" 
+                                class="border font-medium rounded-lg text-sm p-3 mt-2 w-full mb-3 font-sans source-box" 
                                 v-model="newUser.source" 
-                                style="color: #0049f4; opacity: 1; pointer-events: none;" 
+                                style="color: #05264e; opacity: 1; pointer-events: none;" 
                             >
                                 <option value="" disabled>Where did you hear about us?</option>
                                 <option class="font-medium text-sm" value="Paper Advertisement">Paper Advertisement</option>
@@ -69,7 +69,7 @@
                                     Referred by
                                 </label>
                                 <span class="text-red-500">*</span><br />
-                                <input type="text" id="referenceSource" readonly v-model="newUser.referenceSource" class="border text-sm text-[#0049f4] font-medium rounded-lg p-3 mt-2 w-2/3 mb-3 font-sans" placeholder="Enter referred Candidate ID" />
+                                <input type="text" id="referenceSource" readonly v-model="newUser.referenceSource" class="border text-sm text-[#05264e] font-medium rounded-lg p-3 mt-2 w-full mb-3 font-sans" placeholder="Enter referred Candidate ID" />
                             </div>
   
                             <div v-if="newUser.source === 'Social Media'">
@@ -77,18 +77,18 @@
                                     Social media platform
                                 </label>
                                 <span class="text-red-500">*</span><br />
-                                <input type="text" id="mediaSource" v-model="newUser.mediaSource" class="border text-sm font-medium rounded-lg p-3 mt-2 w-2/3 mb-3 font-sans" placeholder="e.g., Facebook, LinkedIn" />
+                                <input type="text" id="mediaSource" v-model="newUser.mediaSource" class="border text-sm font-medium rounded-lg p-3 mt-2 w-full mb-3 font-sans" placeholder="e.g., Facebook, LinkedIn" />
                             </div>
   
                             <p class="text-gray-500 text-xs mt-4" style="color: #7680a2;">By clicking Register, you agree to the <span class="text-sm font-semibold" style="color: #007fcf;">Terms and Conditions</span> & <span class="text-sm font-semibold" style="color: #007fcf;">Privacy Policy</span> of <span class="font-semibold" style="color: #05264e;">jobpro.com</span></p>
-                            <input type="submit" id="saveNewUser" class="rounded-full mt-4 text-white font-semibold bg-blue-600 hover:bg-blue-700 focus:ring-1 focus:ring-blue-500 px-5 py-2 transition-full" style="font-size: 15px;" value="Register Now" />
+                            <input type="submit" id="saveNewUser" class="rounded-full mt-4 mb-2 text-white font-semibold bg-blue-600 hover:bg-blue-700 focus:ring-1 focus:ring-blue-500 px-5 py-2 w-full md:w-full transition-full" style="font-size: 15px;" value="Register Now" />
                         </form>
-                        <div class="mt-14 ml-[-30px] or-hide">
+                        <div class="mt-14 hidden lg:block">
                             <div style="border-left: 1px solid lightgray;height: 120px;"></div>
                             <p class="ml-[-5px] mb-1">or</p>
                             <div style="border-left: 1px solid lightgray;height: 120px;"></div>
                         </div>
-                        <div class="mt-[150px] continue-hide">
+                        <div class="mt-[150px] hidden lg:block">
                             <p class="text-md font-semibold" style="color: #05264e;">Continue with</p>
                             <router-link class="flex justify-center gap-2 border border rounded-xl border-blue-600 text-blue-600 mt-2">
                                 <img src="https://i.postimg.cc/bvMnv7cQ/google-icon-logo-svgrepo-com.png" class="mt-2" style="height: 17px;" />
@@ -140,19 +140,29 @@
         },
         mounted() {
             this.$nextTick(() => {
-        const input = document.querySelector('#phone');
+        // const input = document.querySelector('#phone');
 
-        if (!input) {
-            console.error("Phone input field not found!");
-            return;
-        }
+        // if (!input) {
+        //     console.error("Phone input field not found!");
+        //     return;
+        // }
 
-        this.iti = intlTelInput(input, {
+        // this.iti = intlTelInput(input, {
+        //     initialCountry: "in",
+        //     separateDialCode: true,
+        //     nationalMode: false,
+        //     utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.8/build/js/utils.js"
+        // });
+
+
+        if (this.$refs.phoneInput) {
+            this.iti = intlTelInput(this.$refs.phoneInput, {
             initialCountry: "in",
             separateDialCode: true,
             nationalMode: false,
             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.8/build/js/utils.js"
-        });
+            });
+        }
     });
 
             this.addIntersectionObserver();
@@ -298,6 +308,9 @@
   </script>
   
   <style scoped>
+#phone {
+    width: 210%;
+}
     .account-text-1 {
         color: #315df5;
     }
@@ -373,6 +386,10 @@
         .continue-hide {
             display: none;
         }
+
+        #phone {
+            width: 100%;
+        }
   
         .mainjob-div {
             width: 200%;
@@ -389,7 +406,7 @@
           width:100%;
         }
         .phone-box{
-          width:100%;
+          width:113%;
         }
         .source-box{
           width:100%;

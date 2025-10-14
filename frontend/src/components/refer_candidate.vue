@@ -1,61 +1,102 @@
 <template>
-    <div class="mt-10 mx-20 flex justify-center gap-28 w-[100%]">
-        <div class="mt-10">
-            <h1 class="capitalize text-[#05264e] text-[40px] font-bold">Help your friends<br> get a job and<br> get rewarded</h1>
-            <!-- <p class="mt-2 text-[#646963] font-medium text-[20px]">Start referring today and help your<br> friends land international opportunities<br> while you enjoy great rewards!</p> -->
-            <button @click="handleStartReferringNow()" class="mt-10 text-white text-xl bg-blue-700 hover:bg-blue-800 focus:ring-1 font-medium rounded-lg text-sm px-6 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400">
-                Start Referring Now
-            </button>
+    <div class="md:mt-10 mt-5  md:mx-20 flex flex-col justify-center    gap-9  md:gap-28 w-[100%]">
+
+
+       <div class=" flex justify-center    gap-9  md:gap-28 w-[100%]" >
+
+            <div class="md:mt-10 ml-5 md:ml-0      ">
+                <h1 class="capitalize text-[#05264e]   text-[20px] md:text-[25px] md:text-[40px] font-bold">Help your friends<br> get a job and<br> get rewarded</h1>
+                <!-- <p class="mt-2 text-[#646963] font-medium text-[20px]">Start referring today and help your<br> friends land international opportunities<br> while you enjoy great rewards!</p> -->
+                <button @click="handleStartReferringNow()" class="mt-10  hidden md:block  text-white text-l md:text-xl bg-blue-700 hover:bg-blue-800 focus:ring-1 font-medium rounded-lg text-[14px] px-3 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400         ">
+                    Start Referring Now
+                </button>
+            </div>
+
+            <div class="md:mr-40  md:mt-10   mr-5 md:mr-0 ">
+                <img class="md:w-[400px] w-[150px] " src="https://i.postimg.cc/SsP7hy4k/refer-candidate.png"  />
+            </div>
+
         </div>
-        <div class="mr-40">
-            <img src="https://i.postimg.cc/SsP7hy4k/refer-candidate.png" width="400px" />
-        </div>
+
+        <button @click="handleStartReferringNow()" class=" mx-5 md:hidden  text-white text-l md:text-xl bg-blue-700 hover:bg-blue-800 focus:ring-1 font-medium rounded-lg text-[14px] px-3 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-400         ">
+                    Start Referring Now
+        </button>
+
+
+        
     </div>
-    <div class="mt-10 mx-20 bg-white shadow-lg shadow-gray-600 rounded-xl p-6 pb-14">
-        <div class="flex mr-1 text-center w-full justify-center gap-5 mt-6">
-            <div class="w-[25%]">
-                <div class="flex justify-center">
-                    <svg style="background-color: #d4e7ff;" class="h-16 w-16 rounded-full pl-1 py-5 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 20 576 512">
+
+    <div class="mt-10 mx-5   md:mx-20 bg-white shadow-lg shadow-gray-600 rounded-xl md:p-6  pb-6 md:pb-14">
+
+        <div class="flex  md:flex-row  flex-col  mr-1 text-center w-full justify-center gap:3 md:gap-6 mt-9">
+
+            <div class="w-[100%] md:w-[25%]  flex md:block justify-center  pr-5 pl-5  ">
+                <div class="flex  justify-center items-center mt-4 ">
+                    <svg style="background-color: #d4e7ff;" class="md:h-16 h-12 w-12 p-3 md:w-16 rounded-full md:pl-1 md:py-5 bg-white shadow-lg shadow-gray-600" xmlns="http://www.w3.org/2000/svg" fill="#0070cc" viewBox="0 20 576 512">
                         <path d="M352 224l-46.5 0c-45 0-81.5 36.5-81.5 81.5c0 22.3 10.3 34.3 19.2 40.5c6.8 4.7 12.8 12 12.8 20.3c0 9.8-8 17.8-17.8 17.8l-2.5 0c-2.4 0-4.8-.4-7.1-1.4C210.8 374.8 128 333.4 128 240c0-79.5 64.5-144 144-144l80 0 0-61.3C352 15.5 367.5 0 386.7 0c8.6 0 16.8 3.2 23.2 8.9L548.1 133.3c7.6 6.8 11.9 16.5 11.9 26.7s-4.3 19.9-11.9 26.7l-139 125.1c-5.9 5.3-13.5 8.2-21.4 8.2l-3.7 0c-17.7 0-32-14.3-32-32l0-64zM80 96c-8.8 0-16 7.2-16 16l0 320c0 8.8 7.2 16 16 16l320 0c8.8 0 16-7.2 16-16l0-48c0-17.7 14.3-32 32-32s32 14.3 32 32l0 48c0 44.2-35.8 80-80 80L80 512c-44.2 0-80-35.8-80-80L0 112C0 67.8 35.8 32 80 32l48 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L80 96z" />
                     </svg>
                 </div>
-                <p class="mt-8 text-xl text-[#05264e] font-semibold">Send Invitation</p>
-                <p class="mt-2 leading-[20px] text-sm text-[#70756f] text-center font-semibold">Easily refer your friends by filling out our quick referral form.</p>
+                <div class="ml-4">
+                <p class="mt-8 text-md md:text-xl text-start md:text-center  text-[#05264e] font-semibold">Send Invitation</p>
+                <p class="  md:mt-2 leading-[20px] text-sm text-[#70756f] text-start md:text-center font-semibold">Easily refer your friends by filling out our quick referral form.</p>
+                </div>
             </div>
-            <div class="w-[25%]">
-                <div class="flex justify-center ">
-                    <svg style="background-color: #d4e7ff;" class="h-16 w-16 rounded-full pl-1 py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+
+
+
+
+            <div class="w-[100%] md:w-[25%]  flex md:block justify-center   pr-5 pl-5   ">
+                <div class="flex justify-center items-center mt-5 md:mt-4 ">
+                    <svg style="background-color: #d4e7ff;" class=" md:h-16 h-12 w-12 p-3 md:w-16  rounded-full md:pl-1 md:py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
                         <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304l91.4 0C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7L29.7 512C13.3 512 0 498.7 0 482.3zM504 312l0-64-64 0c-13.3 0-24-10.7-24-24s10.7-24 24-24l64 0 0-64c0-13.3 10.7-24 24-24s24 10.7 24 24l0 64 64 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-64 0 0 64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" />
                     </svg>
                 </div>
-                <p class="mt-8 text-xl text-[#05264e] font-semibold">Registration</p>
-                <p class="mt-2 leading-[20px] text-sm text-[#70756f] text-center font-semibold">Your friends will receive an invitation to sign up</p>
+
+                <div class="ml-4">
+                <p class="mt-8 text-md md:text-xl text-start md:text-center  text-[#05264e] font-semibold">Registration</p>
+                <p class=" md:mt-2 leading-[20px] text-sm text-[#70756f] text-start md:text-center font-semibold">Your friends will receive an invitation to sign up</p>
+              </div>
             </div>
-            <div class="w-[25%]">
-                <div class="flex justify-center ">
-                    <svg style="background-color: #d4e7ff;" class="h-16 w-16 rounded-full py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+
+
+            <div class="w-[100%] md:w-[25%]  flex md:block justify-center   pr-5 pl-5">
+                <div class="flex justify-center items-center mt-4  ">
+                    <svg style="background-color: #d4e7ff;" class=" md:h-16 h-12 w-12 p-3 md:w-16 rounded-full md:py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                         <path d="M184 48l144 0c4.4 0 8 3.6 8 8l0 40L176 96l0-40c0-4.4 3.6-8 8-8zm-56 8l0 40L64 96C28.7 96 0 124.7 0 160l0 96 192 0 128 0 192 0 0-96c0-35.3-28.7-64-64-64l-64 0 0-40c0-30.9-25.1-56-56-56L184 0c-30.9 0-56 25.1-56 56zM512 288l-192 0 0 32c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32l0-32L0 288 0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-128z" />
                     </svg>
                 </div>
-                <p class="mt-8 text-xl text-[#05264e] font-semibold">Got Placed</p>
-                <p class="mt-2 leading-[20px] text-sm text-[#70756f] text-center font-semibold">Once your friend lands a job, you’ll be one step closer to your reward!</p>
+                <div class="ml-4">
+                <p class="mt-8 text-md md:text-xl text-start md:text-center  text-[#05264e] font-semibold">Got Placed</p>
+                <p class=" md:mt-2 leading-[20px] text-sm text-[#70756f] text-start md:text-center font-semibold">Once your friend lands a job, you’ll be one step closer to your reward!</p>
+                </div>
             </div>
-            <div class="w-[25%]">
-                <div class="flex justify-center ">
-                    <svg style="background-color: #d4e7ff;" class="h-16 w-16 rounded-full py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+            <div class="w-[100%] md:w-[25%]  flex md:block justify-center   pr-5 pl-5">
+                <div class="flex justify-center items-center mt-5 md:mt-4 ">
+                    <svg style="background-color: #d4e7ff;" class=" md:h-16 h-12 w-12 p-3 md:w-16 rounded-full md:py-5 bg-white shadow-lg shadow-gray-600" fill="#0070cc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                         <path d="M190.5 68.8L225.3 128l-1.3 0-72 0c-22.1 0-40-17.9-40-40s17.9-40 40-40l2.2 0c14.9 0 28.8 7.9 36.3 20.8zM64 88c0 14.4 3.5 28 9.6 40L32 128c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32l448 0c17.7 0 32-14.3 32-32l0-64c0-17.7-14.3-32-32-32l-41.6 0c6.1-12 9.6-25.6 9.6-40c0-48.6-39.4-88-88-88l-2.2 0c-31.9 0-61.5 16.9-77.7 44.4L256 85.5l-24.1-41C215.7 16.9 186.1 0 154.2 0L152 0C103.4 0 64 39.4 64 88zm336 0c0 22.1-17.9 40-40 40l-72 0-1.3 0 34.8-59.2C329.1 55.9 342.9 48 357.8 48l2.2 0c22.1 0 40 17.9 40 40zM32 288l0 176c0 26.5 21.5 48 48 48l144 0 0-224L32 288zM288 512l144 0c26.5 0 48-21.5 48-48l0-176-192 0 0 224z" />
                     </svg>
                 </div>
-                <p class="mt-8 text-xl text-[#05264e] font-semibold">Get Reward</p>
-                <p class="mt-2 leading-[20px] text-sm text-[#70756f] text-center font-semibold">Enjoy exciting rewards for every successful referral.</p>
+                <div class="ml-4">
+                <p class="mt-8 text-md md:text-xl text-start md:text-center  text-[#05264e] font-semibold">Get Reward</p>
+                <p class=" md:mt-2 leading-[20px] text-sm text-[#70756f] text-start md:text-center font-semibold">Enjoy exciting rewards for every successful referral.</p>
+                </div>
             </div>
         </div>
     </div>
-    <div ref="inviteFriendForm" class="mt-10 mb-8 mx-20 flex items-center justify-center">
-        <div class="bg-white w-full shadow-lg shadow-gray-600 rounded-xl p-6">
-            <h1 class="text-[#05264e] font-semibold text-3xl mb-5">Invite friends!</h1>
-            <form @submit.prevent="submitReferral" class="mt-5">
-                <div class="mt-3 m-5 flex flex-col justify-center gap-10">
+
+
+
+
+    <div ref="inviteFriendForm" class="mt-10 mb-8 mx-5 md:mx-20 flex items-center justify-center">
+        <div class="bg-white w-full shadow-lg shadow-gray-600 rounded-xl p-4 md:p-6 mb-10 md:mb-0 ">
+            <h1 class="text-[#05264e] font-semibold text-md md:text-3xl mb-5">Invite friends!</h1>
+
+            <form @submit.prevent="submitReferral" class="mt-5 pb-8 md:pb-0 ">
+                
+                <div class="mt-3 md:m-5 flex flex-col justify-center gap-10">
+                    <div class="mr-4 md:mr-0 flex flex-col justify-center gap-10">
                     <div class="input-group" :class="{ 'input-active': isNameFocused || name }">
                         <input v-model="name" type="text" class="input rounded font-medium" required @focus="isNameFocused = true" @blur="handleBlur" />
                         <label for="name" class="label font-medium" :class="{ 'label-active': isNameFocused || name }">
@@ -66,18 +107,6 @@
                         <input v-model="email" type="email" class="input rounded font-medium" required @focus="isMailFocused = true" @blur="handleBlur" />
                         <label for="email" class="label font-medium" :class="{ 'label-active': isMailFocused || email }">
                             Email ID <span :class="{ 'text-red-500': isMailFocused || email }">*</span>
-                        </label>
-                    </div>
-                    <div class="input-group" :class="{ 'input-active': isMobileFocused || mobile }">
-                        <input v-model="mobile" type="tel" pattern="[0-9]{10}" class="input rounded font-medium" required @focus="isMobileFocused = true" @blur="handleBlur" />
-                        <label for="tel" class="label font-medium" :class="{ 'label-active': isMobileFocused || mobile }">
-                            Mobile No. <span :class="{ 'text-red-500': isMobileFocused || mobile }">*</span>
-                        </label>
-                    </div>
-                    <div class="input-group" :class="{ 'input-active': isPassportFocused || passport }">
-                        <input v-model="passport" type="text" class="input rounded font-medium" required @focus="isPassportFocused = true" @blur="handleBlur" />
-                        <label for="text" class="label font-medium" :class="{ 'label-active': isPassportFocused || passport }">
-                            Passport No. <span :class="{ 'text-red-500': isPassportFocused || passport }">*</span>
                         </label>
                     </div>
                     <div class="input-group" :class="{ 'input-active': isPositionFocused || position }">
@@ -92,11 +121,25 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="min-h-6 flex items-center justify-center">
+                    <div class="input-group" :class="{ 'input-active': isMobileFocused || mobile }">
+                        <input v-model="mobile" type="tel" pattern="[0-9]{10}" class="input rounded font-medium" required @focus="isMobileFocused = true" @blur="handleBlur" />
+                        <label for="tel" class="label font-medium" :class="{ 'label-active': isMobileFocused || mobile }">
+                            Mobile No. <span :class="{ 'text-red-500': isMobileFocused || mobile }">*</span>
+                        </label>
+                    </div>
+                    <div class="input-group" :class="{ 'input-active': isPassportFocused || passport }">
+                        <input v-model="passport" type="text" class="input rounded font-medium" required @focus="isPassportFocused = true" @blur="handleBlur" />
+                        <label for="text" class="label font-medium" :class="{ 'label-active': isPassportFocused || passport }">
+                            Passport No. <span :class="{ 'text-red-500': isPassportFocused || passport }">*</span>
+                        </label>
+                    </div>
+                    
+                    </div>
+                    <div class=" min-h-4  md:min-h-6 flex items-center justify-center  ">
                         <p class="text-red-500 text-sm font-semibold">{{ errorMessage }}</p>
                     </div>
-                    <button type="submit" :class="{'cursor-not-allowed opacity-75': this.inviteButtonMessage=='Invitation Sent', 'focus:ring-1 dark:focus:ring-blue-400':this.inviteButtonMessage!='Invitation Sent'}" class="relative flex min-h-12 max-h-12 justify-center items-center gap-5 mt-[-30px] text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-md text-md px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 w-full">
-                        <div class="absolute">
+                    <button type="submit" :class="{'cursor-not-allowed  opacity-75': this.inviteButtonMessage=='Invitation Sent', 'focus:ring-1 dark:focus:ring-blue-400':this.inviteButtonMessage!='Invitation Sent '}" class="relative flex min-h-12 max-h-12 justify-center items-center gap-5 mt-[-30px] text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-md text-md   px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 w-full md:mr-5    ">
+                        <div class="absolute ">
                                 <div v-if="loading" class="text-center loader-style">
                                 </div>
                                 <svg v-if="invited" class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
@@ -111,6 +154,7 @@
                     <button v-if="this.inviteButtonMessage == 'Invitation Sent'" @click="handleInviteMore()" class="relative focus:ring-1 dark:focus:ring-blue-400 flex min-h-12 max-h-12 justify-center items-center gap-5 mt-[-20px] text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-md text-md px-4 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 w-full">
                         Invite More
                     </button>
+                   
                 </div>
             </form>
         </div>

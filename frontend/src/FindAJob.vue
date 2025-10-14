@@ -178,7 +178,7 @@
 </template>
 
 <script>
-import apiService from '../services/apiService.js';
+import apiService from './services/apiService.js';
 import { formatDistanceToNow } from 'date-fns';
 import { differenceInDays, differenceInMonths, differenceInYears } from 'date-fns';
 import axios from 'axios';

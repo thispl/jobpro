@@ -1,6 +1,7 @@
 <template>
+<div class="bg-white">
   <div class="m-14 w-10/12 mx-auto">
-      <div class="footer-banner rounded-lg flex justify-center gap-24 py-14 mt-10 relative fade-section">
+      <div class="footer-banner hidden rounded-lg flex justify-center gap-24 py-14 mt-10 relative fade-section">
           <svg class="z-0 absolute w-4/12 top-[-30px] right-[0px]" id="sw-js-blob-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" version="1.1">
               <defs>
                   <linearGradient id="sw-gradient" x1="0" x2="1" y1="1" y2="0">
@@ -35,14 +36,13 @@
           <!-- <img src="https://jthemes.com/themes/wp/jobbox/wp-content/uploads/2023/03/newsletter-right.png" class="hidden md:block z-10 relative" /> -->
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 mt-14 fade-section mob-min ">
+      <div class="grid grid-cols-1 md:grid-cols-4 mt-20 fade-section mob-min ">
           <div>
-              <div class="md:flex flex items-center">
-                  <img src="https://i.postimg.cc/6qY40bGc/Whats-App-Image-2024-09-30-at-11-38-34-75256763-removebg-preview.png" width="60px" class="pt-2" />
-                  <h1 class="jobpro font-bold pt-5 pl-2 mob-min1">JOBPRO</h1>
+              <div class="md:flex flex items-center mt-5">
+                  <img src="https://i.postimg.cc/3JyRDgdL/Artboard-2.png" width="200px" />
               </div>
-              <p class="jobpro-description mob-des">JOBPRO is the heart of the design community and the best resource to discover and connect with designers and jobs worldwide.</p>
-              <div class="md:flex md:mt-3 md:gap-4 log-dis">
+              <p class="jobpro-description w:11/12 md:w-10/12 mob-des mt-2">JOBPRO is the heart of the design community and the best resource to discover and connect with designers and jobs worldwide.</p>
+              <div class="md:flex mt-3 md:gap-4 log-dis">
                   <svg fill="#3c66f6" class="md:h-6 md:w-6 cursor-pointer icon icons8-Facebook-Filled logo-dis1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0" x="0px" y="0px" width="50" height="50" viewBox="0 0 50 50" style="null">
                       <path d="M40,0H10C4.486,0,0,4.486,0,10v30c0,5.514,4.486,10,10,10h30c5.514,0,10-4.486,10-10V10C50,4.486,45.514,0,40,0z M39,17h-3 c-2.145,0-3,0.504-3,2v3h6l-1,6h-5v20h-7V28h-3v-6h3v-3c0-4.677,1.581-8,7-8c2.902,0,6,1,6,1V17z"></path>
                   </svg>
@@ -56,8 +56,8 @@
           </div>
           <div class="grid grid-cols-2 md:flex mar-head">
               <div class="md:mt-6">
-                  <h1 class="footer-head font-bold ">Resources</h1>
-                  <div class="mt-5 footer-text">
+                  <h1 class="footer-head font-semibold">Resources</h1>
+                  <div class="md:mt-5 footer-text">
                       <p class="cursor-pointer">About Us</p>
                       <p class="cursor-pointer">Our Team</p>
                       <p class="cursor-pointer">Products</p>
@@ -65,8 +65,8 @@
                   </div>
               </div>
               <div class="md:mt-6 md:ml-15  tab-head mob-min-4">
-                  <h1 class="footer-head font-bold mob-foot">Community</h1>
-                  <div class="mt-5 footer-text ">
+                  <h1 class="footer-head font-semibold mob-foot">Community</h1>
+                  <div class="md:mt-5 footer-text ">
                       <p class="cursor-pointer">Feature</p>
                       <p class="cursor-pointer">Pricing</p>
                       <p class="cursor-pointer">Credit</p>
@@ -76,8 +76,8 @@
           </div>
           <div class="grid grid-cols-2 md:flex md:gap:40 quick">
               <div class="md:mt-6 tab-head1">
-                  <h1 class="footer-head font-bold mob-head ">Quick links</h1>
-                  <div class="mt-5 footer-text">
+                  <h1 class="footer-head font-semibold mob-head ">Quick links</h1>
+                  <div class="md:mt-5 footer-text">
                       <p class="cursor-pointer">Android</p>
                       <p class="cursor-pointer">IOS</p>
                       <p class="cursor-pointer">Microsoft</p>
@@ -85,8 +85,8 @@
                   </div>
               </div>
               <div class="md:mt-6 md:ml-20 mob-min5 tab-head2">
-                  <h1 class="footer-head font-bold ">More</h1>
-                  <div class="mt-5 footer-text">
+                  <h1 class="footer-head font-semibold ">More</h1>
+                  <div class="md:mt-5 footer-text">
                       <p class="cursor-pointer">Privacy</p>
                       <p class="cursor-pointer">Help</p>
                       <p class="cursor-pointer">Terms</p>
@@ -95,8 +95,7 @@
               </div>
           </div>
           <div class="md:w-full ">
-              <h1 class="download-app font-bold pt-5 grid grid-cols-1">Download App</h1>
-              <p class="jobpro-description1 mob-des5 md:flex">Download our Apps and get extra 15% Discount on your first Order…!</p>
+              <h1 class="text-md font-semibold pt-5 grid grid-cols-1">Download App</h1>
               <div class="md:flex md:mt-4 download">
                   <div class="mobile-app rounded-sm flex md:gap-3 md:py-1 cursor-pointer download1 md:mr-20 md:h-10 md:w-[400px]">
                       <div class="play-buttons">
@@ -111,7 +110,7 @@
                   </div>
                   <div class="mobile-app rounded-sm flex md:gap-3 md:ml-[-40px] md:py-1 cursor-pointer download2 md:h-10 md:w-[400px]">
                       <div class="apple-buttons">
-                          <svg class="h-5 w-5 md:mt-1 md:ml-2 bi bi-apple" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                          <svg class="h-5 w-5 md:mt-1 md:ml-2" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                               <path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516s1.52.087 2.475-1.258.762-2.391.728-2.43m3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422s1.675-2.789 1.698-2.854-.597-.79-1.254-1.157a3.7 3.7 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56s.625 1.924 1.273 2.796c.576.984 1.34 1.667 1.659 1.899s1.219.386 1.843.067c.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758q.52-1.185.473-1.282" />
                               <path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516s1.52.087 2.475-1.258.762-2.391.728-2.43m3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422s1.675-2.789 1.698-2.854-.597-.79-1.254-1.157a3.7 3.7 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56s.625 1.924 1.273 2.796c.576.984 1.34 1.667 1.659 1.899s1.219.386 1.843.067c.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758q.52-1.185.473-1.282" />
                           </svg>
@@ -133,6 +132,7 @@
               <p class="cursor-pointer text-hover foot-cl4">Security</p>
           </div>
       </div>
+  </div>
   </div>
 </template>
 
@@ -223,7 +223,7 @@
 
   .footer-head {
       color: #05264e;
-      font-size: 1.1rem;
+      font-size: 16px;
   }
 
   .footer-text {

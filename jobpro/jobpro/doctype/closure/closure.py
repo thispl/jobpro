@@ -10,8 +10,14 @@ from frappe.utils import cstr, formatdate, add_months, cint, fmt_money, add_days
 from frappe.utils import now
 from frappe.utils.data import now_datetime
 from erpnext.setup.utils import get_exchange_rate
+from frappe.utils import getdate, nowdate, date_diff
 
 class Closure(Document):
+    def before_save(self):
+        previous = self.get_doc_before_save()
+        # self.custom_previous_status = previous.status if previous else None
+        self.custom_previous_status=self.status
+
     # def on_update(self):
     #     if self.client_si:
     #         conversion = get_exchange_rate(self.billing_currency, "INR")
@@ -20,6 +26,26 @@ class Closure(Document):
     #         self.client_payment_company_currency =conversion_amt
             # self.client_payment_dec_cc = conversion * self.client_dec
             # self.client_payment_sc_cc = conversion * self.client_service_charge
+    def validate_status_and_remarks(self):
+        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+        if previous_status != self.status and self.status:
+            valid_remarks = frappe.db.get_all(
+                "Standard Remarks",
+                filters={"status": self.status},
+                fields=["standard_remarks"]
+            )
+            valid_remarks_list = [d["standard_remarks"].strip() for d in valid_remarks if d["standard_remarks"]]
+
+            current_remark = (self.std_remarks or "").strip()
+
+            if valid_remarks_list:
+                if not current_remark:
+                    frappe.throw(f"Remarks are mandatory for status <b>{self.status}</b>.")
+                if current_remark not in valid_remarks_list:
+                    options = "<br>".join(f"• {r}" for r in valid_remarks_list)
+                    frappe.throw(f"""Invalid remark for status <b>{self.status}</b>.<br>
+                    Allowed remarks are:<br>{options}""")
+
     def validate(self):
         if self.status == 'Dropped':
             frappe.db.set_value("Candidate", self.candidate,
@@ -127,7 +153,7 @@ class Closure(Document):
                             "date": frappe.utils.now_datetime(),
                             "status_moved_by": frappe.session.user,
                             "status": self.status
-                        })
+                        })     
                     if self.offer_letter:
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
@@ -135,7 +161,7 @@ class Closure(Document):
                                 "date": frappe.utils.now_datetime(),
                                 "status_moved_by": frappe.session.user,
                                 "status": self.status
-                            })
+                            })   
                         if self.sol:
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
@@ -151,7 +177,8 @@ class Closure(Document):
                                         "date":frappe.utils.now_datetime(),
                                         "status_moved_by": frappe.session.user,
                                         "status": self.status
-                                    })               
+                                    })    
+                                   
                                 # if self.final_medical:
                                 if self.visa and self.so_created:
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
@@ -160,8 +187,10 @@ class Closure(Document):
                                             "date":frappe.utils.now_datetime(),
                                             "status_moved_by": frappe.session.user,
                                             "status": self.status
-                                        })
-                                    if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable ==1 and self.candidate_feedback_form:
+                                        }) 
+                                        
+                                        
+                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable ==1:
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -260,6 +289,7 @@ class Closure(Document):
                                                 "status_moved_by": frappe.session.user,
                                                 "status": self.status
                                             })
+                                            
                             
                                 else:
                                     if self.is_required:
@@ -288,6 +318,7 @@ class Closure(Document):
                                                     "status_moved_by": frappe.session.user,
                                                     "status": self.status
                                                 })
+                                                
                                             # self.save()
                                     else:
                                         self.status = 'Visa'
@@ -302,6 +333,7 @@ class Closure(Document):
                                                 "status_moved_by": frappe.session.user,
                                                 "status": self.status
                                             })
+                                            # self.validate_status_and_remarks()
                                     # else:
                                     #     self.status = 'Final Medical'
                                     #     self.premedical_date = today()
@@ -318,6 +350,7 @@ class Closure(Document):
                                         "status_moved_by": frappe.session.user,
                                         "status": self.status
                                     })
+                                    # self.validate_status_and_remarks()
 
                         else:
                             self.status = 'Signed Offer Letter'
@@ -423,7 +456,7 @@ class Closure(Document):
                                                     "status_moved_by": frappe.session.user,
                                                     "status": self.status
                                                 })
-                                            if self.ecr_status != 'ECR' or self.emigration and self.candidate_feedback_form:
+                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) and self.candidate_feedback_form:
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -702,7 +735,7 @@ class Closure(Document):
                                                 "status_moved_by": frappe.session.user,
                                                 "status": self.status
                                             })
-                                        if self.ecr_status != 'ECR' or self.emigration and self.candidate_feedback_form:
+                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) and self.candidate_feedback_form:
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -967,7 +1000,7 @@ class Closure(Document):
                                                 "status_moved_by": frappe.session.user,
                                                 "status": self.status
                                             })
-                                        if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -1496,7 +1529,7 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -1807,7 +1840,7 @@ class Closure(Document):
                                                             "status_moved_by": frappe.session.user,
                                                             "status": self.status
                                                         })
-                                                    if self.custom_closure_status!="Initiated":
+                                                    if self.custom_closure_status!="Initiated" or self.custom_trade_test_not_applicable==1:
                                                         if self.visa_stamping:
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
@@ -1816,7 +1849,7 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -1933,7 +1966,7 @@ class Closure(Document):
                                                                         "status_moved_by": frappe.session.user,
                                                                         "status": self.status
                                                                     })
-                                                                if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                                if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -2061,7 +2094,7 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -2178,7 +2211,7 @@ class Closure(Document):
                                                                         "status_moved_by": frappe.session.user,
                                                                         "status": self.status
                                                                     })
-                                                                if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                                if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -2923,7 +2956,7 @@ class Closure(Document):
                                                             "status_moved_by": frappe.session.user,
                                                             "status": self.status
                                                         })
-                                                    if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -3358,7 +3391,7 @@ class Closure(Document):
                                                             "status_moved_by": frappe.session.user,
                                                             "status": self.status
                                                         })
-                                                    if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -3488,7 +3521,7 @@ class Closure(Document):
                                                                 "status_moved_by": frappe.session.user,
                                                                 "status": self.status
                                                             })
-                                                        if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -3910,7 +3943,7 @@ class Closure(Document):
                                     "status_moved_by": frappe.session.user,
                                     "status": self.status
                                 })
-                            if self.ecr_status== 'ECR' or self.ecr_status== 'ECNR' or self.emigration or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                            if self.emigration and self.attach_insurance and self.employment_contract and self.candidate_feedback_form:
                                 self.status = 'Arrived'
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
@@ -3973,7 +4006,7 @@ class Closure(Document):
                                     "status_moved_by": frappe.session.user,
                                     "status": self.status
                                 })
-                            if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                            if self.emigration and self.attach_insurance and self.employment_contract and self.candidate_feedback_form:
                                 self.status = 'Arrived'
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
@@ -4062,7 +4095,7 @@ class Closure(Document):
                                             "status_moved_by": frappe.session.user,
                                             "status": self.status
                                         })
-                                    if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -4307,7 +4340,7 @@ def get_status(status,so_created,visa_status,offer_letter,sol,final_medical,pcc,
 @frappe.whitelist()
 def create_sale_order(closure, project, customer, task, candidate_name, contact, payment,client_sc,candidate_owner,sa_id,candidate_sc,billing_currency, territory, associate,passport_no, expected_doj, delivery_manager, account_manager,service,supplier,associate_si,client_si,candidate_si):
     # cg = frappe.db.get_value("Customer", customer, "customer_group")
-    so=frappe.db.get_value("Customer",customer,"custom_so_not_needed")
+    so_value=frappe.db.get_value("Customer",customer,"custom_so_not_needed")
     parent_territory = frappe.get_value(
         'Territory', territory, 'parent_territory')
     if payment:
@@ -4350,7 +4383,7 @@ def create_sale_order(closure, project, customer, task, candidate_name, contact,
             item.save(ignore_permissions=True)
 
         if territory != 'India' or parent_territory != 'India':
-            if so==0:
+            if so_value==0:
                 if payment == "Client":
                     so = frappe.new_doc("Sales Order")
                     so.customer = customer
@@ -4449,7 +4482,7 @@ def create_sale_order(closure, project, customer, task, candidate_name, contact,
                     so.customer = associate
                     so.reference_customer_ = customer
                     so.customer_group = "Associate"
-                    # so.passport_number = passport_no
+                    so.passport_number = passport_no
                     # so.account_manager = account_manager
                     # so.delivery_manager = delivery_manager
                     so.currency = billing_currency
@@ -5047,3 +5080,69 @@ def visa_validate(doc, method):
         frappe.db.set_value("Closure", doc.name, "visa_status", "Visa Pending")
 
 
+
+@frappe.whitelist()
+def move_to_child_table(docname, passport_number=None, place_of_issue=None, issued_date=None, expiry_date=None):
+    doc = frappe.get_doc("Closure", docname)
+
+    # Append to child table
+    doc.append("custom_closure_passport_details", {
+        "passport_number": passport_number,
+        "place_of_issue": place_of_issue,
+        "issued_date": issued_date,
+        "expiry_date": expiry_date
+    })
+
+    # Clear main fields
+    doc.passport_number = ""
+    doc.place_of_issue = ""
+    doc.issued_date = None
+    doc.expiry_date = None
+
+    doc.save()
+
+
+
+@frappe.whitelist()
+def send_mail_closure(pp_original_at, email_id, docname=None):
+    if pp_original_at == "TEAMPRO" and email_id:
+        if docname:
+            doc = frappe.get_doc("Closure", docname)
+        else:
+            doc = None
+
+        customer = doc.customer if doc else ""
+
+        recipients = email_id
+        cc = ["sangeetha.a@groupteampro.com", "dc@groupteampro.com"]
+        subject = f"Acknowledgement of Receipt - Original Passport for {customer} Selection Process"
+
+        name = doc.given_name if doc else ""
+        passport = doc.passport_number if doc else ""
+        territory = doc.territory if doc else ""
+        interview_location = doc.interview_location if doc else ""
+        candidate_owner = doc.candidate_owner if doc else ""
+        interview_date = frappe.db.get_value("Candidate",{'name':doc.candidate},'interviewed_date')
+        candidate_owner_name = frappe.db.get_value("Employee",{"user_id":doc.candidate_owner},"employee_name")
+        mobile = frappe.db.get_value("Employee",{"user_id":doc.candidate_owner},"company_mobile_number")
+
+        message = f"""
+        <h3>Mr. / Ms. Dear {name},</h3>
+        This is to acknowledge that we have received your Original Passport {passport}, as you have been shortlisted for selection and further process by our client {customer}, {territory}, against the interview attended on {interview_date} at {interview_location}  Your Passport will be with us for further processing and will be returned on your request or as deemed to for processing.
+        <br><br>You are free to connect with our on boarding team or the Recruiter Concerned any time at your convenience for any support or clarification.
+        <br><br>On Boarding TEAM : Mr. / Ms. Thelothamma R, +917305056221, thelothamma.r@groupteampro.com  HR Recruiter : Mr. / Ms. {candidate_owner_name or ''}, {mobile or ''}, {candidate_owner or ''}.
+        In Case of No Response from the above team, you can escalate to the HOD - HR Service at +917305056202 / +917550228800 (only WhatsApp)
+        We wish your all the very best for future endeavour and great carrier ahead.
+        <br>
+        With Regards & Wishes<br>TEAMPRO On Boarding TEAM<br>
+        <p style="font-size:13px;">Note : Receiving of Original Document is not an assurance / commitment of selection / hiring, decision by the client on selection will be the final; in case if your candidature is dropped / rejected by client any time during the selection procedure TEAMPRO will not be liable for the same and your original document will be returned to you.</p>
+        """
+
+        frappe.sendmail(
+            recipients=recipients,
+            cc=cc,
+            subject=subject,
+            message=message
+        )
+
+        return "Email sent successfully!"

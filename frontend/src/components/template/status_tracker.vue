@@ -7,7 +7,6 @@
           v-for="(step, index) in steps"
           :key="index"
           class="flex sm:flex-col items-center sm:items-center gap-2 sm:gap-0 cursor-pointer z-10"
-          @click="goToStep(index)"
         >
           <div
             class="w-8 h-8 rounded-full flex items-center justify-center"

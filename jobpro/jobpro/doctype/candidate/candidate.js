@@ -19,24 +19,26 @@ frappe.ui.form.on('Candidate', {
 			};
 		});
 	},
-	task(frm){
-		if(frm.doc.task){
-			frappe.call({
-				method:"jobpro.jobpro.doctype.candidate.candidate.update_criteria_table",
-				args:{
-					task_id:frm.doc.task,
-					name:frm.doc.name
-				},
-			})
-		}
+	// task(frm){
+	// 	if(frm.doc.task){
+	// 		frappe.call({
+	// 			method:"jobpro.jobpro.doctype.candidate.candidate.update_criteria_table",
+	// 			args:{
+	// 				task_id:frm.doc.task,
+	// 				name:frm.doc.name
+	// 			},
+	// 		})
+	// 	}
 		
-	},
+	// },
 	pending_for(frm){
-		if(frm.doc.pending_for == "Submitted(Internal)") {
+		if(frm.doc.pending_for == "Pending QC") {
 			frm.set_value('submitted_date',frappe.datetime.now_date())
 			frm.save()
 		}
 	},
+
+	
 	
 	passport_number(frm){
 	frappe.call({
@@ -49,6 +51,9 @@ frappe.ui.form.on('Candidate', {
 	})
 	},
 	validate:function(frm){
+		if(frm.doc.mobile_number){
+			frm.set_value('mobile',frm.doc.mobile_number)
+		}
 		if(frm.doc.pending_for == "Proposed PSL") {
 			frm.set_df_property("customer", "reqd", 1);
 			frm.set_df_property("project", "reqd", 1);
@@ -187,12 +192,36 @@ frappe.ui.form.on('Candidate', {
 		});
 	},
 	issued_date: function(frm){
-		var me = new Date(frm.doc.issued_date);
-        var expiry_date = new Date(me.getFullYear() + 10, me.getMonth(), me.getDate() - 1)
-		frm.set_value("expiry_date", expiry_date)
-		if(frm.doc.issued_date > frappe.datetime.nowdate()){
-			frappe.throw("Date of Issue Can't be Future Date")
-		}
+		// var me = new Date(frm.doc.issued_date);
+        // var expiry_date = new Date(me.getFullYear() + 10, me.getMonth(), me.getDate() - 1)
+		// frm.set_value("expiry_date", expiry_date)
+		// if(frm.doc.issued_date > frappe.datetime.nowdate()){
+		// 	frappe.throw("Date of Issue Can't be Future Date")
+		// }
+		if (frm.doc.issued_date) {
+            // Calculate expiry date (10 years after issued date)
+            let issued = new Date(frm.doc.issued_date);
+            let expiry = new Date(issued);
+            expiry.setFullYear(expiry.getFullYear() + 10);
+			expiry.setDate(expiry.getDate() - 1)
+            frm.set_value('expiry_date', expiry.toISOString().split('T')[0]);
+
+            // Calculate difference between today and expiry date
+            let today = new Date(frm.doc.interviewed_date);
+            let diffYears = expiry.getFullYear() - today.getFullYear();
+            let diffMonths = expiry.getMonth() - today.getMonth();
+
+            if (diffMonths < 0) {
+                diffYears -= 1;
+                diffMonths += 12;
+            }
+
+            if (frm.doc.interviewed_date){
+            frm.set_value('expiry_period', `${diffYears} years, ${diffMonths} months`);
+			}else{
+				frm.set_value('expiry_period', `0 years, 0 months`);
+			}
+        }
 	},
 	
 	dob: function(frm){
@@ -216,7 +245,18 @@ frappe.ui.form.on('Candidate', {
 			frappe.throw("Expected DOJ Can't be Past Date")
 		}
 	},
-	
+	sa_agent(frm){
+		frappe.call({
+			method:"jobpro.jobpro.doctype.candidate.candidate.update_sa_details_task",
+			args:{
+				"task":frm.doc.task,
+				"sa_agent":frm.doc.sa_agent
+			},
+			callback(){
+				
+			}
+		})
+	},
 	alternate_contact: function(frm){
 		var regex = /[^0-9]/g;
 		if (regex.test(frm.doc.alternate_contact) === true){
@@ -231,17 +271,19 @@ frappe.ui.form.on('Candidate', {
 			frappe.validated = false;
 		}
 	},
-	custom_linedup_confirmed_attachement:function(frm){
-		if(!frm.doc.custom_linedup_confirmed_attachement){
-			frm.set_value("pending_for","Linedup")
-		}
-		else{
-		frm.set_value("pending_for","Linedup Confirmed")
-		}
-	},
+	// custom_linedup_confirmed_attachement:function(frm){
+	// 	if(!frm.doc.custom_linedup_confirmed_attachement){
+	// 		frm.set_value("pending_for","Linedup")
+	// 	}
+	// 	else{
+	// 	frm.set_value("pending_for","Linedup Confirmed")
+	// 	}
+	// },
+
+
 	
 	onload:function(frm){
-		frm.set_value('mobile',frm.doc.mobile_number)
+		// frm.set_value('mobile',frm.doc.mobile_number)
 		if(frm.doc.__islocal){
 			frm.set_value("custom_sourced_by","Normal")
 		}
@@ -252,13 +294,312 @@ frappe.ui.form.on('Candidate', {
 	},
 
 	refresh:function(frm) {
+	
+		if (!$("link[href*='fontawesome']").length) {
+    $("head").append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">');
+}
+
+frm.$wrapper.find('.candidate-status-flow').remove();
+
+const container = $(`
+    <div class="candidate-status-flow" style="
+        width:100%; 
+        padding:10px 0; 
+        display:flex; 
+        flex-wrap:nowrap;      
+        justify-content:center; 
+        gap:13px;               
+        overflow-x:auto;       
+    ">
+    </div>
+`);
+
+if(frm.doc.ecr_status && frm.doc.ecr_status === "ECR") {
+    container.css({
+        border: "3px solid #ff9800",
+        borderRadius: "8px"
+    });
+} else {
+    container.css({ border: "none" });
+}
+
+const statuses = ["IDB","Sourced","Pending QC","Submit(SPOC)","Submitted(Client)","Shortlisted","Linedup","Linedup Confirmed","Reported","Interviewed","Result Pending","Proposed PSL"];
+const icons = {
+    "IDB":"fas fa-database",
+    "Sourced":"fas fa-search",
+    "Pending QC":"fas fa-hourglass-half",
+    "Submit(SPOC)": "fas fa-paper-plane",
+    "Submitted(Client)":"fas fa-user-tie",
+    "Shortlisted":"fas fa-list-check",
+    "Linedup":"fas fa-users",
+    "Linedup Confirmed":"fas fa-user-check",
+    "Reported":"fas fa-user-clock",
+    "Interviewed":"fas fa-comments",
+    "Result Pending":"fas fa-clipboard-question",
+    "Proposed PSL": "fas fa-check-circle"  
+};
+
+const currentStatus = frm.doc.pending_for || "IDB";
+const taskName = frm.doc.task;
+
+statuses.forEach((status, index) => {
+    const active = status === currentStatus ? "active" : "";
+    const completed = statuses.indexOf(currentStatus) > statuses.indexOf(status) ? "completed" : "";
+
+    let sourced_date_html = "";
+    if(frm.doc.custom_status_transition) {
+        const matchingRows = frm.doc.custom_status_transition.filter(r => r.task === taskName && r.status === status);
+        if(matchingRows.length) {
+            matchingRows.sort((a,b)=> new Date(b.sourced_date)-new Date(a.sourced_date));
+            const latestRow = matchingRows[0];
+            if(latestRow.sourced_date){
+                const dt = frappe.datetime.str_to_user(latestRow.sourced_date);
+                const parts = dt.split(" ");
+                sourced_date_html = `<div style="font-size:9px; color:#555; margin-top:2px;text-align:center">${parts[0]}<br>${parts.slice(1).join(" ")}</div>`;
+            }
+        }
+    }
+ let labelText = status;
+
+    const step = $(`
+        <div class="status-step ${active} ${completed}" style="display:flex; flex-direction:column; align-items:center; position:relative;">
+            <div style="display:flex; align-items:center; position:relative;">
+                <div class="circle" style="
+                    width:32px;
+                    height:32px;
+                    border:2px solid #ccc;
+                    border-radius:50%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:#f8f8f8;
+                    z-index:1;
+                    position:relative;
+                ">
+                    <i class="${icons[status]}" style="font-size:13px;color:#555;"></i>
+                </div>
+                ${index < statuses.length - 1 ? `<div class="connector" style="
+                    height:2px;
+                    width:40px;       
+                    background:#ccc;
+                    margin-left:4px;
+                    position:relative;
+                ">
+                    <div style="
+                        width:0;
+                        height:0;
+                        border-top:5px solid transparent;
+                        border-bottom:5px solid transparent;
+                        border-left:6px solid #ccc;
+                        position:absolute;
+                        right:-6px;
+                        top:-4px;
+                    "></div>
+                </div>` : ''}
+            </div>
+           <div style="display:flex; flex-direction:column; align-items:center; margin-top:4px;">
+    <div class="label" title="${status}" style="
+        margin-left:-45px; /* adjust this value as needed */
+        font-size:9px;
+        color:#333;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        text-align:center;
+    ">
+        ${labelText}
+    </div>
+    ${sourced_date_html ? `<div style="font-size:9px;color:#555; margin-top:2px; text-align:center; margin-left:-45px;">${sourced_date_html}</div>` : ''}
+</div>
+
+
+    `);
+
+    container.append(step);
+});
+
+container.find(".status-step").each(function(){
+    const circle = $(this).find(".circle");
+    const icon = circle.find("i");
+    const connector = $(this).find(".connector");
+    const arrow = connector.find("div");
+
+    if($(this).hasClass("active")){
+        circle.css({borderColor:"#007bff", background:"#e7f0ff", boxShadow:"0 0 6px rgba(0,123,255,0.4)"});
+        icon.css("color","#007bff");
+        if(connector.length) connector.css("background","#007bff");
+        if(arrow.length) arrow.css("border-left-color","#007bff");
+    } else if($(this).hasClass("completed")){
+        circle.css({borderColor:"#28a745", background:"#e9f9ee"});
+        icon.css("color","#28a745");
+        if(connector.length) connector.css("background","#28a745");
+        if(arrow.length) arrow.css("border-left-color","#28a745");
+    }
+});
+
+const formPage = frm.$wrapper.find('.form-page'); 
+if(formPage.length) {
+    formPage.prepend(container);
+} else {
+    frm.$wrapper.append(container);
+}
+
+	
+//         if (!$("link[href*='fontawesome']").length) {
+//             $("head").append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">');
+//         }
+//         frm.$wrapper.find('.candidate-status-flow').remove();
+
+// const container = $(`
+//     <div class="candidate-status-flow" style="
+//         width:100%; 
+//         padding:10px 0; 
+//         display:flex; 
+//         flex-wrap:nowrap;      /* prevent wrapping */
+//         justify-content:center; /* align items horizontally */
+//         gap:6px;               /* space between steps/arrows */
+//         overflow-x:auto;       /* scroll if too wide */
+//     ">
+//     </div>
+// `);
+// if(frm.doc.ecr_status && frm.doc.ecr_status === "ECR") {
+//     container.css({
+//         border: "3px solid #ff9800", // orange border
+//         borderRadius: "8px"
+//     });
+// } else {
+//     container.css({
+//         border: "none" 
+//     });
+// }
+
+
+//         const statuses = ["IDB","Sourced","Pending QC","Submit(SPOC)","Submitted(Client)","Shortlisted","Linedup","Linedup Confirmed","Reported","Interviewed","Result Pending","Proposed PSL"];
+//         const icons = {
+//             "IDB":"fas fa-database",
+//             "Sourced":"fas fa-search",
+//             "Pending QC":"fas fa-hourglass-half",
+//             "Submit(SPOC)": "fas fa-paper-plane",
+//             "Submitted(Client)":"fas fa-user-tie",
+//             "Shortlisted":"fas fa-list-check",
+//             "Linedup":"fas fa-users",
+//             "Linedup Confirmed":"fas fa-user-check",
+//             "Reported":"fas fa-user-clock",
+//             "Interviewed":"fas fa-comments",
+//             "Result Pending":"fas fa-clipboard-question",
+//             "Proposed PSL": "fas fa-check-circle"  
+//         };
+//         const currentStatus = frm.doc.pending_for || "IDB";
+// const taskName = frm.doc.task; // current task to match
+//            // Build status steps with arrow in between circles
+// statuses.forEach((status, index) => {
+//     const active = status === currentStatus ? "active" : "";
+//     const completed = statuses.indexOf(currentStatus) > statuses.indexOf(status) ? "completed" : "";
+//  // Find sourced_date from child table
+// let sourced_date_html = "";
+// if(frm.doc.custom_status_transition) {
+//     // Filter all rows that match task and status
+//     const matchingRows = frm.doc.custom_status_transition.filter(r => r.task === taskName && r.status === status);
+
+//     if(matchingRows.length) {
+//         // Sort by sourced_date descending and take the first (latest)
+//         matchingRows.sort((a, b) => new Date(b.sourced_date) - new Date(a.sourced_date));
+//         const latestRow = matchingRows[0];
+
+//         if(latestRow.sourced_date) {
+//             const dt = frappe.datetime.str_to_user(latestRow.sourced_date); // e.g. "07-10-2025 11:30 AM"
+//             const parts = dt.split(" "); // splits into date and time
+//             const datePart = parts[0];
+//             const timePart = parts.slice(1).join(" "); // handle AM/PM
+//             sourced_date_html = `<div style="font-size:9px; color:#555; margin-top:2px;text-align:center">${datePart}<br>${timePart}</div>`;
+//         }
+//     }
+// }
+
+
+//     const step = $(`
+//         <div class="status-step ${active} ${completed}" style="display:flex; flex-direction:column; align-items:center;">
+//             <div class="circle" style="
+//                 width:32px;
+//                 height:32px;
+//                 border:2px solid #ccc;
+//                 border-radius:50%;
+//                 display:flex;
+//                 align-items:center;
+//                 justify-content:center;
+//                 background:#f8f8f8;
+//             ">
+//                 <i class="${icons[status]}" style="font-size:13px;color:#555;"></i>
+//             </div>
+//             <div class="label" title="${status}" style="
+//                 margin-top:4px;
+//                 font-size:10px;
+//                 color:#333;
+//                 overflow:hidden;
+//                 text-overflow:ellipsis;
+//                 white-space:nowrap;
+//             ">${status}</div>
+// 			  ${sourced_date_html ? `<div style="font-size:9px; color:#555; margin-top:2px;">${sourced_date_html}</div>` : ''}
+//         </div>
+//     `);
+
+//     container.append(step);
+
+//     if(index < statuses.length - 1) {
+//         const arrow = $('<div style="display:flex; align-items:center; justify-content:center; font-size:12px; color:#888;">&#8594;</div>');
+//         container.append(arrow);
+//     }
+// });
+
+//         // Highlight active/completed
+//         container.find(".status-step").each(function(){
+//             if($(this).hasClass("active")){
+//                 $(this).find(".circle").css({borderColor:"#007bff",background:"#e7f0ff",boxShadow:"0 0 6px rgba(0,123,255,0.4)"});
+//                 $(this).find("i").css("color","#007bff");
+//             } else if($(this).hasClass("completed")){
+//                 $(this).find(".circle").css({borderColor:"#28a745",background:"#e9f9ee"});
+//                 $(this).find("i").css("color","#28a745");
+//             }
+//         });
+
+//         // Append **inside the main form page**, after custom buttons
+//         const formPage = frm.$wrapper.find('.form-page'); 
+//         if(formPage.length) {
+//             formPage.prepend(container);
+//         } else {
+//             frm.$wrapper.append(container); // fallback
+//         }
+	
+
+		if ( frm.doc.issued_date && !frm.doc.expiry_date) {
+            // Calculate expiry date (10 years after issued date)
+            let issued = new Date(frm.doc.issued_date);
+            let expiry = new Date(issued);
+            expiry.setFullYear(expiry.getFullYear() + 10);
+			expiry.setDate(expiry.getDate() - 1)
+            frm.set_value('expiry_date', expiry.toISOString().split('T')[0]);
+
+            // Calculate difference between today and expiry date
+            let today = new Date(frm.doc.interview_date);
+            let diffYears = expiry.getFullYear() - today.getFullYear();
+            let diffMonths = expiry.getMonth() - today.getMonth();
+
+            if (diffMonths < 0) {
+                diffYears -= 1;
+                diffMonths += 12;
+            }
+			if (frm.doc.interview_date){
+            frm.set_value('expiry_period', `${diffYears} years, ${diffMonths} months`);
+			}else{
+				frm.set_value('expiry_period', `0 years, 0 months`);
+			}
+        }
 		if (frm.doc.passport_number){
 			frm.set_df_property('temp_passport_number', 'hidden', 1);
 		}
 		else{
 			frm.set_df_property('temp_passport_number', 'hidden', 0);
 		}
-
+		
 		if (frm.doc.pending_for=="IDB"){
 			if (!frappe.user.has_role("Customer User")) { 
 	 		frm.add_custom_button(__("Move Candidate to new Customer"), function () {
@@ -328,19 +669,19 @@ frappe.ui.form.on('Candidate', {
 
 		if(frm.doc.pending_for == "Sourced"){
 			if (!frappe.user.has_role("Customer User")) { 
-			frm.add_custom_button(("Submit (Internal)"), function () {
-				frm.set_value("pending_for","Submitted(Internal)")
-				frm.set_value('submitted_date',frappe.datetime.now_date())
+			frm.add_custom_button(("Pending QC"), function () {
+				frm.set_df_property("custom_candidates_acknowledgement_","reqd",1)
+				frm.set_value("pending_for","Pending QC")
 				frm.add_child("custom_status_transition",{
-							'status':frm.doc.pending_for,
-							'sourced_date':frappe.datetime.now_datetime(),
-							'sourced_by':frappe.session.user,
-							'project':frm.doc.project,
-							'task':frm.doc.task,
+					'status':frm.doc.pending_for,
+					'sourced_date':frappe.datetime.now_datetime(),
+					'sourced_by':frappe.session.user,
+					'project':frm.doc.project,
+					'task':frm.doc.task,
 				})
 				frm.refresh_field('custom_status_transition')
 				frm.save()
-			},("Action")); 
+			},("Action"));
 			frm.add_custom_button(("IDB"), function () {
 				let d = new frappe.ui.Dialog({
 					title: 'Remark is mandatory',
@@ -541,95 +882,26 @@ frappe.ui.form.on('Candidate', {
 			},("Action"));
 			}
 		}
-		if(frm.doc.pending_for=="Submitted(Internal)"){
-			if (!frappe.user.has_role("Customer User")) { 
-			frm.add_custom_button(("Pending QC"), function () {
-				frm.set_df_property("custom_candidates_acknowledgement_","reqd",1)
-				frm.set_value("pending_for","Pending QC")
-				frm.add_child("custom_status_transition",{
-					'status':frm.doc.pending_for,
-					'sourced_date':frappe.datetime.now_datetime(),
-					'sourced_by':frappe.session.user,
-					'project':frm.doc.project,
-					'task':frm.doc.task,
-				})
-				frm.refresh_field('custom_status_transition')
-				frm.save()
-			},("Action"));
-		}
-		}
+		// if(frm.doc.pending_for=="Submitted(Internal)"){
+		// 	if (!frappe.user.has_role("Customer User")) { 
+		// 	frm.add_custom_button(("Pending QC"), function () {
+		// 		frm.set_df_property("custom_candidates_acknowledgement_","reqd",1)
+		// 		frm.set_value("pending_for","Pending QC")
+		// 		frm.add_child("custom_status_transition",{
+		// 			'status':frm.doc.pending_for,
+		// 			'sourced_date':frappe.datetime.now_datetime(),
+		// 			'sourced_by':frappe.session.user,
+		// 			'project':frm.doc.project,
+		// 			'task':frm.doc.task,
+		// 		})
+		// 		frm.refresh_field('custom_status_transition')
+		// 		frm.save()
+		// 	},("Action"));
+		// }
+		// }
 		if(frm.doc.pending_for=="Pending QC"){
 			if (!frappe.user.has_role("Customer User")) { 
-			frm.add_custom_button(("QC Cleared"), function () {
-				frm.set_value("pending_for","QC Cleared")
-				frm.add_child("custom_status_transition",{
-					'status':frm.doc.pending_for,
-					'sourced_date':frappe.datetime.now_datetime(),
-					'sourced_by':frappe.session.user,
-					'project':frm.doc.project,
-					'task':frm.doc.task,
-				})
-				frm.refresh_field('custom_status_transition')
-				frm.save()
-			},("Action"));
-			frm.add_custom_button(("IDB"), function () {
-				let d = new frappe.ui.Dialog({
-					title: 'Remark is mandatory',
-					fields: [
-						{
-							label: 'IDB-Remarks',
-							fieldname: 'custom_idbremarks',
-							fieldtype: 'Select',
-							options: 'Rejected By Client\nAny other',
-							default:'Rejected By Client',
-							reqd:1,
-						},
-						{
-							label: 'Any Other Reason',
-							fieldname: 'custom_any_other_reason',
-							fieldtype: 'Small Text',
-							depends_on: "eval:doc.custom_idbremarks===\"Any other\"",
-							mandatory_depends_on: "eval:doc.custom_idbremarks===\"Any other\"",
-						},
-					],
-					primary_action_label: __('Save'),
-					primary_action: () => {
-						let values = d.get_values();
-						frm.set_value("custom_idbremarks",values.custom_idbremarks)
-						frm.set_value("custom_any_other_reason",values.custom_any_other_reason)
-						frm.set_df_property("custom_idbremarks", "read_only", 1);
-						frm.set_df_property("custom_any_other_reason", "custom_any_other_reason", 1);
-						frm.set_df_property("custom_idbremarks", "reqd", 1);
-						frm.set_value("pending_for","IDB")
-						frm.add_child("custom_status_transition",{
-							'status':frm.doc.pending_for,
-							'sourced_date':frappe.datetime.now_datetime(),
-							'sourced_by':frappe.session.user,
-							'project':frm.doc.project,
-							'task':frm.doc.task,
-							'remarks':values.custom_idbremarks,
-						})
-						frm.refresh_field('custom_status_transition')
-						frm.save()
-						d.hide();
-
-					},
-				})
-			d.show();
-				// frm.set_value("pending_for","IDB")
-				// frm.add_child("custom_status_transition",{
-				// 	'status':frm.doc.pending_for,
-				// 	'sourced_date':frappe.datetime.now_datetime(),
-				// 	'sourced_by':frappe.session.user,
-				// })
-				// frm.refresh_field('custom_status_transition')
-				// frm.save()
-			},("Action"));
-		}
-		}
-		if(frm.doc.pending_for=="QC Cleared"){
-			if (!frappe.user.has_role("Customer User")) { 
-			frm.add_custom_button(("Submit (SPOC)"), function () {
+				frm.add_custom_button(("Submit (SPOC)"), function () {
 				frm.set_value("pending_for","Submit(SPOC)")
 				frm.add_child("custom_status_transition",{
 					'status':frm.doc.pending_for,
@@ -638,6 +910,8 @@ frappe.ui.form.on('Candidate', {
 					'project':frm.doc.project,
 					'task':frm.doc.task,
 				})
+				frm.refresh_field('custom_status_transition')
+				frm.save()
 				frappe.call({
 					method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
 					args: {
@@ -647,9 +921,21 @@ frappe.ui.form.on('Candidate', {
 						
 					}
 				});
-				frm.refresh_field('custom_status_transition')
-				frm.save()
+				// frappe.call({
+				// 	method: "jobpro.custom.update_st_count_proj",
+				// 	args: {
+				// 		project:frm.doc.project,
+				// 		name:frm.doc.name
+
+				// 	},
+				// 	callback: function(r) {
+						
+				// 	}
+				// });
+				
+
 			},("Action"));
+			
 			frm.add_custom_button(("IDB"), function () {
 				let d = new frappe.ui.Dialog({
 					title: 'Remark is mandatory',
@@ -705,6 +991,93 @@ frappe.ui.form.on('Candidate', {
 			},("Action"));
 		}
 		}
+		// if(frm.doc.pending_for=="QC Cleared"){
+		// 	if (!frappe.user.has_role("Customer User")) { 
+		// 	frm.add_custom_button(("Submit (SPOC)"), function () {
+		// 		frm.set_value("pending_for","Submit(SPOC)")
+		// 		frm.add_child("custom_status_transition",{
+		// 			'status':frm.doc.pending_for,
+		// 			'sourced_date':frappe.datetime.now_datetime(),
+		// 			'sourced_by':frappe.session.user,
+		// 			'project':frm.doc.project,
+		// 			'task':frm.doc.task,
+		// 		})
+		// 		// frappe.call({
+		// 		// 	method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
+		// 		// 	args: {
+		// 		// 		candidate: frm.doc.name
+		// 		// 	},
+		// 		// 	callback: function(r) {
+						
+		// 		// 	}
+		// 		// });
+		// 		frm.refresh_field('custom_status_transition')
+		// 		frm.save()
+		// 		frappe.call({
+		// 			method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
+		// 			args: {
+		// 				candidate: frm.doc.name
+		// 			},
+		// 			callback: function(r) {
+						
+		// 			}
+		// 		});
+		// 	},("Action"));
+		// 	frm.add_custom_button(("IDB"), function () {
+		// 		let d = new frappe.ui.Dialog({
+		// 			title: 'Remark is mandatory',
+		// 			fields: [
+		// 				{
+		// 					label: 'IDB-Remarks',
+		// 					fieldname: 'custom_idbremarks',
+		// 					fieldtype: 'Select',
+		// 					options: 'Rejected By Client\nAny other',
+		// 					default:'Rejected By Client',
+		// 					reqd:1,
+		// 				},
+		// 				{
+		// 					label: 'Any Other Reason',
+		// 					fieldname: 'custom_any_other_reason',
+		// 					fieldtype: 'Small Text',
+		// 					depends_on: "eval:doc.custom_idbremarks===\"Any other\"",
+		// 					mandatory_depends_on: "eval:doc.custom_idbremarks===\"Any other\"",
+		// 				},
+		// 			],
+		// 			primary_action_label: __('Save'),
+		// 			primary_action: () => {
+		// 				let values = d.get_values();
+		// 				frm.set_value("custom_idbremarks",values.custom_idbremarks)
+		// 				frm.set_value("custom_any_other_reason",values.custom_any_other_reason)
+		// 				frm.set_df_property("custom_idbremarks", "read_only", 1);
+		// 				frm.set_df_property("custom_any_other_reason", "custom_any_other_reason", 1);
+		// 				frm.set_df_property("custom_idbremarks", "reqd", 1);
+		// 				frm.set_value("pending_for","IDB")
+		// 				frm.add_child("custom_status_transition",{
+		// 					'status':frm.doc.pending_for,
+		// 					'sourced_date':frappe.datetime.now_datetime(),
+		// 					'sourced_by':frappe.session.user,
+		// 					'project':frm.doc.project,
+		// 					'task':frm.doc.task,
+		// 					'remarks':values.custom_idbremarks,
+		// 				})
+		// 				frm.refresh_field('custom_status_transition')
+		// 				frm.save()
+		// 				d.hide();
+
+		// 			},
+		// 		})
+		// 	d.show();
+		// 		// frm.set_value("pending_for","IDB")
+		// 		// frm.add_child("custom_status_transition",{
+		// 		// 	'status':frm.doc.pending_for,
+		// 		// 	'sourced_date':frappe.datetime.now_datetime(),
+		// 		// 	'sourced_by':frappe.session.user,
+		// 		// })
+		// 		// frm.refresh_field('custom_status_transition')
+		// 		// frm.save()
+		// 	},("Action"));
+		// }
+		// }
 		if(frm.doc.pending_for=="Submit(SPOC)"){
 			if (!frappe.user.has_role("Customer User")) { 
 			frm.add_custom_button(("Submit (Client)"), function () {
@@ -716,17 +1089,26 @@ frappe.ui.form.on('Candidate', {
 					'project':frm.doc.project,
 					'task':frm.doc.task,
 				})
-				frappe.call({
-					method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
-					args: {
-						candidate: frm.doc.name
-					},
-					callback: function(r) {
+				// frappe.call({
+				// 	method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
+				// 	args: {
+				// 		candidate: frm.doc.name
+				// 	},
+				// 	callback: function(r) {
 						
-					}
-				});
+				// 	}
+				// });
 				frm.refresh_field('custom_status_transition')
 				frm.save()
+				// frappe.call({
+				// 	method: "teampro.teampro.doctype.rec_week_plan.rec_week_plan.update_week_plan_ac_by_today",
+				// 	args: {
+				// 		candidate: frm.doc.name
+				// 	},
+				// 	callback: function(r) {
+						
+				// 	}
+				// });
 			},("Action"));
 			frm.add_custom_button(("IDB"), function () {
 				let d = new frappe.ui.Dialog({
@@ -971,6 +1353,26 @@ frappe.ui.form.on('Candidate', {
 				})
 			d.show();
 			},("Action"));
+		if (!frappe.user.has_role("Customer User")) { 
+			frm.add_custom_button(("Linedup Confirmed"), function () {
+				if(!frm.doc.custom_linedup_confirmed_attachement){
+					frappe.throw("Kindly attach Linedup Confirmed Attachement before move to next status")
+				}
+				else{
+					frm.set_value("pending_for","Linedup Confirmed")
+					frm.add_child("custom_status_transition",{
+						'status':frm.doc.pending_for,
+						'sourced_date':frappe.datetime.now_datetime(),
+						'sourced_by':frappe.session.user,
+						'project':frm.doc.project,
+						'task':frm.doc.task,
+					})
+					frm.refresh_field('custom_status_transition')
+					frm.save()
+				}
+			},__("Action"));
+			
+		}
 		}
 		}
 		// 
@@ -987,7 +1389,7 @@ frappe.ui.form.on('Candidate', {
 				})
 				frm.refresh_field('custom_status_transition')
 				frm.save()
-			},("Action"));
+			},__("Action"));
 			frm.add_custom_button(("IDB"), function () {
 				let d = new frappe.ui.Dialog({
 					title: 'Remark is mandatory',

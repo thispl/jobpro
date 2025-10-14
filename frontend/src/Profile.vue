@@ -1,17 +1,18 @@
-<template>
-    <div :class="{'opacity-[0.5]': loading}">
-        <div class="mt-10 mx-auto w-10/12 font-sans">
-            <div class="shadow-lg shadow-gray-600 rounded-lg bg-white p-10">
-                <div class="flex gap-10 w-full">
-                    <div class="w-[15%] relative hover:opacity-[0.7] ease-in transition-all">
-                        <div class="w-[170px] h-[170px] rounded-full overflow-hidden">
+<template >
+    <div :class="{'opacity-[0.5] blur-sm': addAvailableJoinDate}">
+    <div class="pb-[10px]" :class="{'opacity-[0.5]': loading}  ">
+        <div class=" mt-10 md:mx-auto mx-5  md:w-10/12 font-sans  mb-[60px] md:mb-0 ">
+            <div class="shadow-lg shadow-gray-600 rounded-lg bg-white p-5 md:p-10  ">
+                <div class="flex  md:gap-10 w-full relative ">
+                    <div class="  md:w-[15%] relative hover:opacity-[0.7] ease-in transition-all  ">
+                        <div class=" w-[50px] absolute left-[30px] top-[-10px] md:bottom-[30px] md:left-[3px] md:w-[170px] md:h-[170px] rounded-full overflow-hidden  ">
                             <img v-if="candidateProfile" :src="candidateProfile" alt="profile" class="z-0 rounded-full" />
-                            <img v-else src="https://i.ibb.co/ss8RQ38/user.png" alt="profile" class="z-0" />
+                            <img v-else src="https://i.ibb.co/ss8RQ38/user.png" alt="profile" class="z-0 " />
                         </div>
-                        <div v-if="this.hired" class="w-[250px] badge">
+                        <div v-if="this.hired" class=" w-[90px] left-[12px] top-[16px] absolute md:top-[90px]   md:left-[-35px] md:w-[250px] badge">
                             <img src="https://i.postimg.cc/508kzjsm/Screenshot-2025-01-22-102526-removebg-preview.png" alt="hired" />
                         </div>
-                        <div v-if="this.openToWork" class="w-[250px] badge">
+                        <div v-if="this.openToWork" class="md:w-[250px] top-[90px] badge">
                             <img src="https://i.postimg.cc/MGdZ8SpB/Screenshot-2025-01-30-102218-removebg-preview.png" alt="open-to-work" />
                         </div>
                         <div class="cursor-pointer absolute inset-0 left-[60px] top-[80px] opacity-0 text-[#05264e] font-medium hover:opacity-100 transition-opacity duration-300">
@@ -21,69 +22,88 @@
                             </div>
                         </div>
                     </div>
-                    <div class="w-[50%]">
-                        <div class="flex">
-                            <h1 class="text-3xl text-[#05264e] font-semibold">{{ profileName.fullName }}</h1><svg @click="showEdit = true" class="h-5 w-5 mt-1 ml-3 edit-icon" fill="#474d6a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <div class=" w-[100%]  md:w-[50%] relative  ">
+                        <div class="flex  md:justify-start  md:ml-0 absolute left-[37%] md:static  ">
+                            <h1 class=" md:text-3xl text-[#05264e] font-semibold ml-22 ">{{ profileName.fullName }}</h1><svg @click="showEdit = true" class=" h-4 w-4 md:h-5 md:w-5 mt-1 ml-3 edit-icon" fill="#474d6a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                                 <path d="M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 168 255.8 302.2c-2.9 2.9-6.5 5-10.4 6.1l-58.5 16.7 16.7-58.5c1.1-3.9 3.2-7.5 6.1-10.4zM373.1 25L175.8 222.2c-8.7 8.7-15 19.4-18.3 31.1l-28.6 100c-2.4 8.4-.1 17.4 6.1 23.6s15.2 8.5 23.6 6.1l100-28.6c11.8-3.4 22.5-9.7 31.1-18.3L487 138.9c28.1-28.1 28.1-73.7 0-101.8L474.9 25C446.8-3.1 401.2-3.1 373.1 25zM88 64C39.4 64 0 103.4 0 152L0 424c0 48.6 39.4 88 88 88l272 0c48.6 0 88-39.4 88-88l0-112c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 112c0 22.1-17.9 40-40 40L88 464c-22.1 0-40-17.9-40-40l0-272c0-22.1 17.9-40 40-40l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24L88 64z" />
                             </svg>
                         </div>
-                        <p v-if="id" class="text-lg font-medium text-[#474d6a] mt-2">{{ id }}</p>
-                        <hr class="border-1 border-gray-300 my-3">
+                        <p v-if="id" class="text-xs text-center md:text-start absolute md:static left-[37%]  md:text-lg   p-0 md:ml-0  font-medium text-[#474d6a] mt-6 md:mt-2 ">{{ id }}</p>
+                        <hr class="border-1 mt-16 md:mt-4 border-gray-300 my-3">
                         <div class="flex gap-5 w-ful">
-                            <div class="w-[45%]">
-                                <div class="flex mt-3 gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[2px]" fill="#c6c3bd" viewBox="0 0 384 512">
+                            <div class=" w-[100%] md:w-[45%]">
+                                <div class="flex mt-2 md:mt-3 gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 " fill="#c6c3bd" viewBox="0 0 384 512">
                                         <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
                                     </svg>
-                                    <p v-if="location" class="text-md text-[#474d6a] font-semibold">{{ location }}</p>
-                                    <p v-else class="text-md text-[#265df5] font-semibold">Add location</p>
+                                    <p v-if="location" class="text-xs md:text-md text-[#474d6a] font-semibold">{{ location }}</p>
+                                    <p v-else class="text-xs md:text-md text-[#265df5] font-semibold">Add location</p>
                                 </div>
-                                <div class="flex gap-2 mt-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[2px]" fill="#c6c3bd" viewBox="0 0 512 512">
+                                <div class="flex gap-2 mt-3 md:mt-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[-1px] md:mt-[2px]" fill="#c6c3bd" viewBox="0 0 512 512">
                                         <path d="M184 48l144 0c4.4 0 8 3.6 8 8l0 40L176 96l0-40c0-4.4 3.6-8 8-8zm-56 8l0 40L64 96C28.7 96 0 124.7 0 160l0 96 192 0 128 0 192 0 0-96c0-35.3-28.7-64-64-64l-64 0 0-40c0-30.9-25.1-56-56-56L184 0c-30.9 0-56 25.1-56 56zM512 288l-192 0 0 32c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32l0-32L0 288 0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-128z" />
                                     </svg>
-                                    <p v-if="totalExp==0" class="text- text-[#474d6a] font-semibold">Fresher</p>
-                                    <p v-else class="text- text-[#474d6a] font-semibold">Experienced</p>
+                                    <p v-if="totalExp==0" class=" text-xs md:text-md text-[#474d6a] font-semibold">Fresher</p>
+                                    <p v-else class="text-xs md:text-md text-[#474d6a] font-semibold">Experienced</p>
                                 </div>
-                                <div class="flex gap-2 mt-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[2px]" fill="#c6c3bd" viewBox="0 0 448 512">
+                                <div class="flex gap-2 mt-3 md:mt-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4  mt-[-1px]" fill="#c6c3bd" viewBox="0 0 448 512">
                                         <path d="M128 0c17.7 0 32 14.3 32 32l0 32 128 0 0-32c0-17.7 14.3-32 32-32s32 14.3 32 32l0 32 48 0c26.5 0 48 21.5 48 48l0 48L0 160l0-48C0 85.5 21.5 64 48 64l48 0 0-32c0-17.7 14.3-32 32-32zM0 192l448 0 0 272c0 26.5-21.5 48-48 48L48 512c-26.5 0-48-21.5-48-48L0 192zm80 64c-8.8 0-16 7.2-16 16l0 96c0 8.8 7.2 16 16 16l96 0c8.8 0 16-7.2 16-16l0-96c0-8.8-7.2-16-16-16l-96 0z" />
                                     </svg>
-                                    <p class="text- text-[#265df5] font-semibold">Add availability to join</p>
+                                    <p v-if="country" class="text-xs md:text-md text-[#474d6a] font-semibold" >{{ country }}</p>
+                                    <button v-else class="text-xs md:text-md text-[#265df5] font-semibold "@click="showEdit = true">Add Country</button>
                                 </div>
-                            </div>
-                            <div class="mt-3" style="border-left: 1px solid lightgray;height: 100px;"></div>
-                            <div class="w-45%">
-                                <div>
-                                    <div class="flex gap-2 mt-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[2px]" fill="#c6c3bd" viewBox="0 0 512 512">
+
+                                <div class="flex gap-2 mt-3 md:hidden">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[-1px] md:mt-[2px]" fill="#c6c3bd" viewBox="0 0 512 512">
                                             <path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z" />
                                         </svg>
-                                        <p v-if="mobile" class="text- text-[#474d6a] font-semibold">{{ this.country_code }} {{ this.mobile }}</p>
-                                        <p v-else class="text-md text-[#265df5] font-semibold">Add mobile number</p>
+                                        <p v-if="mobile" class="text-xs md:text-md text-[#474d6a] font-semibold">{{ this.country_code }} {{ this.mobile }}</p>
+                                        <p v-else class="text-xs md:text-md text-[#265df5] font-semibold">Add mobile number</p>
                                     </div>
-                                    <div class="flex gap-2 mt-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[3px]" fill="#c6c3bd" viewBox="0 0 512 512">
+                                    <div class="flex gap-2 mt-3 md:mt-2 md:hidden">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[-1px] md:mt-[3px]" fill="#c6c3bd" viewBox="0 0 512 512">
                                             <path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48L48 64zM0 176L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-208L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z" />
                                         </svg>
-                                        <p v-if="profileMail.emailId" class="text- text-[#474d6a] font-semibold">{{ profileMail.emailId }}</p>
-                                        <p v-else class="text-md text-[#265df5] font-semibold">Add your email</p>
+                                        <p v-if="profileMail.emailId" class="text-xs md:text-md text-[#474d6a] font-semibold">{{ profileMail.emailId }}</p>
+                                        <p v-else class="text-xs md:text-md text-[#265df5] font-semibold">Add your email</p>
+                                    </div>
+
+
+
+                            </div>
+                            <div class="mt-3 hidden md:block" style="border-left: 1px solid lightgray;height: 100px;"></div>
+                            <div class="w-45% hidden md:block  ">
+                                <div>
+                                    <div class="flex gap-2 mt-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[-1px] md:mt-[2px]" fill="#c6c3bd" viewBox="0 0 512 512">
+                                            <path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z" />
+                                        </svg>
+                                        <p v-if="mobile" class="text-xs md:text-md text-[#474d6a] font-semibold">{{ this.country_code }} {{ this.mobile }}</p>
+                                        <p v-else class="text-xs md:text-md text-[#265df5] font-semibold">Add mobile number</p>
+                                    </div>
+                                    <div class="flex gap-2 mt-3 md:mt-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mt-[-1px] md:mt-[3px]" fill="#c6c3bd" viewBox="0 0 512 512">
+                                            <path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48L48 64zM0 176L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-208L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z" />
+                                        </svg>
+                                        <p v-if="profileMail.emailId" class="text-xs md:text-md text-[#474d6a] font-semibold">{{ profileMail.emailId }}</p>
+                                        <p v-else class="text-xs md:text-md text-[#265df5] font-semibold">Add your email</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-[#fff2e3] w-[30%] rounded-lg p-5">
+                    <div v-if="!changeUpload && !cv || !location || !profileBadge  " class=" hidden md:block bg-[#fff2e3] w-[30%] rounded-lg p-5">
                         <div class="my-auto">
-                            <div class="flex gap-2">
+                            <div v-if="!profileBadge" class="flex gap-2">
                                 <div class="bg-white p-2 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="#c6c3bd" viewBox="0 0 384 512">
                                         <path d="M80 0C44.7 0 16 28.7 16 64l0 384c0 35.3 28.7 64 64 64l224 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L80 0zm80 432l64 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-64 0c-8.8 0-16-7.2-16-16s7.2-16 16-16z" />
                                     </svg>
                                 </div>
-                                <p class="font-semibold text-md text-[#474d6a] mt-1">Verify mobile number</p>
+                                <p class="font-semibold text-md text-[#474d6a] mt-1">Add Profile Badge</p>
                             </div>
-                            <div class="flex gap-2 mt-3">
+                            <div v-if="!location" class="flex gap-2 mt-3">
                                 <div class="bg-white p-2 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="#c6c3bd" viewBox="0 0 384 512">
                                         <path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
@@ -91,7 +111,7 @@
                                 </div>
                                 <p class="font-semibold text-md text-[#474d6a] mt-1">Add preferred location</p>
                             </div>
-                            <div class="flex gap-2 mt-3">
+                            <div v-if="!changeUpload && !cv" class="flex gap-2 mt-3">
                                 <div class="bg-white p-2 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="#c6c3bd" viewBox="0 0 384 512">
                                         <path d="M0 64C0 28.7 28.7 0 64 0L224 0l0 128c0 17.7 14.3 32 32 32l128 0 0 288c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 64zm384 64l-128 0L256 0 384 128z" />
@@ -100,15 +120,15 @@
                                 <p class="font-semibold text-md text-[#474d6a] mt-1">Add resume</p>
                             </div>
                             <div class="text-center mx-auto mt-3">
-                                <button class="bg-[#f05537] text-white rounded-xl py-1 px-4 font-semibold">Add missing details</button>
+                                <button class="bg-[#f05537] text-white rounded-xl py-1 px-4 font-semibold"@click="showEdit=true">Add missing details</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-8 gap-5 mt-7">
+            <div class="  grid grid-cols-8 gap-5 mt-2 md:mt-7 ">
                 <div class="col-span-2">
-                    <div class="shadow-lg shadow-gray-600 bg-white rounded-lg p-4 sticky top-[100px]">
+                    <div class=" hidden md:block shadow-lg shadow-gray-600 bg-white rounded-lg p-4 sticky top-[100px]">
                         <h1 class="text-[#05264e] text-xl font-semibold">Quick Links</h1>
                         <div class="flex mt-8 ml-4 w-full">
                             <p class="text-md text-[#05264e] font-medium">Resume</p>
@@ -142,11 +162,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-span-6 ">
+                <div class="md:col-span-6 col-span-12 ">
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg pb-2">
-                        <h1 class="text-[#05264e] text-xl font-medium p-4">Resume</h1>
-                        <div class="m-6">
-                            <div class="border relative flex bg-gradient-to-t from-[#feeef8] to-[white] overflow-hidden rounded-xl">
+                        <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium p-4">Resume</h1>
+                        <div class=" m-4 md:m-6">
+                            <!-- <div class="border relative flex bg-gradient-to-t from-[#feeef8] to-[white] overflow-hidden rounded-xl">
                                 <div class="absolute z-0 h-[250px] left-[-100px] top-[-50px]">
                                     <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                                         <circle r="45" cx="50" cy="50" fill="#feecf1" />
@@ -154,20 +174,20 @@
                                 </div>
                                 <div class="flex">
                                     <img src="https://i.postimg.cc/wMkqc8sf/download-8-removebg-preview.png" width="100px" class="bg-white m-5 z-10 rounded-lg" />
-                                    <div class="flex ml-[90px]  mt-[60px]">
-                                        <h1 class="text-[#05264e] text-[30px] font-bold">Create Your <span class="text-[40px]">Resume</span></h1>
-                                        <div class=" ml-[80px]  mt-[15px]">
+                                    <div class="flex   md:ml-[90px]  mt-[60px] md:flex-row flex-col">
+                                        <h1 class="text-[#05264e] ml-3 text-[15px] md:text-[30px] font-bold">Create Your <span class=" text-[25px]  md:text-[40px]">Resume</span></h1>
+                                        <div class=" md:ml-[80px]  mt-[15px]">
                                             <button class="border rounded-full bg-[#1654f5] text-white px-3 py-1 font-semibold hover:bg-[#567bf3]">Create Resume</button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="border border-gray-500 border-dashed rounded-xl mt-3">
                                 <div class="flex justify-center py-8 gap-3">
                                     <div class="flex upload-btn-wrapper">
 
-                                        <p v-if="!changeUpload && !cv" class="font-medium text-[#05264e]">Already have a resume ? <span><button v-if="!changeUpload && !cv" class="text-md font-medium text-[#265df5]">Upload</button></span></p>
-                                        <p v-if="changeUpload || cv" class="font-medium text-[#05264e]">Need to re-upload your resume ? <span><button v-if="changeUpload || cv" class="text-md font-medium text-[#265df5]">Change</button></span></p>
+                                        <p v-if="!changeUpload && !cv" class="font-medium text-md text-[#05264e]">Already have a resume ? <span><button v-if="!changeUpload && !cv" class=" text-[14px] md:text-md font-medium text-[#265df5]">Upload</button></span></p>
+                                        <p v-if="changeUpload || cv" class="font-medium text-[14px] md:text-md text-[#05264e]">Need to re-upload your resume ? <span><button v-if="changeUpload || cv" class="text-md font-medium text-[#265df5]">Change</button></span></p>
 
                                         <input v-bind:type="'file'" v-bind:name="'myfile'" ref="file2" @change="handleFileUpload()" />
                                     </div>
@@ -178,32 +198,32 @@
                     <!-- Personal Details -->
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg mt-4 p-5">
                         <div class="flex">
-                            <h1 class="text-[#05264e] text-xl font-medium">Personal details</h1>
-                            <button class="text-[#265df5] text-md font-medium ml-auto" @click="showPersonalDetails = true">
+                            <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium">Personal details</h1>
+                            <button class="text-[#265df5] text-[14px] md:text-md font-medium ml-auto" @click="showPersonalDetails = true">
                                 <h1>Add personal details</h1>
                             </button>
                         </div>
-                        <p class="text-lg text-[#697499] mt-3">This information is important for employers to know you better</p>
+                        <p class=" text-[14px] md:text-lg text-[#697499] mt-3">This information is important for employers to know you better</p>
                     </div>
                     <!-- Contact Details -->
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg mt-4 p-5">
                         <div class="flex">
-                            <h1 class="text-[#05264e] text-xl font-medium">Contact details</h1>
-                            <button class="text-[#265df5] text-md font-medium ml-auto" @click="showContactDetails = true">
+                            <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium">Contact details</h1>
+                            <button class="text-[#265df5] text-[14px] md:text-md font-medium ml-auto" @click="showContactDetails = true">
                                 <h1>Add contact details</h1>
                             </button>
                         </div>
-                        <p class="text-lg text-[#697499] mt-3">Add a contact details so that recruiters can reach you</p>
+                        <p class=" text-[14px] md:text-lg text-[#697499] mt-3">Add a contact details so that recruiters can reach you</p>
                     </div>
                     <!-- Education Details -->
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg mt-4 p-5">
                         <div class="flex">
-                            <h1 class="text-[#05264e] text-xl font-medium">Education details</h1>
-                            <button class="text-[#265df5] text-md font-medium ml-auto" @click="showEducationDetails = true">
+                            <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium">Education details</h1>
+                            <button class="text-[#265df5] text-[14px] md:text-md font-medium ml-auto" @click="showEducationDetails = true">
                                 <h1>Add education details</h1>
                             </button>
                         </div>
-                        <p class="text-lg text-[#697499] mt-3">Your qualifications help employers know your educational background</p>
+                        <p class=" text-[14px] md:text-lg text-[#697499] mt-3">Your qualifications help employers know your educational background</p>
                         <div v-if="degree" @click="showEducationDetails = true">
                             <button class="text-[#00014a] text-[15px] font-semibold mt-2">Degree details</button>
                             <p class="text-[#697499] text-[14px]">{{ qualification }} {{ specialization }}, Passed out in {{ year }} Year</p>
@@ -232,32 +252,36 @@
                     <!-- Experience details -->
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg mt-4 p-5">
                         <div class="flex">
-                            <h1 class="text-[#05264e] text-xl font-medium">Experience details</h1>
-                            <button class="text-[#265df5] text-md font-medium ml-auto" @click="showExperienceDetails = true">Add experience details</button>
+                            <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium">Experience details</h1>
+                            <button class="text-[#265df5] text-[14px] md:text-md font-medium ml-auto" @click="showExperienceDetails = true">Add experience details</button>
                         </div>
-                        <p class="text-lg text-[#697499] mt-3">Your employment details will help recruiters understand your experience</p>
+                        <p class=" text-[14px] md:text-lg text-[#697499] mt-3">Your employment details will help recruiters understand your experience</p>
                     </div>
                     <!-- Passport Details-->
                     <div class="shadow-lg shadow-gray-600 bg-white rounded-lg mt-4 p-5">
                         <div class="flex">
-                            <h1 class="text-[#05264e] text-xl font-medium">Passport details</h1>
-                            <button class="text-[#265df5] text-md font-medium ml-auto" @click="showPassportDetails = true">Add passport details</button>
+                            <h1 class="text-[#05264e] text-md font-semibold md:text-xl md:font-medium">Passport details</h1>
+                            <button class="text-[#265df5] text-[14px] md:text-md font-medium ml-auto" @click="showPassportDetails = true">Add passport details</button>
                         </div>
-                        <p class="text-lg text-[#697499] mt-3">Add a passport details to showcase your eligibility for international opportunities</p>
+                        <p class=" text-[14px] md:text-lg text-[#697499] mt-3">Add a passport details to showcase your eligibility for international opportunities</p>
                     </div>
                 </div>
             </div>
             <!-- Edit Modal -->
             <div v-show="showEdit" class="z-50 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
-                    <div class="flex">
-                        <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Basic Details</h2>
-                        <div class="ml-auto"><button class="h-5 w-5" @click="showEdit = false">
+
+                
+                <div class="bg-white p-5 pt-0 md:p-10  rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]  max-h-[80vh] overflow-y-scroll md:max-h-auto  md:overflow-y-hidden  ">
+
+                    <div class="flex sticky top-0 bg-white z-10 mb-5 h-[45px] ">
+                        <h2 class=" mt-5  text-md md:text-xl font-semibold  md:mb-5" style="color: #05264e;">Basic Details</h2>
+                        <div class=" mt-5 ml-auto"><button class="h-5 w-5" @click="showEdit = false">
                                 <img src="https://i.postimg.cc/dVQFYNh9/close.png" alt="close" />
                             </button></div>
                     </div>
-                    <div class="flex gap-10">
-                        <div class="w-[100%]">
+                    
+                    <div class="flex gap-2 md:gap-10  flex-col md:flex-row   ">
+                        <div class="w-[100%] ">
                             <label for="name" class="text-md font-semibold" style="color: #05264e;">Name</label><span class="text-red-500">*</span><br />
                             <input v-if="profileName.fullName" type="text" placeholder="Enter your name" v-model="profileName.fullName" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" required />
                             <input v-else type="text" placeholder="Enter your name" v-model="profileName.fullName" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1" style="color: #7680a2;" required />
@@ -280,12 +304,19 @@
                                     <input type="radio" value="Experienced" v-model="workStatus" /> Experienced
                                 </label>
                             </div>
-                        </div>
-                        <div class="w-[100%]">
-                            <div class="mb-3">
+
+
+                            <div class="mt-3">
                                 <label for="location" class="text-md font-semibold" style="color: #05264e;">Current Location</label><span class="text-red-500"></span><br />
                                 <input type="text" placeholder="District" v-model="location" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold uppercase" style="color: #0049f4;" />
                             </div>
+
+
+
+
+                        </div>
+                        <div class="w-[100%]">
+                            
                             <label for="country" class="text-md font-semibold" style="color: #05264e;">Country</label><br />
                             <input type="text" placeholder="Enter your country" v-model="country" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] mt-1 font-semibold" style="color: #0049f4;" />
 
@@ -300,10 +331,31 @@
                                 <input v-if="profileMail.emailId" type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" required readonly />
                                 <input v-else type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1" style="color: #7680a2;" required readonly />
                             </div>
+
+
+                            
+                                
+                            <div class="flex mt-8 ml-4 w-full ">
+                            <p class="text-md text-[#05264e] font-medium">Resume</p>
+                            <a :href="'https://erp.teamproit.com/' + cv" target="_blank" v-if="changeUpload || cv" class="text-md font-medium text-[#265df5] text-right ml-auto">View</a>
+
+                            <div class="upload-btn-wrapper text-right ml-auto mr-[35px]">
+                                <button v-if="!changeUpload && !cv" class="text-md font-medium text-[#265df5] ">Upload</button>
+                                <button v-if="changeUpload || cv" class="text-md font-medium text-[#265df5]">Change</button>
+                                <input v-bind:type="'file'" v-bind:name="'myfile'" ref="file1" @change="handleFileUpload()" />
+                            </div>
+                            </div>
+                            
+
+
+
+
+
                         </div>
+                    
                     </div>
-                    <p class="text-md font-semibold mt-3" style="color: #05264e;">Availability to join</p>
-                    <div class="option-toggle mt-3">
+                    <!-- <p class="text-md font-semibold mt-3  " style="color: #05264e;">Availability to join</p>
+                    <div class="option-toggle mt-3 flex flex-wrap  ">
                         <label :class="{ checked: availability === '15_days' }" class="text-[#999999] font-medium">
                             <input type="radio" value="15_days" v-model="availability" /> 15 Days or less
                         </label>
@@ -319,10 +371,10 @@
                         <label :class="{ checked: availability === 'more_than_3_months' }" class="text-[#999999] font-medium">
                             <input type="radio" value="more_than_3_months" v-model="availability" /> More than 3 Months
                         </label>
-                    </div>
+                    </div> -->
 
 
-                    <div class="text-right mt-3">
+                    <div class="text-right mt-2 md:mt-3  ">
                         <button @click="showEdit = false" class="text-md text-right text-blue-800 mt-3 font-medium">Cancel</button>
                         <button class="border rounded-full bg-[#1654f5] text-white px-3 py-0.5 font-semibold hover:bg-[#567bf3] ml-3" @click="updateEditProfile()">Save</button>
                     </div>
@@ -330,7 +382,7 @@
             </div>
             <!-- Add Personal Details Modal -->
             <div v-if="showPersonalDetails" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
                         <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Personal Details</h2>
@@ -339,19 +391,19 @@
                             </button></div>
                     </div>
 
-                    <label for="name" class="text-md font-semibold" style="color: #05264e;">Name</label><span class="text-red-500">*</span><br />
+                    <label for="name" class="text-md font-semibold mb-3 md:mb-0" style="color: #05264e;">Name</label><span class="text-red-500">*</span><br />
                     <input v-if="profileName.fullName" type="text" placeholder="Enter your name" v-model="profileName.fullName" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" required />
                     <input v-else type="text" placeholder="Enter your name" v-model="profileName.fullName" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1" style="color: #7680a2;" required />
-                    <div class="grid grid-cols-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2">
                         <div>
                             <div class="mt-3">
-                                <label for="dob" class="text-md font-semibold" style="color: #05264e;">DOB</label><br />
-                                <input v-if="dob" type="date" placeholder="District" v-model="dob" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-2 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="date" placeholder="District" v-model="dob" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-2" style="color: #7680a2;" required />
+                                <label for="dob" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">DOB</label><br />
+                                <input v-if="dob" type="date" placeholder="District" v-model="dob" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-2 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="date" placeholder="District" v-model="dob" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-2" style="color: #7680a2;" required />
                             </div>
                             <div class="mt-3">
-                                <label for="vaccination_status" class="text-md font-semibold" style="color: #05264e;">Vaccination Status</label> <br />
-                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] font-semibold" v-model="vacStatus" style="color: #0049f4;">
+                                <label for="vaccination_status" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Vaccination Status</label> <br />
+                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] font-semibold" v-model="vacStatus" style="color: #0049f4;">
                                     <option value="Dose 1">Dose 1</option>
                                     <option value="Dose 2">Dose 2</option>
                                     <option value="Dose 3">Dose3</option>
@@ -360,32 +412,32 @@
                             </div>
 
                             <div class="mt-3">
-                                <label for="location" class="text-md font-semibold" style="color: #05264e;">Location</label><br />
-                                <input v-if="location" type="text" placeholder="District" v-model="location" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold uppercase" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="District" v-model="location" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 uppercase" style="color: #7680a2;" />
+                                <label for="location" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Location</label><br />
+                                <input v-if="location" type="text" placeholder="District" v-model="location" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold uppercase" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="District" v-model="location" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 uppercase" style="color: #7680a2;" />
                             </div>
 
                         </div>
                         <div>
                             <div class="mt-3">
-                                <label for="gender" class="text-md font-semibold" style="color: #05264e;">Gender</label> <br />
-                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] font-semibold" v-model="gender" style="color: #0049f4;">
+                                <label for="gender" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Gender</label> <br />
+                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] font-semibold" v-model="gender" style="color: #0049f4;">
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Prefer Not To Say">Prefer Not To Say</option>
                                 </select>
                             </div>
                             <div class="mt-4">
-                                <label for="ecr_status" class="text-md font-semibold" style="color: #05264e;">ECR Status</label> <br />
-                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] font-semibold" v-model="ecrStatus" style="color: #0049f4;">
+                                <label for="ecr_status" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">ECR Status</label> <br />
+                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] font-semibold" v-model="ecrStatus" style="color: #0049f4;">
                                     <option value="ECR">ECR</option>
                                     <option value="ECNR">ECNR</option>
                                 </select>
                             </div>
                             <div class="mt-3">
-                                <label for="nationality" class="text-md font-semibold" style="color: #05264e;">Nationality</label><br />
-                                <input v-if="nationality" type="text" placeholder="Nationality" v-model="nationality" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-2 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="Nationality" v-model="nationality" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-2" style="color: #7680a2;" required />
+                                <label for="nationality" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Nationality</label><br />
+                                <input v-if="nationality" type="text" placeholder="Nationality" v-model="nationality" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-2 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="Nationality" v-model="nationality" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-2" style="color: #7680a2;" required />
                             </div>
 
                         </div>
@@ -401,7 +453,7 @@
             </div>
             <!-- Add Contact Details Modal -->
             <div v-show="showContactDetails" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
                         <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Contact Details</h2>
@@ -409,16 +461,16 @@
                                 <img src="https://i.postimg.cc/dVQFYNh9/close.png" alt="close" />
                             </button></div>
                     </div>
-                    <div class="grid grid-cols-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2">
 
                         <div>
-                            <label for="country" class="text-md font-semibold" style="color: #05264e;">Country</label><br />
-                            <input type="text" placeholder="Enter your country" v-model="country" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                            <label for="country" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Country</label><br />
+                            <input type="text" placeholder="Enter your country" v-model="country" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
 
                             <div class="relative mt-3">
-                                <label for="mobile_no" class="text-md font-semibold" style="color: #05264e;">Primary mobile number</label><span class="text-red-500">*</span><br />
-                                <input type="tel" name="mobile_no" v-model="mobile" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="rounded-lg pl-12 border-gray-400 text-sm p-3 mt-2 w-[80%] mb-3 font-semibold" style="color: #0049f4;" required />
-                                <p class="absolute top-[40px] pl-2.5 mt-0.5 text-[#05264e] text-[15px] font-medium">{{ country_code }}</p>
+                                <label for="mobile_no" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Primary mobile number</label><span class="text-red-500">*</span><br />
+                                <input type="tel" name="mobile_no" v-model="mobile" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="rounded-lg pl-12 border-gray-400 text-sm p-3 mt-2 w-[100%] md:w-[80%] mb-3 font-semibold" style="color: #0049f4;" required />
+                                <p class="absolute top-[40px] pl-2.5 mt-1 md:mt-0.5 text-[#05264e] text-sm md:text-[15px] font-medium">{{ country_code }}</p>
                             </div>
 
                             <!-- <div class="relative">
@@ -426,22 +478,22 @@
                                 <input type="tel" id="phone" name="mobile_no" placeholder="Enter your mobile number" class="border-gray-400 text-[#006fdd] font-medium rounded-lg text-sm p-3 pl-10 mt-2 w-[85%] mb-3" required />
                             </div> -->
                             <div class="relative mt-3">
-                                <label for="sec_mobile_no" class="text-md font-semibold" style="color: #05264e;">Secondary mobile number</label><br />
-                                <input v-if="secMobile" type="tel" name="sec_mobile_no" v-model="secMobile" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
+                                <label for="sec_mobile_no" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Secondary mobile number</label><br />
+                                <input v-if="secMobile" type="tel" name="sec_mobile_no" v-model="secMobile" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
                                 <input v-else type="tel" name="sec_mobile_no" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3" style="color: #7680a2;" required />
                             </div>
                         </div>
 
                         <div>
                             <div class="relative">
-                                <label for="mobile_no" class="text-md font-semibold" style="color: #05264e;">Whatsapp number</label><br />
-                                <input v-if="whatsappNo" type="tel" name="mobile_no" v-model="whatsappNo" placeholder="Eg. +91-9890989076" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
+                                <label for="mobile_no" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Whatsapp number</label><br />
+                                <input v-if="whatsappNo" type="tel" name="mobile_no" v-model="whatsappNo" placeholder="Eg. +91-9890989076" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
                                 <input v-else type="tel" name="mobile_no" placeholder="Eg. +91-9890989076" v-model="whatsappNo" pattern="[0-9]{10}" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3" style="color: #7680a2;" required />
                             </div>
                             <div class="">
-                                <label for="email" class="text-md font-semibold" style="color: #05264e;">Email address</label><span class="text-red-500">*</span><br />
-                                <input v-if="profileMail.emailId" type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" required readonly />
-                                <input v-else type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" required />
+                                <label for="email" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Email address</label><span class="text-red-500">*</span><br />
+                                <input v-if="profileMail.emailId" type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" required readonly />
+                                <input v-else type="text" placeholder="Enter your email" v-model="profileMail.emailId" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" required />
                             </div>
 
 
@@ -455,32 +507,41 @@
             </div>
             <!-- Add Educational Details Modal -->
             <div v-if="showEducationDetails" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
-                        <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Education - Degree Details</h2>
+                        <h2 class=" text-xl font-semibold mb-5" style="color: #05264e;">Education - Degree Details</h2>
                         <div class="ml-auto"><button class="h-5 w-5" @click="showEducationDetails = false">
                                 <img src="https://i.postimg.cc/dVQFYNh9/close.png" alt="close" />
                             </button></div>
                     </div>
 
                     <div class="mt-3 relative">
-                        <label for="qualification" class="text-md font-semibold" style="color: #05264e;">Course name</label><br />
+                        <label for="qualification" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">Course name</label><br />
                         <input type="text" placeholder="BTech/BE, BCOM, ..." v-model="qualification" @input="filterQualifications" @focus="showAllQualifications" @blur="hideQualificationSuggestionsWithDelay" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" />
 
                         <!-- Suggestions List -->
-                        <ul v-show="showQualificationSuggestions && filteredQualifications.length" class="absolute bg-white border w-full rounded shadow-lg max-h-40 overflow-y-auto scroll-smooth">
+                        <ul v-show="showQualificationSuggestions && filteredQualifications.length" class="absolute bg-white border w-full rounded shadow-lg max-h-40 overflow-y-auto scroll-smooth z-30">
                             <li v-for="qualification in filteredQualifications" :key="qualification" @mousedown.prevent="selectQualification(qualification)" class="p-2 text-sm text-[#001647] font-semibold cursor-pointer hover:bg-gray-200">
                                 {{ qualification }}
                             </li>
                         </ul>
                     </div>
-                    <div class="mt-3">
-                        <label for="name" class="text-md font-semibold" style="color: #05264e;">Specialization</label><br />
-                        <input type="text" placeholder="Computer Science, Civil, ..." v-model="specialization" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" />
+
+                    <div class="mt-3 relative ">
+                        <label for="specialization" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Specialization</label><br />
+                        <input type="text" placeholder="Computer Science, Civil, ..." v-model="specialization" @input="filterSpecializations" @focus="showAllSpecializations" @blur="hideSpecializationSuggestionsWithDelay" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" />
+
+                         <!-- Suggestions List -->
+                        <ul v-show="showSpecializationSuggestions && filteredSpecializations.length" class="absolute bg-white border w-full  rounded shadow-lg max-h-40 overflow-y-auto scroll-smooth">
+                            <li v-for="specialization in filteredSpecializations" :key="specialization" @mousedown.prevent="selectSpecialization(specialization)" class="p-2 text-sm text-[#001647] font-semibold cursor-pointer hover:bg-gray-200">
+                                {{ specialization }}
+                            </li>
+                        </ul>
                     </div>
+
                     <div class="mt-3">
-                        <label for="name" class="text-md font-semibold" style="color: #05264e;">Year of passing</label><br />
+                        <label for="name" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Year of passing</label><br />
                         <input type="text" placeholder="YYYY" v-model="year" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-full mt-1 font-semibold" style="color: #0049f4;" />
                     </div>
                     <div class="text-right mt-3">
@@ -491,7 +552,7 @@
             </div>
             <!-- Add +2 Details Modal -->
             <div v-if="showEducationDetailsHSC" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
                         <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Education - HSC Details</h2>
@@ -544,7 +605,7 @@
 
             <!-- Add 10th Details Modal -->
             <div v-if="showEducationDetailsSSLC" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
                         <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Education - SSLC Details</h2>
@@ -597,71 +658,79 @@
 
             <!-- Add Experience Details Modal -->
             <div v-if="showExperienceDetails" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 pt-0 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white  w-[90%] md:w-[50%] max-h-[80vh] overflow-y-scroll md:overflow-y-hidden">
 
-                    <div class="flex">
-                        <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Experience Details</h2>
-                        <div class="ml-auto"><button class="h-5 w-5" @click="showExperienceDetails = false">
+                    <div class="flex sticky top-0 bg-white z-10 mb-5 h-[45px]  ">
+                        <h2 class=" mt-5 text-[18px] md:text-xl font-semibold mb-5" style="color: #05264e;">Experience Details</h2>
+                        <div class=" mt-5 ml-auto"><button class="h-5 w-5" @click="showExperienceDetails = false">
                                 <img src="https://i.postimg.cc/dVQFYNh9/close.png" alt="close" />
                             </button></div>
                     </div>
-                    <div class="grid grid-cols-2">
+                    <div class="grid grid:cols-1 md:grid-cols-2">
 
                         <div>
-                            <label for="india_experience" class="text-md font-semibold" style="color: #05264e;">India Experience</label><br />
-                            <input v-if="indExp" type="text" placeholder="0" v-model="indExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                            <input v-else type="text" placeholder="0" v-model="indExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" required />
+                            <label for="india_experience" class=" text-[16px] md:text-md font-semibold" style="color: #05264e;">India Experience</label><br />
+                            <input v-if="indExp" type="text" placeholder="0" v-model="indExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3   w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                            <input v-else type="text" placeholder="0" v-model="indExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" required />
+
+                            <!-- <div class="relative mt-3">
+                                <label for="india_experience" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Total Experience</label><br />
+                                <input v-if="totalExp" type="text" placeholder="0" v-model="totalExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="0" v-model="totalExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" required />
+                            </div> -->
 
                             <div class="relative mt-3">
-                                <label for="india_experience" class="text-md font-semibold" style="color: #05264e;">Total Experience</label><br />
-                                <input v-if="totalExp" type="text" placeholder="0" v-model="totalExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="0" v-model="totalExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" required />
-                            </div>
-
-                            <div class="relative mt-3">
-                                <label for="current_ctc" class="text-md font-semibold" style="color: #05264e;">Current CTC</label><br />
-                                <input v-if="currentCtc" type="text" name="current_ctc" v-model="currentCtc" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" name="current_ctc" v-model="currentCtc" placeholder="Current CTC" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%]" style="color: #7680a2;" />
+                                <label for="current_ctc" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Current CTC</label><br />
+                                <input v-if="currentCtc" type="text" name="current_ctc" v-model="currentCtc" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" name="current_ctc" v-model="currentCtc" placeholder="Current CTC" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%]" style="color: #7680a2;" />
                             </div>
                             <div class="mt-1">
-                                <label for="ctc_mentioned_in" class="text-md font-semibold" style="color: #05264e;">CTC Mentioned In</label> <br />
-                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] font-semibold" v-model="ctcMentionedIn" style="color: #0049f4;">
+                                <label for="ctc_mentioned_in" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">CTC Mentioned In</label> <br />
+                                <select class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] font-semibold" v-model="ctcMentionedIn" style="color: #0049f4;">
                                     <option value="Monthly">Monthly</option>
                                     <option value="Yearly">Yearly</option>
                                 </select>
                             </div>
                             <div class="relative mt-3">
-                                <label for="notice_period" class="text-md font-semibold" style="color: #05264e;">Notice Period (months)</label><br />
-                                <input v-if="noPeriod" type="text" name="notice_period" v-model="noPeriod" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" name="notice_period" v-model="noPeriod" placeholder="Notice Period" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[80%]" style="color: #7680a2;" />
+                                <label for="notice_period" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Notice Period (months)</label><br />
+                                <input v-if="noPeriod" type="text" name="notice_period" v-model="noPeriod" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%] mb-3 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" name="notice_period" v-model="noPeriod" placeholder="Notice Period" class="rounded-lg border-gray-400 text-sm p-3 pl-3 mt-2 w-[100%] md:w-[80%]" style="color: #7680a2;" />
                             </div>
                         </div>
 
                         <div class="mt-1">
                             <div class="relative">
-                                <label for="india_experience" class="text-md font-semibold" style="color: #05264e;">Oversease Experience</label><br />
-                                <input v-if="overseasExp" type="text" placeholder="0" v-model="overseasExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="0" v-model="overseasExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" />
+                                <label for="india_experience" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Oversease Experience</label><br />
+                                <input v-if="overseasExp" type="text" placeholder="0" v-model="overseasExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="0" v-model="overseasExp" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" />
                             </div>
                             <div class="mt-3">
-                                <label for="current_employer" class="text-md font-semibold" style="color: #05264e;">Current Employer</label><br />
-                                <input v-if="currentEmployer" type="text" placeholder="Current Employer" v-model="currentEmployer" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="Current Employer" v-model="currentEmployer" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" />
+                                <label for="current_employer" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Current Employer</label><br />
+                                <input v-if="currentEmployer" type="text" placeholder="Current Employer" v-model="currentEmployer" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="Current Employer" v-model="currentEmployer" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" />
+                            </div>
+                            <div class="mt-3 relative">
+                                <label for="currency_ctc" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">CTC Currency</label><br />
+                                <!-- <input v-if="currencyCtc" type="text" placeholder="CTC Currency" v-model="currencyCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" /> -->
+                                <input  type="text" placeholder="Currency CTC" v-model="currencyCtc" @input="filtercurrencyCtcs" @focus="showAllcurrencyCtcs" @blur="hidecurrencyCtcSuggestionsWithDelay" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" />
+
+                                 <!-- Suggestions List -->
+                        <ul v-show="showcurrencyCtcSuggestions && filteredcurrencyCtcs.length" class="absolute bg-white border w-[100%] md:w-[80%]  rounded shadow-lg max-h-40 overflow-y-auto scroll-smooth">
+                            <li v-for="currencyCtc in filteredcurrencyCtcs" :key="currencyCtc" @mousedown.prevent="selectcurrencyCtc(currencyCtc)" class="p-2 text-sm text-[#001647] font-semibold cursor-pointer hover:bg-gray-200">
+                                {{ currencyCtc }}
+                            </li>
+                        </ul>
+
                             </div>
                             <div class="mt-3">
-                                <label for="currency_ctc" class="text-md font-semibold" style="color: #05264e;">CTC Currency</label><br />
-                                <input v-if="currencyCtc" type="text" placeholder="CTC Currency" v-model="currencyCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="Currency CTC" v-model="currencyCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" />
-                            </div>
-                            <div class="mt-3">
-                                <label for="expected_ctc" class="text-md font-semibold" style="color: #05264e;">Expected CTC</label><br />
-                                <input v-if="expCtc" type="text" placeholder="CTC Currency" v-model="expCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
-                                <input v-else type="text" placeholder="Expected CTC" v-model="expCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[80%] mt-1" style="color: #7680a2;" />
+                                <label for="expected_ctc" class="text-[16px] md:text-md font-semibold" style="color: #05264e;">Expected CTC</label><br />
+                                <input v-if="expCtc" type="text" placeholder="CTC Currency" v-model="expCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1 font-semibold" style="color: #0049f4;" />
+                                <input v-else type="text" placeholder="Expected CTC" v-model="expCtc" class="mb-1 border-gray-400 rounded-lg text-sm p-3 w-[100%] md:w-[80%] mt-1" style="color: #7680a2;" />
                             </div>
 
                         </div>
                     </div>
-                    <div class="text-right mt-3">
+                    <div class="text-right mt-1">
                         <button @click="showExperienceDetails = false" class="text-md text-right text-blue-800 mt-3 font-medium">Cancel</button>
                         <button class="border rounded-full bg-[#1654f5] text-white px-3 py-0.5 font-semibold hover:bg-[#567bf3] ml-3" @click="updateExperienceDetails()">Save</button>
                     </div>
@@ -669,7 +738,7 @@
             </div>
             <!-- Add Passport Details Modal -->
             <div v-if="showPassportDetails" class="z-30 fixed inset-0 bg-black bg-opacity-[0.5] flex justify-center items-center">
-                <div class="bg-white p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[50%]">
+                <div class="bg-white p-5 md:p-10 rounded-md border-0 shadow-lg shadow-gray-600 bg-white w-[90%] md:w-[50%]">
 
                     <div class="flex">
                         <h2 class="text-xl font-semibold mb-5" style="color: #05264e;">Passport Details</h2>
@@ -701,12 +770,12 @@
                                 </select>
                             </div>
                     <div class="flex justify-center mt-5">
-                        <div v-if="changePassport" class="flex upload-btn-wrapper border border-gray-600 px-[41%] py-2 border-dashed rounded-md">
+                        <div v-if="changePassport" class="flex upload-btn-wrapper border border-gray-600 w-full px-[20%] md:px-[41%] py-2 border-dashed rounded-md">
                             <p class="font-medium text-[16px] text-[#05264e]">Change <span class="text-[17px] font-medium text-[#265df5]">Passport</span></p>
                             <input type="file" name="passFile" ref="passport" @change="handleFileUploadPassport()" />
                         </div>
-                        <div v-else class="flex upload-btn-wrapper border border-gray-600 px-[41%] py-2 border-dashed rounded-md">
-                            <p class="font-medium text-[16px] text-[#05264e]">Attach <span class="text-[17px] font-medium text-[#265df5]">Passport</span></p>
+                        <div v-else class="flex upload-btn-wrapper border border-gray-600 w-full px-[20%] md:px-[41%] py-2 border-dashed rounded-md">
+                            <p class="font-medium   text-md  md:text-[16px] text-[#05264e]">Attach <span class=" text-md md:text-[17px] font-medium text-[#265df5]">Passport</span></p>
                             <input type="file" name="passFile" ref="passport" @change="handleFileUploadPassport()" />
                         </div>
                     </div>
@@ -718,9 +787,33 @@
             </div>
         </div>
     </div>
+    </div>
     <div v-if="loading" class="text-center loading-overlay">
         <p><span class="loader"></span></p>
     </div>
+     <Transition name="fade-scale">
+        <div v-if="addAvailableJoinDate" class="fixed inset-0 flex justify-center items-center z-30">
+            <div class="bg-white p-6 rounded-md border-0 shadow-lg shadow-gray-600 w-[300px]">
+                <button @click="addAvailableJoinDate=false" class="close-button h-5 w-5 ml-[90%]">
+                    <img src="https://i.postimg.cc/dVQFYNh9/close.png" alt="close" class="mt-[-10px]" />
+                </button>
+                <!-- <p class="text-left font-semibold text-[#05264e]">You haven't signed in yet. Sign In to Refer a Friend.</p>
+                <button class="bg-blue-700 hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 text-[white] font-sans px-3 p-1 text-sm rounded-md w-full mt-3 font-semibold" @click="pushToLoginPage()">
+                    <p class="px-2 py-2 text-center">Sign In</p>
+                </button> -->
+                <p class="text-left font-semibold text-[#05264e] ">Add availability to join</p>
+                <input type="date" class="w-full  mt-2 rounded-lg border border-gray-400 text-sm" />
+                <div class="flex justify-end mt-3">
+                  <button class="color-blue-500 text-md text-blue-500 " @click="addAvailableJoinDate=false">Cancel</button>
+                <button class=" text-md py-0.5 px-3 text-white border  border-blue-500 bg-blue-500 rounded-full   ml-5">Save</button>
+
+                </div>
+                
+            </div>
+
+        </div>
+    </Transition>
+
 </template>
 
 <script>
@@ -765,6 +858,8 @@
                 qualifications: [],
                 filteredQualifications: [],
                 showQualificationSuggestions: false,
+                showSpecializationSuggestions: false,
+                showcurrencyCtcSuggestions: false,
                 state: '',
                 states: ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"],
                 filteredStates: [],
@@ -845,6 +940,7 @@
                 iti: null,
                 changePassport: false,
                 expiryDate: "",
+                addAvailableJoinDate:false,
             };
         },
         watch: {
@@ -885,6 +981,8 @@
             this.getSchoolDetailsHSC();
             this.getSchoolDetailsSSLC();
             this.qualificationList();
+            this.specializationList();
+            this.currencyCtcList();
             this.checkRouteAndFetch();
         },
         watch: {
@@ -898,6 +996,10 @@
                     this.candidateDetails();
                 }
             },
+
+            // addAvailableJoinDate(){
+
+            // },
 
             async getSchoolDetailsHSC() {
                 if (!this.profileMail || !this.profileMail.emailId) {
@@ -1213,6 +1315,8 @@
                 console.log(educationData)
                 try {
                     const id = this.id;
+                    console.log(educationData)
+                    console.log(id)
                     await axios.post('/api/method/jobpro.jobpro_web.education_details', {
                         educationData,
                         id
@@ -1238,6 +1342,8 @@
                 console.log(educationHSCData)
                 try {
                     const id = this.id;
+                    console.log(educationHSCData)
+                    console.log(id)
                     await axios.post('/api/method/jobpro.jobpro_web.education_details_hsc', {
                         educationHSCData,
                         id
@@ -1285,7 +1391,7 @@
                     overseasExp: this.overseasExp,
                     currentEmployer: this.currentEmployer,
                     currentCtc: this.currentCtc,
-                    currencyCtc: this.currencyCtc,
+                    
                     expCtc: this.expCtc,
                     noPeriod: this.noPeriod,
                     ctcMentionedIn: this.ctcMentionedIn,
@@ -1397,6 +1503,16 @@
                     this.showQualificationSuggestions = false;
                 }, 200);
             },
+            hideSpecializationSuggestionsWithDelay() {
+                setTimeout(() => {
+                    this.showSpecializationSuggestions = false;
+                }, 200);
+            },
+            hidecurrencyCtcSuggestionsWithDelay() {
+                setTimeout(() => {
+                    this.showcurrencyCtcSuggestions = false;
+                }, 200);
+            },
             hideLanguageSuggestionsWithDelayHSC() {
                 setTimeout(() => {
                     this.showLanguageSuggestionsHSC = false;
@@ -1443,6 +1559,73 @@
                     this.filteredQualifications = [...this.qualifications];
                 } catch (error) {
                     console.error("Failed to fetch qualification details:", error);
+                }
+            },
+
+            filterSpecializations() {
+                if (this.specialization) {
+                    this.filteredSpecializations = this.specializations.filter(specialization =>
+                        specialization.toLowerCase().includes(this.specialization.toLowerCase())
+                    );
+                } else {
+                    this.filteredSpecializations = [...this.specializations];
+                }
+                this.showSpecializationSuggestions = true;
+            },
+            showAllSpecializations() {
+                this.filteredSpecializations = [...this.specializations];
+                this.showSpecializationSuggestions = true;
+            },
+            selectSpecialization(specialization) {
+                this.specialization = specialization;
+                this.showSpecializationSuggestions = false;
+            },
+
+            async specializationList() {
+                try {
+                    const response = await apiService.getSpecializationList();
+                    this.response = response.data.message;
+                    if (Array.isArray(this.response)) {
+                        this.specializations = this.response;
+                    } else if (typeof this.response === "string") {
+                        this.specializations = this.response.split(",").map(specialization => specialization.trim());
+                    }
+                    this.filteredSpecializations = [...this.specializations];
+                } catch (error) {
+                    console.error("Failed to fetch specialization details:", error);
+                }
+            },
+            filtercurrencyCtcs() {
+                if (this.currencyCtc) {
+                    this.filteredcurrencyCtcs = this.currencyCtcs.filter(currencyCtc =>
+                        currencyCtc.toLowerCase().includes(this.currencyCtc.toLowerCase())
+                    );
+                } else {
+                    this.filteredcurrencyCtcs = [...this.currencyCtcs];
+                }
+                this.showcurrencyCtcSuggestions = true;
+            },
+            showAllcurrencyCtcs() {
+                this.filteredcurrencyCtcs = [...this.currencyCtcs];
+                this.showcurrencyCtcSuggestions = true;
+            },
+            selectcurrencyCtc(currencyCtc) {
+                this.currencyCtc = currencyCtc;
+                this.showcurrencyCtcSuggestions = false;
+            },
+
+            async currencyCtcList() {
+                try {
+                    const response = await apiService.getcurrencyCtcList();
+                    this.response = response.data.message;
+                    if (Array.isArray(this.response)) {
+                        this.currencyCtcs = this.response;
+                    } else if (typeof this.response === "string") {
+                        this.currencyCtcs = this.response.split(",").map(currencyCtc => currencyCtc.trim());
+                    }
+                    this.filteredcurrencyCtcs = [...this.currencyCtcs];
+                } catch (error) {
+                    console.error("Failed to fetch specialization details:", error);
                 }
             },
             filterStatesHSC() {

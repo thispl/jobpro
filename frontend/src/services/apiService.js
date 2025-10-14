@@ -67,15 +67,36 @@ const apiService = {
       throw error;
     }
   },
+  async getProjectDetails(project) {
+    const apiKey = '4aedf12d2330fbe';
+    const apiSecret = '2d72f01e8e1a60a';
+    const baseUrl = `/api/resource/Project/${project}`;
 
-async createUser(full_name, email, password, mobile_no, source, reference_source, media_source, country_name) {
+    try {
+      const response = await axios.get(baseUrl, {
+        headers: {
+          Authorization: `token ${apiKey}:${apiSecret}`,
+        },
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching data from ERPNext:', error);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+      }
+      throw error;
+    }
+  },
+
+async createUser(full_name, email, password, mobile_no, source, reference_source, media_source , countryData ) {
   const apiKey = '4aedf12d2330fbe';
   const apiSecret = '2d72f01e8e1a60a';
     const apiUrl = '/api/method/jobpro.jobpro_web.new_user'; 
+    console.log("Country Name =",countryData)
     try {
         const response = await axios.post(
             apiUrl,
-            {full_name, email, password, mobile_no, source, reference_source, media_source, country_name}, 
+            {full_name, email, password, mobile_no, source, reference_source, media_source, countryData}, 
             {
                 headers: {
                     // 'Content-Type': 'application/json',
@@ -83,6 +104,7 @@ async createUser(full_name, email, password, mobile_no, source, reference_source
                 },
             }
         );
+        console.log(response)
         return response;
     } catch (error) {
         return error.response.data.exception;
@@ -302,6 +324,7 @@ async findAppliedJobs(task, id) {
   const apiSecret = '2d72f01e8e1a60a';
   const apiUrl = '/api/method/jobpro.jobpro_web.find_applied_jobs';  
   try {
+    
     const response = await axios.post(apiUrl, {task, id}, {
       
         headers: {
@@ -319,6 +342,7 @@ async applyJobs(task, candidate) {
   const apiSecret = '2d72f01e8e1a60a';
   const apiUrl = '/api/method/jobpro.jobpro_web.apply_jobs';  
   try {
+    
     const response = await axios.post(apiUrl, {task, candidate}, {
       
         headers: {
@@ -330,6 +354,10 @@ async applyJobs(task, candidate) {
       return error.response;
   }
 },
+
+
+
+
 
 async getPopUrl() {
   const apiKey = '4aedf12d2330fbe';
@@ -352,6 +380,38 @@ async getQualificationList() {
   const apiKey = '4aedf12d2330fbe';
   const apiSecret = '2d72f01e8e1a60a';
   const apiUrl = '/api/method/jobpro.jobpro_web.list_course';  
+  try {
+    const response = await axios.post(apiUrl, {
+      
+        headers: {
+            "Authorization": `token ${apiKey}:${apiSecret}`,
+        },
+  });
+      return response;
+  } catch (error) {
+      return error.response;
+  }
+},
+async getSpecializationList() {
+  const apiKey = '4aedf12d2330fbe';
+  const apiSecret = '2d72f01e8e1a60a';
+  const apiUrl = '/api/method/jobpro.jobpro_web.list_specialization';  
+  try {
+    const response = await axios.post(apiUrl, {
+      
+        headers: {
+            "Authorization": `token ${apiKey}:${apiSecret}`,
+        },
+  });
+      return response;
+  } catch (error) {
+      return error.response;
+  }
+},
+async getcurrencyCtcList() {
+  const apiKey = '4aedf12d2330fbe';
+  const apiSecret = '2d72f01e8e1a60a';
+  const apiUrl = '/api/method/jobpro.jobpro_web.list_currencyCtc';  
   try {
     const response = await axios.post(apiUrl, {
       
@@ -558,14 +618,14 @@ async update_referpro_profile_data(email, account_number, ifsc_code, name, prima
   }
 },
 
-async getCandidateID(userMail) {
+async getCandidateID(user_mail) {
   const apiKey = '4aedf12d2330fbe';
   const apiSecret = '2d72f01e8e1a60a';
   const apiUrl = '/api/method/jobpro.jobpro_web.get_candidate_id';  
   try {
-    const response = await axios.post(apiUrl, {userMail}, {
+    const response = await axios.post(apiUrl, {user_mail}, {
         headers: {
-            "Authorization": `token ${apiKey}:${apiSecret}`,
+            "Authorization": `token ${apiKey}:${apiSecret}`
         },
   });
       return response;
@@ -578,6 +638,38 @@ async createPurchaseInvoice(supplier, item) {
   const apiKey = '4aedf12d2330fbe';
   const apiSecret = '2d72f01e8e1a60a';
   const apiUrl = '/api/method/jobpro.jobpro_web.create_purchase_invoice';  
+  try {
+    const response = await axios.post(apiUrl, {supplier, item}, {
+        headers: {
+            "Authorization": `token ${apiKey}:${apiSecret}`,
+        },
+  });
+      return response;
+  } catch (error) {
+      return error.response;
+  }
+},
+
+async getReferproClaimDetails(candidate, user_id) {
+  const apiKey = '4aedf12d2330fbe';
+  const apiSecret = '2d72f01e8e1a60a';
+  const apiUrl = '/api/method/jobpro.jobpro_web.get_claim_details';  
+  try {
+    const response = await axios.post(apiUrl, {candidate, user_id}, {
+        headers: {
+            "Authorization": `token ${apiKey}:${apiSecret}`,
+        },
+  });
+      return response;
+  } catch (error) {
+      return error.response;
+  }
+},
+
+async isPurchaseInvoiceCreated(supplier, item) {
+  const apiKey = '4aedf12d2330fbe';
+  const apiSecret = '2d72f01e8e1a60a';
+  const apiUrl = '/api/method/jobpro.jobpro_web.is_purchase_invoice_created';  
   try {
     const response = await axios.post(apiUrl, {supplier, item}, {
         headers: {
