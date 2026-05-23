@@ -345,9 +345,9 @@
 
             <!-- Posts -->
               <div v-if="filteredTaskCount > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 md:ml-[15px]  mt-10 gap-y-7 gap-x-0 w-[75%]  md:ml-auto font-sans  ">
-                  <div v-for="(task, index) in paginatedTasks" :key="task.name" class="job-card" >
-                    <div class="card-inner">
-                      <div class="border rounded-md  transition-colors px-5 shadow-lg shadow-gray-600 card-front relative pt-2 scroll-smooth  ;">
+                  <div v-for="(task, index) in paginatedTasks" :key="task.name" class="job-card h-[350px]" >
+                    <div class="card-inner ">
+                      <div class="border rounded-md   transition-colors px-5 shadow-lg shadow-gray-600 card-front relative pt-2 scroll-smooth  ;">
                           <div v-if="expireDate(task.exp_end_date) < 12 && newlyPosted(task.created_on)==false" class="expires-soon">
                               <img src="https://i.postimg.cc/vZQrChGv/Red-Corner-Label-4-PNG-SVG-Design-For-T-Shirts-removebg-preview.png" class="z-10">
                               <p class="rotate-45 z-15 expires-soon-text font-semibold">Expires Soon</p>
@@ -435,7 +435,7 @@
                       </div>
                       
 
-                      <div class="border rounded-md hover:bg-white transition-colors px-5 shadow-lg shadow-gray-600 card-back  relative  scroll-smooth  ;">
+                      <div class="border rounded-md  hover:bg-white transition-colors px-5 shadow-lg shadow-gray-600 card-back  relative  scroll-smooth  ;">
                              
                              <div class="flex  absolute top-[-3px]">
                               <h1 class="pt-3 text-md font-sans text-gray-900 font-bold min-h-10 capitalize" style="color: #05264e;">{{ task.subject }}</h1>
@@ -950,16 +950,7 @@ import { id } from 'intl-tel-input/i18n';
     showRegisterPopup(newVal) {
       if (newVal) {
         this.$nextTick(() => {
-        //   if (this.$refs.phoneInput) {
-        //     if (!this.iti) {
-        //       this.iti = intlTelInput(this.$refs.phoneInput, {
-        //         initialCountry: "in",
-        //         separateDialCode: true,
-        //         nationalMode: false,
-        //         utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.8/build/js/utils.js"
-        //       });
-        //     }
-        //   }
+       
         
           if (this.$refs.phoneInput) {
     if (!this.iti) {
@@ -970,8 +961,7 @@ import { id } from 'intl-tel-input/i18n';
         utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@17.0.8/build/js/utils.js"
       });
 
-      // Force reset width after plugin sets it
-    //   this.$refs.phoneInput.style.width = "100%";
+      
     }
   }
 
@@ -2325,17 +2315,7 @@ min-height: 350px;
       color: #0062d3;
       transition: all 0.3s ease-in-out;
   }
-/* .iti {
-  display: block !important;
-  width: 100% !important;
-} */
 
-/* Make the input itself full width */
-/* .iti .iti__tel-input,
-.iti input {
-  width: 100% !important;
-  box-sizing: border-box !important;
-} */
 
   
 

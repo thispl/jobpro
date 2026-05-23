@@ -61,6 +61,7 @@ class Closure(Document):
         if not self.onboarded:
             parent_territory = frappe.get_value(
                 'Territory', self.territory, 'parent_territory')
+            
             if self.territory == 'India' or parent_territory == 'India':
                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                 if previous_status != self.status and self.status:

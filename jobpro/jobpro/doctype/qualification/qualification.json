@@ -9,7 +9,9 @@
  "field_order": [
   "qualification",
   "qualification_type",
-  "category"
+  "category",
+  "section_break_elzx",
+  "candidate_specialization"
  ],
  "fields": [
   {
@@ -33,13 +35,24 @@
    "in_standard_filter": 1,
    "label": "Category",
    "options": "Qualification Category"
+  },
+  {
+   "fieldname": "section_break_elzx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "candidate_specialization",
+   "fieldtype": "Table",
+   "label": "Specialization",
+   "options": "Candidate Specialization"
   }
  ],
  "links": [],
- "modified": "2020-09-10 11:34:58.205965",
+ "modified": "2026-01-07 21:52:55.975048",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Qualification",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -58,5 +71,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

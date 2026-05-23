@@ -61,41 +61,6 @@ def update_timesheet():
                 doc.save(ignore_permissions=True)
                 frappe.db.commit()
                 
-
-
-@frappe.whitelist()
-def update_candidate_list(candidate,project,customer,task):
-    can = json.loads(candidate)
-    for c in can:
-        cand = frappe.get_doc("Candidate",(c["candidate_id"]))
-        cand.update({
-            "pending_for": c["candidate_status"],
-            "degree" : c.get("degree"),
-            # "specialization" : c.get("specialization"),
-            # "current_ctc" :c.get("current_ctc"),
-            # "current_ctc" :c.get("current_ctc"),
-            "indian_experience" : c.get("indian_experience"),
-            "gulf_experience" : c.get("gulf_experience"),
-            "currency_type" : c.get("currency_type"),
-            "expected_ctc" : c.get("expected_ctc"),
-            "passport_no" : c.get("passport_no"),
-            "expiry_date" : c.get("expiry_date"),
-            "ecr_status" : c.get("ecr_status"),
-            "current_location" : c.get("current_location"),
-            "mobile" : c.get("mobile"),
-            "associate_name" : c.get("associate"),
-            "user" : c.get("user"),
-        })
-        # child = frappe.get_all('Candidate Task',{'parent':c["candidate_id"]},['customer','project','task','pending_for','territory'])
-        # for ch in child:
-        #     if ch.customer == customer and ch.project == project:
-        #         ch.update({
-        #             "pending_for":c["candidate_status"],
-        #             })
-        #         ch.db_update()
-        cand.db_update()
-        frappe.db.commit()
-
 @frappe.whitelist()
 def update_candidates(candidate):
     can = json.loads(candidate)
@@ -112,15 +77,6 @@ def update_candidates(candidate):
         cand.db_update()
         frappe.db.commit()
 
-@frappe.whitelist()
-def load_candidates(task):
-    candidates = frappe.get_all("Candidate", {"task": task}, ["*"], order_by="given_name asc")
-    # candidates = frappe.db.sql("""select `tabCandidate`.name as candidate_id,`tabCandidate`.pending_for as candidate_status,`tabCandidate`.given_name as given_name,
-    # `tabCandidate`.mobile as mobile,`tabCandidate`.sa_name as sa_name,`tabCandidate`.candidate_created_by as candidate_created_by,`tabCandidate Task`.task
-    # FROM `tabCandidate`
-    # LEFT JOIN `tabCandidate Task` ON `tabCandidate`.name = `tabCandidate Task`.parent
-    # WHERE `tabCandidate Task`.task = '%s' """%(task),as_dict=True)
-    return candidates
 # @frappe.whitelist()
 # def update_task():
 #     candidate=frappe.get_all("Candidate")
@@ -181,54 +137,54 @@ def sa_candidate(task,project):
     return(allocated)    
 
 
-@frappe.whitelist()
-def project_sa_candidate(project):
-    allocated = frappe.db.sql("""
-        SELECT sa_agent,sa_agent_name,sa_mobile_number,count(sa_agent) as achieved_count,
-        (SELECT COUNT(pending_for) as count1 FROM `tabCandidate` cc WHERE cc.project= '%s' AND cc.pending_for = 'IDB' AND 
-        cc.sa_agent = sa.name) as selected,
-        (SELECT COUNT(pending_for) as count2 FROM `tabCandidate` cfp WHERE cfp.project= '%s' AND cfp.pending_for IN ('Submitted','Interviewed') AND
-        cfp.sa_agent = sa.name) as fp,
-        (SELECT COUNT(pending_for) as count3 FROM `tabCandidate` csl WHERE csl.project= '%s' AND csl.pending_for IN ('Linedup','Shortlisted') AND
-        csl.sa_agent = sa.name) as sl,
-        (SELECT COUNT(pending_for) as count4 FROM `tabCandidate` cpsl WHERE cpsl.project= '%s' AND  cpsl.pending_for ='Proposed PSL' AND 
-        cpsl.sa_agent = sa.name) as psl,
-        (SELECT COUNT(pending_for) as count5 FROM `tabCandidate` csp WHERE csp.project= '%s' AND csp.pending_for ='Sourced' AND 
-        csp.sa_agent = sa.name) as sp,
-        (SELECT COUNT(pending_for) as count6 FROM `tabCandidate` tsa WHERE tsa.project= '%s' AND tsa.pending_for IN ('Submitted','Interviewed','Linedup','Shortlisted','IDB','Proposed PSL','Sourced') AND 
-        tsa.sa_agent = sa.name) as tsa
-        FROM `tabCandidate` c 
-        JOIN `tabSAMS` sa ON  sa.name = c.sa_agent 
-        WHERE c.project='%s'AND c.sa_agent IS NOT NULL AND c.project IS NOT NULL GROUP BY sa.name
-        """ %(project,project,project,project,project,project,project),as_dict=1)
-    return(allocated)
+# @frappe.whitelist()
+# def project_sa_candidate(project):
+#     allocated = frappe.db.sql("""
+#         SELECT sa_agent,sa_agent_name,sa_mobile_number,count(sa_agent) as achieved_count,
+#         (SELECT COUNT(pending_for) as count1 FROM `tabCandidate` cc WHERE cc.project= '%s' AND cc.pending_for = 'IDB' AND 
+#         cc.sa_agent = sa.name) as selected,
+#         (SELECT COUNT(pending_for) as count2 FROM `tabCandidate` cfp WHERE cfp.project= '%s' AND cfp.pending_for IN ('Submitted','Interviewed') AND
+#         cfp.sa_agent = sa.name) as fp,
+#         (SELECT COUNT(pending_for) as count3 FROM `tabCandidate` csl WHERE csl.project= '%s' AND csl.pending_for IN ('Linedup','Shortlisted') AND
+#         csl.sa_agent = sa.name) as sl,
+#         (SELECT COUNT(pending_for) as count4 FROM `tabCandidate` cpsl WHERE cpsl.project= '%s' AND  cpsl.pending_for ='Proposed PSL' AND 
+#         cpsl.sa_agent = sa.name) as psl,
+#         (SELECT COUNT(pending_for) as count5 FROM `tabCandidate` csp WHERE csp.project= '%s' AND csp.pending_for ='Sourced' AND 
+#         csp.sa_agent = sa.name) as sp,
+#         (SELECT COUNT(pending_for) as count6 FROM `tabCandidate` tsa WHERE tsa.project= '%s' AND tsa.pending_for IN ('Submitted','Interviewed','Linedup','Shortlisted','IDB','Proposed PSL','Sourced') AND 
+#         tsa.sa_agent = sa.name) as tsa
+#         FROM `tabCandidate` c 
+#         JOIN `tabSAMS` sa ON  sa.name = c.sa_agent 
+#         WHERE c.project='%s'AND c.sa_agent IS NOT NULL AND c.project IS NOT NULL GROUP BY sa.name
+#         """ %(project,project,project,project,project,project,project),as_dict=1)
+#     return(allocated)
 
-@frappe.whitelist()
-def count_task(project):
-    task = frappe.db.count('Task',{'project':project,'status':('in',["Open","Working","Overdue","Pending Review"])})
-    count_vac = frappe.db.sql("""
-        SELECT SUM(vac) AS total_vac
-        FROM `tabTask`
-        WHERE project = %s
-        AND status IN ('Open', 'Working', 'Pending Review', 'Overdue')
-    """, (project,), as_dict=True)
-    count = frappe.db.sql("""
-        SELECT SUM(sp) AS total_sp, SUM(fp) AS total_fp, SUM(sl) AS total_sl, SUM(psl) AS total_psl
-        FROM `tabTask`
-        WHERE project = %s
-        AND status IN ('Open', 'Working', 'Pending Review', 'Overdue', 'Completed')
-    """, (project,), as_dict=True)
-    return task, count_vac, count
+# @frappe.whitelist()
+# def count_task(project):
+#     task = frappe.db.count('Task',{'project':project,'status':('in',["Open","Working","Overdue","Pending Review"])})
+#     count_vac = frappe.db.sql("""
+#         SELECT SUM(vac) AS total_vac
+#         FROM `tabTask`
+#         WHERE project = %s
+#         AND status IN ('Open', 'Working', 'Pending Review', 'Overdue')
+#     """, (project,), as_dict=True)
+#     count = frappe.db.sql("""
+#         SELECT SUM(sp) AS total_sp, SUM(fp) AS total_fp, SUM(sl) AS total_sl, SUM(psl) AS total_psl
+#         FROM `tabTask`
+#         WHERE project = %s
+#         AND status IN ('Open', 'Working', 'Pending Review', 'Overdue', 'Completed')
+#     """, (project,), as_dict=True)
+#     return task, count_vac, count
 
-@frappe.whitelist()
-def task_count(project):
-    task_it = frappe.db.count('Task',{'project':project})
-    work_it = frappe.db.count('Task',{'project':project,"status":"Working"})
-    pending_it = frappe.db.count('Task',{'project':project,"status":"Pending Review"})
-    comp_it = frappe.db.count('Task',{'project':project,"status":"Completed"})
-    open_it = frappe.db.count('Task',{'project':project,"status":"Open"})
-    overdue_it = frappe.db.count('Task',{'project':project,"status":"Overdue"})
-    return task_it,work_it,pending_it,comp_it,open_it,overdue_it
+# @frappe.whitelist()
+# def task_count(project):
+#     task_it = frappe.db.count('Task',{'project':project})
+#     work_it = frappe.db.count('Task',{'project':project,"status":"Working"})
+#     pending_it = frappe.db.count('Task',{'project':project,"status":"Pending Review"})
+#     comp_it = frappe.db.count('Task',{'project':project,"status":"Completed"})
+#     open_it = frappe.db.count('Task',{'project':project,"status":"Open"})
+#     overdue_it = frappe.db.count('Task',{'project':project,"status":"Overdue"})
+#     return task_it,work_it,pending_it,comp_it,open_it,overdue_it
 
 @frappe.whitelist()
 def case_count(batch):  
@@ -287,98 +243,6 @@ def leave_allocation():
                 allocation.submit()
                 frappe.db.commit()
 
-@frappe.whitelist()
-def auto_mail_to_sams(project,territory):
-    task =frappe.get_all("Task",filters = {"project":project}, fields = ["*"])
-    for t in task:
-        sams =frappe.db.sql("""select email_address,person_name from`tabSAMS` where NOT sa_status= "Do Not Contact" """,as_dict=True)
-        for s in sams:
-            vacancy =t.vac * t.prop
-            frappe.sendmail(
-                recipients=["sarumathy.d@groupteampro.com"],
-                subject='Regarding Vacancy' ,
-                message="""<p>Dear %s,</p>
-                <p>Greetings From TEAMPRO !!! <br>
-                    We are always happy to be associated with you, and appreciate your sincere efforts to be support us in recruitment.
-                    We have a manpower requirement������������������������������������������������������������������������������������������������������������������������������������������������������������������for once of our reputed client in %s������������������������������������������������������������������������������������������������������������������������������������������������������������������; The details for project is as below:
-                    <table class='table table-bordered'>
-                    <tr>
-                    <th>Position</th>  <th>Vacancy</th>  <th> Valid till</th>
-                    </tr>
-                    <tr>
-                     <td> %s </td> <td> %s </td> <td> %s </td>
-                    </tr>
-                     </table>
-                     <br>
-                     <table class='table table-bordered'>
-                     <tr>
-                    <th> Job Requirement</th> 
-                    </tr>
-                    <tr>
-                    <th> Qualification Type </th>   <th> Temp Qualification </th> <th>Minimum Experience</th>  <th>Total Experience</th>
-                    </tr>
-                    <tr>
-                    <td> %s </td>   <td> %s </td> <td> %s </td> <td> %s </td>
-                    </tr>
-                    <tr>
-                    <th> Salary Type </th>  <th>Specialization</th> <th> Maximum Experience </th> <th>Currency</th>
-                    </tr>
-                    <tr>
-                    <td> %s </td>  <td>%s</td> <td> %s </td> <td> %s </td>
-                    </tr>
-                    <tr>
-                    <th> Category </th>  <th>Gulf Experience</th> <th> Amount </th> <th>Driving Licence (If any)</th>
-                    </tr>
-                    <tr>
-                    <td> %s </td>  <td>%s</td> <td> %s </td> <td> %s </td>
-                    </tr>
-                     </table>
-                     <br>
-                     <table class='table table-bordered'>
-                     <tr>
-                    <th>Job Description </th> 
-                    </tr>
-                    <tr>
-                    <td> %s </td>
-                    </tr>
-                     </table>
-                     <br>
-                     <table class='table table-bordered'>
-                    <tr>
-                    <th>Allowance and Benefits  </th> 
-                    </tr>
-                    <tr>
-                    <th> Working Days/HRS </th>  <th> Food </th> <th>Visa Type </th> <th>Transportation </th> 
-                    </tr>
-                    <tr>
-                    <td> %s </td>  <td>%s</td> <td> %s </td> <td> %s </td>
-                    </tr>
-                     <tr>
-                    <th> Accommodation </th>  <th> Nationality </th> <th>  Contract Period Year</th> <th> Contract Period  Month</th>
-                    </tr>
-                    <tr>
-                    <td> %s </td>  <td>%s</td> <td> %s </td> <td> %s </td>
-                    </tr>
-                    <tr>
-                    <th>  Over Time </th>  <th> Joining Ticket </th> <th> Leave </th> <th> Any Other Allowance</th>
-                    </tr>
-                    <tr>
-                    <td> %s </td>  <td>%s</td> <td> %s </td> <td> %s </td>
-                    </tr>
-                    </table>
-                    <br>
-                    Please contact us at������������������������������������������������������������������������������������������������������������������������������������������������������������������+91 73050 56202������������������������������������������������������������������������������������������������������������������������������������������������������������������/������������������������������������������������������������������������������������������������������������������������������������������������������������������+91 73050 56203������������������������������������������������������������������������������������������������������������������������������������������������������������������/������������������������������������������������������������������������������������������������������������������������������������������������������������������+91 73050 56201������������������������������������������������������������������������������������������������������������������������������������������������������������������/������������������������������������������������������������������������������������������������������������������������������������������������������������������+91 7550224400
-                    or write to us at������������������������������������������������������������������������������������������������������������������������������������������������������������������cv@groupteampro.com������������������������������������������������������������������������������������������������������������������������������������������������������������������/������������������������������������������������������������������������������������������������������������������������������������������������������������������hr@groupteampro.com
-                    </p> 
-                    <style>
-                    th {
-                        background-color:989898
-                    }
-                    </style>
-                    """ % (s.person_name,territory,t.subject,vacancy,t.exp_end_date ,t.qualification_type,t.temp_qualification,
-                    t.minimum_experience,t.total_experience, t.salary_type,t.specialization,t.maximum_experience,t.currency,t.category,t.gulf_experience,
-                    t.amount ,t.driving_licence ,t.description,t.working_days,t.food,t.visa_type,t.transportation,t.accommodation,t.nationality,
-                    t.contract_period_year,t.contract_period__month,t.over_time,t.joining_ticket,t.leave,t.any_other_allowance,))
 
 @frappe.whitelist()
 def update_sams():
@@ -488,13 +352,7 @@ def create_task(**args):
 #             "cron_format": '00 1 * * *'
 #         })
 #         sjt.save(ignore_permissions=True)
-@frappe.whitelist()
-def update_sams_by(doc,method):
-    if doc.sa_agent:
-        frappe.db.set_value("Candidate",doc.name,'custom_sourced_by',"SAMS")
-    else:
-            frappe.db.set_value("Candidate",doc.name,'custom_sourced_by',"Normal")
-       
+
     
 @frappe.whitelist()
 def update_task_counts(doc,method):
@@ -539,7 +397,7 @@ def update_task_counts(doc,method):
 def check_candidate_for_sourced(candidate_id):
     candidate = frappe.get_doc("Candidate", candidate_id)
     for i in candidate.custom_interview_history:
-        if i.client_name == candidate.customer:
+        if i.client_name == candidate.customer and candidate.interviewed_date:
             interviewed_date_str = candidate.interviewed_date.strftime('%d-%m-%Y')
             return_msg= (
                 f"This candidate has already attended an interview with this client on {interviewed_date_str} "
@@ -576,120 +434,12 @@ def validate_passport(passport):
         if existing_candidate:
             frappe.throw(f"A candidate with Passport Number {passport} already exists.")
         
-@frappe.whitelist()     
-def on_click_create_mail(project,name,task,vac):
-    create=frappe.get_doc("Project",name)
-    table = '<table text-align="center" border="1" width="25%" style="border-collapse: collapse;">'
-    table += '<tr style="background-color: #87CEFA"><td style= width="1%";font-weight: bold;">Task ID</td><td style="width:1%; font-weight: bold;">Subject</td><td style="width: 1%; font-weight: bold;">No of Vacancies</td><td style="width:1%; font-weight: bold;">SP</td></tr>'
-    task=frappe.db.get_all("Task",{'project':name},['name','subject','vac','sp'])
-    for i in task:
-        tot_sp=frappe.db.sql("""SELECT sum(sp) as sp from `tabTask` where project=%s group by project""",(create.name),as_dict=True)[0]
-        tot_vac=frappe.db.sql("""SELECT sum(vac) as vac from `tabTask` where project=%s group by project""",(create.name),as_dict=True)[0]
-        table+="""<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"""%(i.name,i.subject,i.vac,i.sp)
-    table+="""<tr><td colspan=2 style="text-align: center;">Total</td><td>%s</td><td>%s</td></tr>"""%(round(tot_vac['vac']) or '',round(tot_sp['sp']) or '')
-    table+='</table>'
-    subject="Action Created-  %s" % nowdate()
-    message = """
-    Dear Sir/Madam,<br><br>
-    Kindly find the below Action Created Details:<p><b>Project Name:</b>{}<p><b>Project ID:</b>{}– a new project has been created for your further action.<br>{}<br></p><br>
-    Thanks & Regards,<br>TEAM ERP<br>
-    <i>This email has been automatically generated. Please do not reply</i>
-    """.format(create.project_name,create.name,table)
-    frappe.sendmail(
-        # recipients=["divya.p@groupteampro.com"],
-        recipients=["sangeetha.a@groupteampro.com","dineshbabu.k@groupteampro.com","sangeetha.s@groupteampro.com"],
-        subject=subject,
-        message=message
-    )
-@frappe.whitelist()     
-def on_click_confirm_mail(project,name):
-    create=frappe.get_doc("Project",name)
-    # det=frappe.db.get_all("Task",{'project_name':'project','project':'name'})
-    table= '<table text-align="center" border="1" width="25%" style="border-collapse: collapse;">'
-    table += '<tr style="background-color: #87CEFA"><td style="width:1%; font-weight: bold;">Task ID</td><td style="width: 1%; font-weight: bold;">Subject</td><td style="width: 1%; font-weight: bold;">No of Vacancies</td><td style="width: 1%; font-weight: bold;">#SP</td><td style="width: 1%; font-weight: bold;">Date Batch-1</td><td style="width: 1%; font-weight: bold;">Date Batch-2</td></tr>'
-    task=frappe.db.get_all("Task",{'project':name},['name','subject','vac','sp'])
-    manager=frappe.db.get_value("Project",{'name':name},['account_manager'])
-    for i in task:
-        tot_sp=frappe.db.sql("""SELECT sum(sp) as sp from `tabTask` where project=%s group by project""",(create.name),as_dict=True)[0]
-        tot_vac=frappe.db.sql("""SELECT sum(vac) as vac from `tabTask` where project=%s group by project""",(create.name),as_dict=True)[0]
-        table+="""<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td></td><td></td></tr>"""%(i.name,i.subject,i.vac,i.sp)
-    table+="""<tr><td colspan=2 style="text-align: center;">Total</td><td>%s</td><td>%s</td><td></td><td></td></tr>"""%(round(tot_vac['vac']) or '',round(tot_sp['sp']) or '')
-    table+='</table>'
-    subject="Action Confirmed-  %s" % nowdate()
-    message = """
-    Dear Sir/Madam,<br><br>
-    Kindly find the below Action Created Details:<p><b>Project Name:{}</b><p><b>Project ID:</b>{}– has been confirmed for execution by OPS Team.<br>{}<br></p><br>
-    Thanks & Regards,<br>TEAM ERP<br>
-    <i>This email has been automatically generated. Please do not reply</i>
-    """.format(create.project_name,create.name,table)
-    frappe.sendmail(
-        # recipients=["divya.p@groupteampro.com"],
-        recipients=["dineshbabu.k@groupteampro.com","sangeetha.s@groupteampro.com","annie.m@groupteampro.com",manager],
-        subject = subject,
-        message=message
-    
-        ) 
-
-# @frappe.whitelist()
-# def on_click_confirm_mail(project,name):
-#     create = frappe.get_doc("Project",name)
-#     tasks = frappe.db.get_all("Task", filters={'project': create.name}, fields=['name'])
-#     manager=frappe.db.get_value("Project",{'name':create.name},['account_manager'])
-#     details = []
-#     if tasks:
-#         task_names = [task['name'] for task in tasks]
-#         details = frappe.get_all("Project Plan Child", filters={'parent': ['in', task_names]}, fields=['parent', 'date', 'count'])
-#     table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-#     table += '<tr style="background-color: #87CEFA"><td style="width: 20%; font-weight: bold; text-align: center;">Task ID</td><td style="width: 20%; font-weight: bold; text-align: center;">Subject</td><td style="width: 20%; font-weight: bold; text-align: center;">No Of Vacancies</td><td style="width: 20%; font-weight: bold; text-align: center;">#SP</td><td style="width: 20%; font-weight: bold; text-align: center;">Date Batch-1</td><td style="width: 20%; font-weight: bold; text-align: center;">Date Batch-2</td></tr>'
-#     task_dict = {task['name']: task for task in tasks}  # Dictionary to store task info by task name
-#     for record in details:
-#         task = task_dict.get(record['parent'])
-#         table += f"<tr><td>{record['parent']}</td><td>{task['subject']}</td><td>{task['vac']}</td><td>{task['sp']}</td><td>{record['date']}</td><td>{record['count']}</td></tr>"
-    
-#     # for record in details:
-#     #     table += f"<tr><td>{record['parent']}</td><td>{record['date']}</td><td>{record['count']}</td></tr>"
-#     table += "</table>"
-#     email_message = f"""   
-#         Dear Sir/Mam,<br>
-#         <p><b>Project Name: </b>{create.project_name} & <b>Project ID:</b>{create.name} – has been confirmed for execution by OPS Team.</p><br>
-#         {table}<br>
-#         Thanks & Regards<br>TEAM ERP<br>"This email has been automatically generated. Please do not reply"
-#     """
-    
-#     # Send the email
-#     frappe.sendmail(
-#         recipients=["divya.p@groupteampro.com"],
-#         # recipients=["dineshbabu.k@groupteampro.com","sangeetha.s@groupteampro.com","annie.m@groupteampro.com",manager],
-#         subject=f"New Action Confirmed - {nowdate()}",
-#         message=email_message
-#     )
-
-
-@frappe.whitelist()     
-def on_creation_of_psl_mail(doc,method):
-    creates=frappe.get_doc("Closure",doc)
-    candidate_mail=frappe.db.get_value("Candidate",{"name":doc.candidate},['mail_id'])
-    acc=frappe.db.get_value("Candidate",{"name":doc.candidate},['task'])
-    acc_manager=frappe.db.get_value("Task",{'name':acc},['account_manager'])
-    spoc=frappe.db.get_value("Task",{'name':acc},['spoc'])
-    frappe.sendmail(
-        # recipients=["divya.p@groupteampro.com"],
-        recipients=["sangeetha.s@groupteampro.com","dc@groupteampro.com",acc_manager,spoc],
-        subject = "New PSL Created -  %s" % nowdate(),
-        message="""   
-        Dear Sir/Mam,<br>
-        <p><b>Closure ID: </b>%s  <b> Status :</b>%s  <b> Customer Name :</b>%s -a new PSL added in Closure for your further action.</p><br>
-        
-            Thanks & Regards<br>TEAM ERP<br>"This email has been automatically generated. Please do not reply"
-    """ % (doc.name,doc.status,doc.customer)
-        ) 
-
 @frappe.whitelist() 
 def fp_candidate_list_send_mail():
     projects=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
     
     for i in projects:
-        s_no=0
+        # s_no=0
         table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
         table += '<tr style="background-color: #87CEFA"><td style="width: 45%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 25%; font-weight: bold; text-align: center;">Project Name</td><td style="width: 30%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 25%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 25%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
         tasks = frappe.get_all("Task", {'status': ('in', ['Open', 'Working','Overdue','Pending Review']),'project':i.name},['*'],group_by= "spoc")
@@ -697,11 +447,12 @@ def fp_candidate_list_send_mail():
         spoc=frappe.db.get_value("Task",{'project':i.name},['spoc'])
         task_count=frappe.db.count("Task", {'status': ('in', ['Open', 'Working','Overdue','Pending Review']),'project':i.name})
         # table+="""<tr><td></td><td></td><td></td><td></td><td></td><td>%s</td><td></td><td></td><td></td><td></td></tr>"""%(i.project_name)
-        print(acc_manager)
-        print(spoc)
-        print(task_count)
+        # print(acc_manager)
+        # print(spoc)
+        # print(task_count)
         if task_count>0:
             row=0
+            s_no = 0
             for j in tasks:
                 candidate=frappe.get_all("Candidate",{'pending_for':('not in',['IDB','Sourced','Proposed PSL']),'task':j.name},['name','pending_for','given_name','position','project_name','project','customer','age_of_cv','custom_next_contact_on'],group_by= "customer ASC")
                 for ca in candidate:
@@ -723,149 +474,12 @@ def fp_candidate_list_send_mail():
             """.format(table)
 
             frappe.sendmail(
-                # recipients=["divya.p@groupteampro.com"],
+                # recipients=["sivarenisha.m@groupteampro.com"],
                 recipients=[acc_manager,spoc],
+                cc=["annie.m@groupteampro.com"],
                 subject=subject,
                 message=message,
             )
-@frappe.whitelist()
-def send_mail_to_creation_adv(name):
-    pro = frappe.get_doc("Project",name)
-    tasks = frappe.get_all("Task",{'project': pro.name},['*'])
-    t=frappe.db.get_all("Task",{'project': pro.name},['food'],group_by='food')
-    food_count=len(t)
-    qualification=frappe.get_all("Task",{'project': pro.name},['qualification_type'],group_by='qualification_type')
-    qual_count=len(qualification)
-    experience=frappe.get_all("Task",{'project': pro.name},['total_experience'],group_by='total_experience')
-    exp_count=len(experience)
-    g_experience=frappe.get_all("Task",{'project': pro.name},['gulf_experience'],group_by='gulf_experience')
-    g_exp=len(g_experience)
-    interview=frappe.get_all("Task",{'project': pro.name},['mode_of_interview'],group_by='mode_of_interview')
-    int_count=len(interview)
-    acc=frappe.get_all("Task",{'project': pro.name},['accommodation'],group_by='accommodation')
-    a_count=len(acc)
-    transport=frappe.get_all("Task",{'project': pro.name},['transportation'],group_by='transportation')
-    trans_count=len(transport)
-    visa=frappe.get_all("Task",{'project': pro.name},['visa_type'],group_by='visa_type')
-    v_count=len(visa)
-    con=frappe.get_all("Task",{'project': pro.name},['contract_period_year'],group_by='contract_period_year')
-    con_count=len(con)
-    categorys=frappe.get_all("Task",{'project': pro.name},['category'],group_by='category')
-    ca_count=len(categorys)
-    keys=frappe.get_all("Task",{'project': pro.name},['custom_major_key_skills'],group_by='custom_major_key_skills')
-    key_count=len(keys)
-    rec=frappe.get_all("Task",{'project': pro.name},['custom_free_recruitment'],group_by='custom_free_recruitment')
-    rec_count=len(rec)
-    task_count=(frappe.db.count("Task",{'project': pro.name}))
-    table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-    table += '<tr style="background-color: #87CEFA"><td style="width: 10%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">Title</td><td style="width: 60%; font-weight: bold; text-align: center;">Details</td></tr>'
-    table += """<tr><td></td><td>Project ID</td><td>{}</td></tr>""".format(pro.name or '')
-    table += """<tr><td></td><td>Date</td><td>{}</td></tr>""".format(pro.custom_actionconfirmed_datetime or '')
-    table += """<tr><td>1</td><td>Country</td><td>{}</td></tr>""".format(pro.territory or '')
-    table += """<tr><td></td><td>Client</td><td>{}</td></tr>""".format(pro.customer or '')
-    s_no = 0
-    for i in tasks:
-        if tasks.index(i)==0:
-            table += """<tr><td rowspan={}>2</td><td rowspan={}>Positions</td><td>{}</td></tr>""".format(task_count,task_count,i.subject or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(i.subject or '')
-    for k in keys:
-        if keys.index(k)==0:
-            table += """<tr><td rowspan={}>3</td><td rowspan={}>Major Key Skills</td><td>{}</td></tr>""".format(key_count,key_count,k.custom_major_key_skills or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(k.custom_major_key_skills or '')
-    for d in qualification:
-        if qualification.index(d)==0:
-            table += """<tr><td rowspan={}>4</td><td rowspan={}>Qualification</td><td>{}</td></tr>""".format(qual_count,qual_count,d.qualification_type or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(d.qualification_type or '')
-    for e in experience:
-        if experience.index(e)==0:
-            table += """<tr><td rowspan={}>5</td><td rowspan={}>Experience</td><td>{}</td></tr>""".format(exp_count,exp_count,e.total_experience or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(e.total_experience or '')
-    for g in g_experience:
-        if g_experience.index(g)==0:
-            table += """<tr><td rowspan={}>6</td><td rowspan={}>GCC Experience</td><td>{}</td></tr>""".format(g_exp,g_exp,g.gulf_experience or '')
-        else:
-            table +="""<tr><td>{}</td></tr>""".format(g.gulf_experience or '')
-    for r in rec:
-        if rec.index(r)==0:
-            table += """<tr><td rowspan={}>7</td><td rowspan={}>Free Recruitment</td><td>{}</td></tr>""".format(rec_count,rec_count,r.custom_free_recruitment or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(r.custom_free_recruitment or '')
-    for m in interview:
-        if interview.index(m)==0:
-            table += """<tr><td rowspan={}>8</td><td rowspan={}>Mode Of Interview</td><td>{}</td></tr>""".format(int_count,int_count,m.mode_of_interview or '')
-        else:
-            table += """<tr><td>{}</td></tr>""".format(m.mode_of_interview or '')
-    table += """<tr><td>9</td><td>If Direct Client Interview - Location & Date</td><td></td></tr>"""
-    for j in t:
-            if t.index(j)==0:
-                table += """<tr><td rowspan={}>10</td><td rowspan={}>Food</td><td>{}</td></tr>""".format(food_count,food_count,j.food or '')
-            else:
-                table +=  """<tr><td>{}</td></tr>""".format(j.food or '')
-    for a in acc:
-            if acc.index(a)==0:
-                table += """<tr><td rowspan={}>11</td><td rowspan={}>Accomodation</td><td>{}</td></tr>""".format(a_count,a_count,a.accommodation or '')
-            else:
-                table +=  """<tr><td>{}</td></tr>""".format(a.accommodation or '')
-    for tr in transport:
-            if transport.index(tr)==0:
-                table += """<tr><td rowspan={}>12</td><td rowspan={}>Transportation</td><td>{}</td></tr>""".format(trans_count,trans_count,tr.transportation or '')
-            else:
-                table += """<tr><td>{}</td></tr>""".format(tr.transportation or '')
-    table += """<tr><td>13</td><td>Contact Number</td><td></td></tr>"""
-    table += """<tr><td>14</td><td>Mail ID</td><td></td></tr>"""
-    for v in visa:
-            if visa.index(v)==0:
-                table += """<tr><td rowspan={}>15</td><td rowspan={}>Visa Type</td><td>{}</td></tr>""".format(v_count,v_count,v.visa_type or '')
-            else:
-                table += """<tr><td>{}</td></tr>""".format(v.visa_type or '')
-    for cons in con:
-            if con.index(cons)==0:
-                table += """<tr><td rowspan={}>16</td><td rowspan={}>Contract</td><td>{}</td></tr>""".format(con_count,con_count,cons.contract_period_year or '')
-            else:
-                table += """<tr><td>{}</td></tr>""".format(cons.contract_period_year or '')
-    for cat in categorys:
-            if categorys.index(cat)==0:
-                table += """<tr><td rowspan={}>17</td><td rowspan={}>ECR/ECNR</td><td>{}</td></tr>""".format(ca_count,ca_count,cat.category or '')
-            else:
-                table += """<tr><td>{}</td></tr>""".format(cat.category or '')
-    table += """<tr><td>18</td><td>Special Remarks</td><td>Attractive Salary</td></tr>"""
-    table += """<tr><td>19</td><td>Common Version 1.0</td><td>Company Name + Logo + RA Licence + Location + Website + Common Number (7305056202) + Common Mail ID</td></tr>"""
-    table += '</table>'
-    subject = " Action Confirmed -  {}".format(frappe.utils.nowdate())
-    message = """
-    Dear Sir/Madam,<br><br>
-    Kindly find the below Action Confirmed Details:<br><br>{}<br><br>
-    Thanks & Regards,<br>TEAM ERP<br>
-    <i>This email has been automatically generated. Please do not reply</i>
-    """.format(table)
-    frappe.sendmail(
-        # recipients=["divya.p@groupteampro.com"],
-        recipients=["dineshbabu.k@groupteampro.com","dm@groupteampro.com","annie.m@groupteampro.com"],
-        subject=subject,
-        message=message
-    )
-
-
-@frappe.whitelist()     
-def send_mail_to_drop(name):
-    create=frappe.get_doc("Closure",name)
-    candidate=frappe.db.get_all("Candidate",{"name":create.candidate},['task'])
-    spoc=frappe.db.get_value("Task",{'name':candidate},['spoc'])
-    frappe.sendmail(
-        # recipients=["divya.p@groupteampro.com"],
-        recipients=[spoc],
-        subject = "Candidate Droped-  %s" % nowdate(),
-        message="""   
-        Dear Sir/Mam,<br>
-        <p><b>Closure ID: </b>%s – has been Droped.Additional CV is Required</p><br>
-        
-            Thanks & Regards<br>TEAM ERP<br>"This email has been automatically generated. Please do not reply"
-    """ % (create.name)
-        ) 
     
 @frappe.whitelist() 
 def fp_candidate_list_send_mail_to_spoc():
@@ -884,18 +498,18 @@ def fp_candidate_list_send_mail_to_spoc():
         spoc_projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']], 'spoc': spoc,'custom_spoc__next_contact_on':next_day}, fields=['*'])
         table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
         for project in spoc_projects:
-            s_no = 0
             tasks = frappe.get_all("Task", filters={'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']), 'project': project['name'], 'service': ('in', ['REC-D', 'REC-I'])}, fields=['name'])
             candidate_count = frappe.db.count("Candidate", filters={'project': project['name'], 'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL'])})
             if candidate_count > 0:
+                s_no = 0
                 row = 0
                 table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,project['project_name'])
                 table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 30%; font-weight: bold; text-align: center;">Passport No</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
                 for task in tasks:
-                    s_no += 1
                     candidates = frappe.get_all("Candidate", filters={'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']), 'task': task['name']}, fields=['name', 'pending_for', 'given_name','passport_number', 'position', 'candidate_created_by', 'project', 'customer', 'age_of_cv', 'custom_next_contact_on'])
                     for candidate in candidates:
                         row += 1
+                        s_no += 1
                         table += """<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no, candidate['name'], candidate['pending_for'], candidate['given_name'],candidate['passport_number'], candidate['position'], candidate['candidate_created_by'], candidate['project'], candidate['customer'], candidate['age_of_cv'], candidate['custom_next_contact_on'] or '')
         table += '</table>'
         subject = "FP List - %s" % nowdate()
@@ -908,7 +522,8 @@ def fp_candidate_list_send_mail_to_spoc():
         if candidate_count>0:
             frappe.sendmail(
                 recipients=[spoc],
-                # recipients=["divya.p@groupteampro.com"],
+                cc=["annie.m@groupteampro.com"],
+                # recipients=["riyaz.a@groupteampro.com"],
                 subject=subject,
                 message=message,
             )
@@ -967,6 +582,7 @@ def update_project_count(doc,method):
         tot_sp=frappe.db.sql("""SELECT sum(sp) as sp from `tabTask` where project=%s """,(doc.project),as_dict=True)[0]
         tot_lp=frappe.db.sql("""SELECT sum(custom_lp) as lp from `tabTask` where project=%s""",(doc.project),as_dict=True)[0]
         tot_rp=frappe.db.sql("""SELECT sum(custom_rp) as rp from `tabTask` where project=%s""",(doc.project),as_dict=True)[0]
+        tot_vac=frappe.db.sql("""SELECT sum(vac) as vac from `tabTask` where project=%s""",(doc.project),as_dict=True)[0]
         if tot_fp['fp'] is not None:
             frappe.db.set_value("Project",doc.project,'tfp',tot_fp['fp'])
         if tot_psl['psl'] is not None:
@@ -979,6 +595,8 @@ def update_project_count(doc,method):
             frappe.db.set_value("Project",doc.project,'custom_t_lp',tot_lp['lp'])  
         if tot_rp['rp'] is not None:
             frappe.db.set_value("Project",doc.project,'custom_t_rp',tot_rp['rp'])              
+        if tot_vac['vac'] is not None:
+            frappe.db.set_value("Project",doc.project,'tvac',tot_vac['vac'])              
         # frappe.db.set_value("Project", doc.project, 'tfp', tot_fp[0].get('fp', 0))
         # frappe.db.set_value("Project", doc.project, 'tpsl', tot_psl[0].get('psl', 0))
         # frappe.db.set_value("Project", doc.project, 'tsl', tot_sl[0].get('sl', 0))
@@ -989,7 +607,7 @@ def fp_candidate_list_send_mails():
     projects=frappe.get_all("Project",{'status':'Open','service':('in',['REC-D','REC-I'])},['*'])
     table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
     for i in projects:
-        s_no=0
+        
 
         # row=0
         tasks = frappe.get_all("Task", {'status': ('in', ['Open', 'Working','Overdue','Pending Review']),'project':i.name,'service':('in',['REC-D','REC-I'])},['*'])
@@ -999,15 +617,16 @@ def fp_candidate_list_send_mails():
         candidate_count=frappe.db.count("Candidate", {'project':i.name,'pending_for':('not in',['IDB','Sourced','Proposed PSL'])})
         if candidate_count>0:
             row=0
+            s_no=0
             table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,i.project_name)
             # table += '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
             table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
             for j in tasks:
-                s_no+=1
+                
                 candidate=frappe.get_all("Candidate",{'pending_for':('not in',['IDB','Sourced','Proposed PSL']),'task':j.name},['name','pending_for','given_name','position','candidate_created_by','project_name','project','customer','age_of_cv','custom_next_contact_on'])
                 for ca in candidate:
                     row+=1
-                    # s_no+=1
+                    s_no+=1
                     table+="""<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no,ca.name,ca.pending_for,ca.given_name,ca.position,ca.candidate_created_by,ca.project,ca.customer,ca.age_of_cv,ca.custom_next_contact_on or '')
     table += '</table>'
     subject = "FP List -  %s" % nowdate()
@@ -1019,8 +638,9 @@ def fp_candidate_list_send_mails():
     """.format(table)
     # if row>1:
     frappe.sendmail(
-        recipients=["sangeetha.a@groupteampro.com"],
-        # recipients=["divya.p@groupteampro.com"],
+        recipients=["sangeetha.s@groupteampro.com"],
+        cc=["annie.m@groupteampro.com"],
+        # recipients=["riyaz.a@groupteampro.com"],
         subject=subject,
         message=message,
     )
@@ -1030,88 +650,337 @@ from frappe.utils import nowdate
 
 import frappe
 
-@frappe.whitelist() 
-def fp_candidate_to_spoc():
-    projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]}, fields=['name', 'spoc'])
-    spoc_set = set()
-    for project in projects:
-        if project.get('spoc'):
-            spoc_set.add(project['spoc'])
-    spoc_list = list(spoc_set)
-    # table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-    print(spoc_list)
-    for spoc in spoc_list:
-        spoc_projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']], 'spoc': spoc}, fields=['*'])
-        table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
+# @frappe.whitelist() 
+# def fp_candidate_to_spoc():
+#     projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]}, fields=['name', 'spoc'])
+#     spoc_set = set()
+#     for project in projects:
+#         if project.get('spoc'):
+#             spoc_set.add(project['spoc'])
+#     spoc_list = list(spoc_set)
+#     # table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
+#     # print(spoc_list)
+#     for spoc in spoc_list:
+#         spoc_projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']], 'spoc': spoc}, fields=['*'])
+#         table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
        
+#         for project in spoc_projects:
+#             tasks = frappe.get_all("Task", filters={'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']), 'project': project['name'], 'service': ('in', ['REC-D', 'REC-I'])}, fields=['name'])
+#             candidate_count = frappe.db.count("Candidate", filters={'project': project['name'], 'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL'])})
+#             if candidate_count > 0:
+#                 row = 0
+#                 s_no = 0
+#                 table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,project['project_name'])
+#                 table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 25%; font-weight: bold; text-align: center;">Passport No</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
+#                 for task in tasks:
+#                     candidates = frappe.get_all("Candidate", filters={'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']), 'task': task['name']}, fields=['name', 'pending_for', 'given_name','passport_number', 'position', 'candidate_created_by', 'project', 'customer', 'age_of_cv', 'custom_next_contact_on'])
+#                     for candidate in candidates:
+#                         row += 1
+#                         s_no += 1  
+#                         table += """<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no, candidate['name'], candidate['pending_for'],candidate['given_name'] ,candidate['passport_number'],candidate['position'], candidate['candidate_created_by'], candidate['project'], candidate['customer'], candidate['age_of_cv'], candidate['custom_next_contact_on'] or '')
+#         table += '</table>'
+#         subject = "FP List - %s" % nowdate()
+#         message = """
+#         Dear Sir/Madam,<br><br>
+#         Kindly find the below list of your FP List:<br><br>{}<br><br>
+#         Thanks & Regards,<br>TEAM ERP<br>
+#         <i>This email has been automatically generated. Please do not reply</i>
+#         """.format(table)
+#         recipient_email = "cs@groupteampro.com" if spoc == "tamilarasi.ts@groupteampro.com" else spoc
+
+#         frappe.sendmail(
+#             recipients=[recipient_email],
+#             subject=subject,
+#             message=message,
+#         )
+
+
+@frappe.whitelist()
+def fp_candidate_to_spoc():
+
+    projects = frappe.get_all(
+        "Project",
+        filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]},
+        fields=['name', 'spoc', 'project_name']
+    )
+
+    # Group projects by SPOC
+    spoc_map = {}
+    for p in projects:
+        if p.spoc:
+            spoc_map.setdefault(p.spoc, []).append(p)
+
+    for spoc, spoc_projects in spoc_map.items():
+
+        table = '<table border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
+        has_data = False
+
         for project in spoc_projects:
-            s_no = 0
-            tasks = frappe.get_all("Task", filters={'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']), 'project': project['name'], 'service': ('in', ['REC-D', 'REC-I'])}, fields=['name'])
-            candidate_count = frappe.db.count("Candidate", filters={'project': project['name'], 'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL'])})
-            if candidate_count > 0:
-                row = 0
-                table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,project['project_name'])
-                table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 25%; font-weight: bold; text-align: center;">Passport No</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
-                for task in tasks:
-                    s_no += 1
-                    candidates = frappe.get_all("Candidate", filters={'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']), 'task': task['name']}, fields=['name', 'pending_for', 'given_name','passport_number', 'position', 'candidate_created_by', 'project', 'customer', 'age_of_cv', 'custom_next_contact_on'])
-                    for candidate in candidates:
-                        row += 1
-                        table += """<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no, candidate['name'], candidate['pending_for'],candidate['given_name'] ,candidate['passport_number'],candidate['position'], candidate['candidate_created_by'], candidate['project'], candidate['customer'], candidate['age_of_cv'], candidate['custom_next_contact_on'] or '')
+
+            tasks = frappe.get_all(
+                "Task",
+                filters={
+                    'project': project.name,
+                    'status': ['in', ['Open', 'Working', 'Overdue', 'Pending Review']],
+                    'service': ['in', ['REC-D', 'REC-I']]
+                },
+                fields=['name']
+            )
+
+            task_names = [t.name for t in tasks]
+
+            if not task_names:
+                continue
+
+            candidates = frappe.get_all(
+                "Candidate",
+                filters={
+                    'task': ['in', task_names],
+                    'pending_for': ['not in', ['IDB', 'Sourced', 'Proposed PSL']]
+                },
+                fields=[
+                    'name', 'pending_for', 'given_name',
+                    'passport_number', 'position',
+                    'candidate_created_by', 'project',
+                    'customer', 'age_of_cv', 'custom_next_contact_on'
+                ]
+            )
+
+            if not candidates:
+                continue
+
+            has_data = True
+            table += f"""<tr><td colspan=11><b>{project.project_name}</b></td></tr>"""
+
+            table += '''
+            <tr style="background-color: #87CEFA">
+                <td>S.NO</td><td>CDID</td><td>Status</td><td>Name</td>
+                <td>Passport</td><td>Position</td><td>Owner</td>
+                <td>Project</td><td>Customer</td><td>Age</td><td>Next Contact</td>
+            </tr>
+            '''
+
+            for i, c in enumerate(candidates, 1):
+                table += f"""
+                <tr>
+                    <td>{i}</td>
+                    <td>{c.name}</td>
+                    <td>{c.pending_for}</td>
+                    <td>{c.given_name}</td>
+                    <td>{c.passport_number}</td>
+                    <td>{c.position}</td>
+                    <td>{c.candidate_created_by}</td>
+                    <td>{c.project}</td>
+                    <td>{c.customer}</td>
+                    <td>{c.age_of_cv}</td>
+                    <td>{c.custom_next_contact_on or ''}</td>
+                </tr>
+                """
+
         table += '</table>'
-        subject = "FP List - %s" % nowdate()
-        message = """
+
+        if not has_data:
+            continue  # skip empty mail
+
+        subject = f"FP List - {frappe.utils.nowdate()}"
+
+        message = f"""
         Dear Sir/Madam,<br><br>
-        Kindly find the below list of your FP List:<br><br>{}<br><br>
+        Kindly find the below list of your FP List:<br><br>
+        {table}<br><br>
         Thanks & Regards,<br>TEAM ERP<br>
         <i>This email has been automatically generated. Please do not reply</i>
-        """.format(table)
+        """
+
+        recipient_email = "cs@groupteampro.com" if spoc == "tamilarasi.ts@groupteampro.com" else spoc
+        # recipient_email = "sivarenisha.m@groupteampro.com" 
         frappe.sendmail(
-            recipients=[spoc],
-            # recipients=["divya.p@groupteampro.com"],
+            recipients=[recipient_email],
             subject=subject,
             message=message,
         )
 
+    # frappe.db.commit()
+
+    
+# @frappe.whitelist() 
+# def fp_candidate_to_acc_manager():
+#     projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]}, fields=['name', 'account_manager'])
+#     spoc_set = set()
+#     for project in projects:
+#         if project.get('account_manager'):
+#             spoc_set.add(project['account_manager'])
+#     spoc_list = list(spoc_set)
+#     # table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
+#     print(spoc_list)
+#     for spoc in spoc_list:
+#         spoc_projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']], 'account_manager': spoc}, fields=['name','project_name'])
+#         table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
+       
+#         for project in spoc_projects:
+#             s_no = 0
+#             tasks = frappe.get_all("Task", filters={'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']), 'project': project['name'], 'service': ('in', ['REC-D', 'REC-I'])}, fields=['name'])
+#             candidate_count = frappe.db.count("Candidate", filters={'project': project['name'], 'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL'])})
+#             if candidate_count > 0:
+#                 row = 0
+#                 table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,project['project_name'])
+#                 table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 25%; font-weight: bold; text-align: center;">Passport No</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
+#                 for task in tasks:
+#                     # s_no += 1
+#                     candidates = frappe.get_all("Candidate", filters={'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']), 'task': task['name']}, fields=['name', 'pending_for', 'given_name','passport_number', 'position', 'candidate_created_by', 'project', 'customer', 'age_of_cv', 'custom_next_contact_on'])
+#                     for candidate in candidates:
+#                         row += 1
+#                         s_no += 1
+#                         table += """<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no, candidate['name'], candidate['pending_for'], candidate['given_name'],candidate['passport_number'], candidate['position'], candidate['candidate_created_by'], candidate['project'], candidate['customer'], candidate['age_of_cv'], candidate['custom_next_contact_on'] or '')
+#         table += '</table>'
+#         subject = "FP List - %s" % nowdate()
+#         message = """
+#         Dear Sir/Madam,<br><br>
+#         Kindly find the below list of your FP List:<br><br>{}<br><br>
+#         Thanks & Regards,<br>TEAM ERP<br>
+#         <i>This email has been automatically generated. Please do not reply</i>
+#         """.format(table)
+#         frappe.sendmail(
+#             # recipients=["sivarenisha.m@groupteampro.com"],
+#             recipients=[spoc],
+#             cc=["annie.m@groupteampro.com", "cs@groupteampro.com" ],
+#             subject=subject,
+#             message=message,
+#         )
+
 @frappe.whitelist() 
 def fp_candidate_to_acc_manager():
-    projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]}, fields=['name', 'account_manager'])
+
+    projects = frappe.get_all(
+        "Project",
+        filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']]},
+        fields=['name', 'account_manager']
+    )
+
     spoc_set = set()
     for project in projects:
         if project.get('account_manager'):
             spoc_set.add(project['account_manager'])
+
     spoc_list = list(spoc_set)
-    # table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-    print(spoc_list)
+
+    # frappe.logger().info(spoc_list)
+
     for spoc in spoc_list:
-        spoc_projects = frappe.get_all("Project", filters={'status': 'Open', 'service': ['in', ['REC-D', 'REC-I']], 'account_manager': spoc}, fields=['name','project_name'])
+
+        spoc_projects = frappe.get_all(
+            "Project",
+            filters={
+                'status': 'Open',
+                'service': ['in', ['REC-D', 'REC-I']],
+                'account_manager': spoc
+            },
+            fields=['name', 'project_name']
+        )
+
         table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-       
+
         for project in spoc_projects:
+
             s_no = 0
-            tasks = frappe.get_all("Task", filters={'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']), 'project': project['name'], 'service': ('in', ['REC-D', 'REC-I'])}, fields=['name'])
-            candidate_count = frappe.db.count("Candidate", filters={'project': project['name'], 'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL'])})
-            if candidate_count > 0:
-                row = 0
-                table+="""<tr style="text-align: center;"><td style="border-left: none; border-right: none;"colspan=10 %s>%s</td></tr>"""%(row+1,project['project_name'])
-                table += '<tr style="background-color: #87CEFA"><td style="width: 15%; font-weight: bold; text-align: center;">S.NO</td><td style="width: 30%; font-weight: bold; text-align: center;">CDID</td><td style="width: 25%; font-weight: bold; text-align: center;">Candidate Status</td><td style="width: 25%; font-weight: bold; text-align: center;">Given Name/Surname</td><td style="width: 25%; font-weight: bold; text-align: center;">Passport No</td><td style="width: 25%; font-weight: bold; text-align: center;">Position</td><td style="width: 30%; font-weight: bold; text-align: center;">Candidate Owner</td><td style="width: 40%; font-weight: bold; text-align: center;">Project ID</td><td style="width: 40%; font-weight: bold; text-align: center;">Customer Name</td><td style="width: 25%; font-weight: bold; text-align: center;">Age</td><td style="width: 30%; font-weight: bold; text-align: center;">Next Contact On</td></tr>'
-                for task in tasks:
-                    s_no += 1
-                    candidates = frappe.get_all("Candidate", filters={'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']), 'task': task['name']}, fields=['name', 'pending_for', 'given_name','passport_number', 'position', 'candidate_created_by', 'project', 'customer', 'age_of_cv', 'custom_next_contact_on'])
-                    for candidate in candidates:
-                        row += 1
-                        table += """<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (s_no, candidate['name'], candidate['pending_for'], candidate['given_name'],candidate['passport_number'], candidate['position'], candidate['candidate_created_by'], candidate['project'], candidate['customer'], candidate['age_of_cv'], candidate['custom_next_contact_on'] or '')
+
+            tasks = frappe.get_all(
+                "Task",
+                filters={
+                    'status': ('in', ['Open', 'Working', 'Overdue', 'Pending Review']),
+                    'project': project['name'],
+                    'service': ('in', ['REC-D', 'REC-I'])
+                },
+                fields=['name']
+            )
+
+            task_names = [t['name'] for t in tasks]
+
+            if not task_names:
+                continue
+
+            candidates = frappe.get_all(
+                "Candidate",
+                filters={
+                    'pending_for': ('not in', ['IDB', 'Sourced', 'Proposed PSL']),
+                    'task': ('in', task_names)
+                },
+                fields=[
+                    'name', 'pending_for', 'given_name',
+                    'passport_number', 'position',
+                    'candidate_created_by', 'project',
+                    'customer', 'age_of_cv', 'custom_next_contact_on'
+                ]
+            )
+
+            if not candidates:
+                continue
+            row = 0
+
+            table += """<tr style="text-align: center;">
+                <td style="border-left: none; border-right: none;" colspan=10>%s</td>
+            </tr>""" % (project['project_name'])
+
+            table += '''
+            <tr style="background-color: #87CEFA">
+                <td style="width: 15%; font-weight: bold;">S.NO</td>
+                <td style="width: 30%; font-weight: bold;">CDID</td>
+                <td style="width: 25%; font-weight: bold;">Candidate Status</td>
+                <td style="width: 25%; font-weight: bold;">Given Name/Surname</td>
+                <td style="width: 25%; font-weight: bold;">Passport No</td>
+                <td style="width: 25%; font-weight: bold;">Position</td>
+                <td style="width: 30%; font-weight: bold;">Candidate Owner</td>
+                <td style="width: 40%; font-weight: bold;">Project ID</td>
+                <td style="width: 40%; font-weight: bold;">Customer Name</td>
+                <td style="width: 25%; font-weight: bold;">Age</td>
+                <td style="width: 30%; font-weight: bold;">Next Contact On</td>
+            </tr>
+            '''
+
+            for candidate in candidates:
+                row += 1
+                s_no += 1
+
+                table += """<tr>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                    <td>%s</td>
+                </tr>""" % (
+                    s_no,
+                    candidate['name'],
+                    candidate['pending_for'],
+                    candidate['given_name'],
+                    candidate['passport_number'],
+                    candidate['position'],
+                    candidate['candidate_created_by'],
+                    candidate['project'],
+                    candidate['customer'],
+                    candidate['age_of_cv'],
+                    candidate['custom_next_contact_on'] or ''
+                )
+
         table += '</table>'
-        subject = "FP List - %s" % nowdate()
+
+        subject = "FP List - %s" % frappe.utils.nowdate()
+
         message = """
         Dear Sir/Madam,<br><br>
         Kindly find the below list of your FP List:<br><br>{}<br><br>
         Thanks & Regards,<br>TEAM ERP<br>
         <i>This email has been automatically generated. Please do not reply</i>
         """.format(table)
+
         frappe.sendmail(
-            # recipients=["jothi.m@groupteampro.com"],
             recipients=[spoc],
+            cc=["annie.m@groupteampro.com", "cs@groupteampro.com"],
             subject=subject,
             message=message,
         )
@@ -1188,146 +1057,6 @@ def get_data(args):
             ])
     return data
 
-@frappe.whitelist() 
-def send_mail_to_candidate(candidate_id):
-    candidate=frappe.db.get_all("Candidate",{'name':candidate_id},['mail_id','territory','position','given_name','interview_location','interview_date','passport_number'])
-    candidate_mail=frappe.db.get_value("Candidate",{'name':candidate_id},['mail_id'])
-    if candidate:
-        candidate = candidate[0]
-    subject = " Acknowledgement of Receipt - Original Passport for ACGC, {}  {}".format(candidate['territory'],candidate['position']) 
-    message = """
-    Dear {},
-    <br><br>
-    Greetings from TEAMPRO!
-    <br><br>
-    Following your interview for the position of {} with ACGC, {} in {} on {}, we are delighted to inform you that you have been shortlisted for further consideration.
-    <br><br>
-    This email serves as confirmation of the receipt of your original passport (Passport No: {}), which we will securely hold until the next stage of the process.
-    <br><br>
-    Should you have any questions or require further clarification, please don't hesitate to contact us.
-    <br><br>
-    We appreciate the opportunity to be of service to you.
-    <br><br>
-    Note: This acknowledgment does not guarantee employment and is subject to confirmation from the client's side.
-    <br><br>
-    With Best Wishes & Regards,
-    <br><br>
-    TEAMPRO""".format(candidate['given_name'],candidate['position'],candidate['territory'],candidate['interview_location'],candidate['interview_date'],candidate['passport_number'])
-    frappe.sendmail(
-        # recipients=[candidate_mail],
-        recipients=["abdulla.pi@groupteampro.com"],
-        subject=subject,
-        message=message,
-    )
-
-@frappe.whitelist() 
-def send_mail_to_candidate_pass_return(candidate_id):
-    candidate=frappe.db.get_all("Candidate",{'name':candidate_id},['mail_id','territory','position','given_name','interview_location','interview_date','passport_number'])
-    candidate_mail=frappe.db.get_value("Candidate",{'name':candidate_id},['mail_id'])
-    if candidate:
-        candidate = candidate[0]
-    subject = " Acknowledgement of Returned- Original Passport for ACGC, {}  {}".format(candidate['territory'],candidate['position']) 
-    message = """
-    Dear {},
-    <br><br>
-    Greetings from TEAMPRO!
-    <br><br>
-    Following your interview for the position of {} with ACGC, {} in {} on {}.
-    <br><br>
-    This email serves as confirmation of the return of your original passport (Passport No: {})
-    <br><br>
-    Should you have any questions or require further clarification, please don't hesitate to contact us.
-    <br><br>
-    We appreciate the opportunity to be of service to you.
-    <br><br>
-    Note: This acknowledgment does not guarantee employment and is subject to confirmation from the client's side.
-    <br><br>
-    With Best Wishes & Regards,
-    <br><br>
-    TEAMPRO""".format(candidate['given_name'],candidate['position'],candidate['territory'],candidate['interview_location'],candidate['interview_date'],candidate['passport_number'])
-    frappe.sendmail(
-        # recipients=[candidate_mail],
-        recipients=["sangeetha.a@groupteampro.com"],
-        subject=subject,
-        message=message,
-    )
-
-@frappe.whitelist() 
-def send_mail_to_draft(acc_manager,reason,name):
-    subject="Project:{} is moved to draft".format(name)
-    message="""
-        <br>Dear Sir/Mam,<br>
-        The Project:{} status is moved to Draft.The following queries need to be clarified.
-        <br>Reason:{}
-        <br><br>
-        With Best Wishes & Regards,
-        <br><br>
-        TEAMPRO""".format(name,reason)
-    frappe.sendmail(
-        recipients=acc_manager,
-        # recipients=["divya.p@groupteampro.com"],
-        subject=subject,
-        message=message,
-    )
-
-@frappe.whitelist() 
-def send_notification_to_am_cofirmed(name):
-    subject="Project:{} is conifirmed by Account Manager".format(name)
-    message="""
-            <br>Dear Sir/Mam,<br>
-            The Project:{} is conifirmed by Account Manager for your further action.
-            <br><br>
-            With Best Wishes & Regards,
-            <br><br>
-            TEAMPRO""".format(name)
-    frappe.sendmail(
-        recipients=["sangeetha.a@groupteampro.com"],
-        # recipients=["divya.p@groupteampro.com"],
-        subject=subject,
-        message=message,
-    )
-
-@frappe.whitelist() 
-def candidate_idb_remarks(candidate_id,reason):
-    subject="Candidate:{} is {}".format(candidate_id,reason)
-    message="""
-            <br>Dear Sir/Mam,<br>
-            Candidate:{} is {}
-            <br><br>
-            With Best Wishes & Regards,
-            <br><br>
-            TEAMPRO""".format(candidate_id,reason)
-    frappe.sendmail(
-        recipients=["sangeetha.a@groupteampro.com"],
-        # recipients=["divya.p@groupteampro.com"],
-        subject=subject,
-        message=message,
-    )
-    # return "ok"
-
-# @frappe.whitelist()
-# def candidate_update():
-#     value=frappe.db.get_all("Candidate",{'pending_for':'Submitted(Internal)','submitted_date':('<','2024-08-16')},['*'])
-#     ind=0
-#     for i in value:
-#         ind+=1
-#     # print(ind)
-#         frappe.db.sql("""update `tabCandidate` set pending_for = 'Submitted(Client)' where name = %s""",(i.name))
-
-
-# @frappe.whitelist()
-# def project_name_update():
-#     tasks=frappe.db.get_all("Task",{"project":"PROJ-1713"},["name"])
-#     count=0
-#     for i in tasks:
-#         count+=1
-#         frappe.db.set_value("Task",i.name,"project_name","ONEIC_16.08.2024")
-#         print(i.name)
-#     print(count)
-
-# @frappe.whitelist()
-# def closure_update():
-#     frappe.db.set_value("Closure",{"name":"CL03059"},"status","Visa")
 
 @frappe.whitelist()
 def quotation_validate(doc, method):
@@ -1769,7 +1498,7 @@ def app_team_dpr_mail(filename, file_content):
         reciever.append(j.user_id)
     for i in emp:
         recievers.append(i.user_id)
-    recievers.append('anil.p@groupteampro.com')
+    recievers.append('annie.m@groupteampro.com')
     data = '<table border="1" width="100%" style="border-collapse: collapse;">'
     data += '<tr style="text-align:center;"><td colspan="9"><b>APP & Team DPR, {}</b></td></tr>'.format(formatted_date)
     data += '''
@@ -1849,26 +1578,6 @@ def app_team_dpr_mail(filename, file_content):
     data += '</table>'
 
 
-
-#     frappe.sendmail(
-#                 # recipients=recievers,
-#                 recipients=['divya.p@groupteampro.com'],
-#                 # recipients=['anil.p@groupteampro.com'],
-#                 # cc='dineshbabu.k@groupteampro.com',
-#                 subject='APP & Team DPR %s -Reg' % formatted_date,
-#                 message = """
-#                 <b>Dear Team,</b><br><br>
-# Please find the below DPR for {} for your kind reference and action.<br><br>
-
-#             {}<br><br>
-#                 Thanks & Regards,<br>TEAM ERP<br>
-                
-#                 <i>This email has been automatically generated. Please do not reply</i>
-#                 """.format(formatted_date,data),
-#                 attachments=[
-#             {"fname": filename, "fcontent": file_content}
-#             ]
-#             )
     for user_i in reciever:
         data = '<table border="1" width="100%" style="border-collapse: collapse;">'
         data += '<tr style="text-align:center;"><td colspan="8"><b>APP & Team DPR, {}</b></td></tr>'.format(formatted_date)
@@ -1946,21 +1655,7 @@ def app_team_dpr_mail(filename, file_content):
                     data += '<tr style="text-align:center;"><td colspan="1">{}</td><td colspan="1">{}</td><td colspan="7" style="text-align: left; padding-left: 50px;">{}</td></tr>'.format(short_code, i.time, i.name)
 
         data += '</table>'
-        # frappe.sendmail(
-        #     # recipients=[user_emails],
-        #     recipients=['divya.p@groupteampro.com'],
-        #     subject='APP & Team DPR %s - Reg' % formatted_date,
-        #     message="""
-        #         <b>Dear {user},</b><br><br>
-        #         Please find the below DPR for {date} for your kind reference and action.<br><br>
-        #         {table}<br><br>
-        #         Thanks & Regards,<br>TEAM ERP<br>
-        #         <i>This email has been automatically generated. Please do not reply</i>
-        #     """.format(user=user_email.split('@')[0], date=formatted_date, table=data),
-        #     attachments=[
-        #     {"fname": filename, "fcontent": file_content},
-        # ]
-        # )
+     
 
 
 import frappe
@@ -2005,7 +1700,7 @@ def make_xlsx_for_app_team_dpr(filename):
     # Fetch employee list
     emp = frappe.db.get_all("Employee", {'status': 'Active', 'reports_to': 'TI00023', 'user_id': ('not in', ['sivarenisha.m@groupteampro.com', 'jeniba.a@groupteampro.com'])}, ['*'])
     recievers = [employee.user_id for employee in emp]
-    recievers.append("anil.p@groupteampro.com")
+    recievers.append("annie.m@groupteampro.com")
 
     # DPR Data
     for user_email in recievers:
@@ -2665,19 +2360,52 @@ def make_xlsx_test(data, sheet_name=None, wb=None, column_widths=None):
     ws = wb.create_sheet(sheet_name, 0)
 
     # Set column widths
-    for col in range(ord('A'), ord('M')):  # Columns A to L
-        ws.column_dimensions[chr(col)].width = 20
+    # for col in range(ord('A'), ord('N')):  # Columns A to M
+    #     ws.column_dimensions[chr(col)].width = 20
+    
+    column_widths = {
+        
+        "A": 5,  
+        "B": 15,  
+        "C": 15,  
+        "D": 40,  
+        "E": 15,  
+        "F": 15,  
+        "G": 10,  
+        "H": 10,  
+        "I":10 , 
+        "J": 36,  
+        "K": 18,  
+        "L":18 ,  
+        "M": 18,
+        "N":15,
+        "O":70   
+    }
+
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+
 
     # Define headers
-    headers = ["Candidate ID", "PP Number", "Candidate Name", "Qualification", 
-               "Total Yrs of Exp", "Overseas Exp", "Current Employer", 
-               "Current Salary", "Exp. Salary", "Current Location", 
-               "Notice Period", "Remarks"]
+    # headers = [
+    # "S.No", "CD ID", "PP Number", "Candidate Name", "Qualification",
+    # "Specialization", "Experience", "", "", "Current Employer",
+    # "Salary (SAR)", "", "Current Location", "Notice Period", "Remarks"
+    # ]
+
+    sub_headers = [
+        "", "", "", "", "", "",
+        "India", "Gulf", "Total",
+        "",
+        "Current", "Expected",
+        "", "", ""
+    ]
+
 
     # Define styles
-    position_fill = PatternFill(start_color="0F1568", end_color="0F1568", fill_type="solid")
+    position_fill = PatternFill(start_color="0f1568", end_color="0f1568", fill_type="solid")
     position_font = Font(color="FFFFFF", bold=True)
-    header_fill = PatternFill(start_color="98D7F5", end_color="98D7F5", fill_type="solid")
+    header_fill = PatternFill(start_color="00b1f0", end_color="00b1f0", fill_type="solid")
     header_font = Font(bold=True)
     black_border = Border(
         left=Side(border_style="thin", color="000000"),
@@ -2685,13 +2413,33 @@ def make_xlsx_test(data, sheet_name=None, wb=None, column_widths=None):
         top=Side(border_style="thin", color="000000"),
         bottom=Side(border_style="thin", color="000000")
     )
+    even_row_fill = PatternFill(
+    start_color="e6f2f1",
+    end_color="e6f2f1",
+    fill_type="solid"
+    )
     # Fetch candidate data grouped by positions
     position_candidates = get_data_grouped_by_position(args)
+    
+    
+        
 
-    for position, candidates in position_candidates.items():
+    for position, position_data in position_candidates.items():
+        
+        candidates = position_data["rows"]
+        currency = position_data["currency"]
+
+        headers = [
+            "S.No", "CD ID", "PP Number", "Candidate Name", "Qualification",
+            "Specialization", "Experience", "", "",
+            "Current Employer",
+            f"Salary ({currency})", "",
+            "Current Location", "Notice Period", "Remarks"
+        ]
+        
         # Add position row
         position_row = ws.max_row + 1
-        ws.merge_cells(start_row=position_row, start_column=1, end_row=position_row, end_column=12)
+        ws.merge_cells(start_row=position_row, start_column=1, end_row=position_row, end_column=15)
         cell = ws.cell(row=position_row, column=1)
         cell.value = f"{position}"
         cell.fill = position_fill
@@ -2700,23 +2448,99 @@ def make_xlsx_test(data, sheet_name=None, wb=None, column_widths=None):
         cell.border = black_border
 
         # Add headers
-        header_row = ws.max_row + 1
+        # header_row = ws.max_row + 1
+        # for col_num, header in enumerate(headers, start=1):
+        #     cell = ws.cell(row=header_row, column=col_num)
+        #     cell.value = header
+        #     cell.fill = header_fill
+        #     cell.font = header_font
+        #     cell.alignment = Alignment(horizontal="center", vertical="center")
+        #     cell.border = black_border
+        
+        
+        header_row_1 = ws.max_row + 1
+        header_row_2 = header_row_1 + 1
+
+        # First header row
         for col_num, header in enumerate(headers, start=1):
-            cell = ws.cell(row=header_row, column=col_num)
+            cell = ws.cell(row=header_row_1, column=col_num)
             cell.value = header
             cell.fill = header_fill
             cell.font = header_font
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = black_border
 
+        # Second header row (sub headers)
+        for col_num, header in enumerate(sub_headers, start=1):
+            cell = ws.cell(row=header_row_2, column=col_num)
+            cell.value = header
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = black_border
+            
+        rowspan_columns = [1,2,3,4,5,6,10,13,14,15]
+        for col in rowspan_columns:
+            ws.merge_cells(
+                start_row=header_row_1,
+                start_column=col,
+                end_row=header_row_2,
+                end_column=col
+            )
+    
+        ws.merge_cells(
+        start_row=header_row_1,
+        start_column=7,
+        end_row=header_row_1,
+        end_column=9
+        )
+        
+        ws.merge_cells(
+        start_row=header_row_1,
+        start_column=11,
+        end_row=header_row_1,
+        end_column=12
+        )
+
+        row_num = ws.max_row + 1
+
+        
+        
+        
+
         # Add details for the position
-        for candidate in candidates:
+        for idx, candidate in enumerate(candidates, start=1):
             # ws.append(candidate)
             row_num = ws.max_row + 1
-            for col_num, value in enumerate(candidate, start=1):
+            is_even_row = idx % 2 == 0
+            
+            cell = ws.cell(row=row_num, column=1)
+            cell.value = idx
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = black_border
+            if is_even_row:
+                cell.fill = even_row_fill
+            
+            
+            
+            for col_num, value in enumerate(candidate, start=2):
                 cell = ws.cell(row=row_num, column=col_num)
                 cell.value = value
-                cell.border = black_border  # Apply border to each cell
+                cell.border = black_border
+                
+                if col_num in[1, 2,3,  5, 6,7,8,9,10,14]:
+                    
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                if col_num in[11,12]:
+                    
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+                    
+                if col_num == 15:
+                    cell.alignment = Alignment(wrap_text=True, vertical="top")    
+                    
+                if is_even_row:
+                    cell.fill = even_row_fill    
+                    
 
         # Add an empty row for separation
         ws.append([])
@@ -2731,24 +2555,28 @@ def get_data_grouped_by_position(args):
     candidates = frappe.get_all(
         "Candidate",
         filters={'submitted_date': nowdate(), 'candidate_created_by': args.candidate_created_by},
-        fields=["name", "passport_number", "given_name", "highest_degree",
-                "total_experience", "overseas_experience", "current_employer",
+        fields=["name", "passport_number", "given_name", "highest_degree","specialization","india_experience",
+                "overseas_experience", "total_experience",  "current_employer",
                 "current_ctc", "expected_ctc", "location", "notice_period_months",
-                "remarks_1", "position","currency_ctc"]
+                "remarks_1", "position","currency_ctc",]
     )
     
     for candidate in candidates:
         position = candidate.get("position", "")
         currency=candidate.currency_ctc
         formatted_ctc = f"{currency} {candidate.current_ctc}" if candidate.current_ctc else "0"
+        formatted_expected_ctc = f"{currency} {candidate.expected_ctc}" if candidate.expected_ctc else "0"
         if position not in data:
-            data[position] = []
-        data[position].append([
+            data[position] = {
+                "currency": currency,
+                "rows": []
+            }
+        data[position]["rows"].append([
             candidate.name, candidate.passport_number, candidate.given_name,
-            candidate.highest_degree, candidate.total_experience, 
-            candidate.overseas_experience, candidate.current_employer,
-            formatted_ctc, candidate.expected_ctc, candidate.location, 
-            candidate.notice_period_months, candidate.remarks_1
+            candidate.highest_degree, candidate.specialization, candidate.india_experience, candidate.overseas_experience, 
+            candidate.total_experience, candidate.current_employer,
+            formatted_ctc,formatted_expected_ctc , candidate.location, 
+            candidate.notice_period_months, candidate.remarks_1, 
         ])
 
     return data
@@ -2817,7 +2645,7 @@ def send_closure_mail():
     if ind>0:
         frappe.sendmail(
             # recipients=['divya.p@groupteampro.com'],
-            recipients=['sangeetha.s@groupteampro.com','dc@groupteampro.com','keerthana.k@groupteampro.com','sangeetha.a@groupteampro.com','dineshbabu.k@groupteampro.com'],
+            recipients=['sangeetha.s@groupteampro.com','dc@groupteampro.com','sangeetha.a@groupteampro.com','dineshbabu.k@groupteampro.com'],
             subject=subject,
             message=message
         )
@@ -2863,11 +2691,6 @@ def update_appt():
     for s in sfp:
         frappe.db.set_value("Sales Follow Up",s.name,'app_status','Yet to visit(YTV)')
     return count
-
-@frappe.whitelist()
-def update_so_details():
-    so_ietm_name=frappe.db.get_value("Sales Order Item",{'parent':"SAL-ORD-2023-00440"},['name'])
-    print(so_ietm_name)
 
 @frappe.whitelist()
 def sales_ami_team_dsr_daily():
@@ -3133,75 +2956,6 @@ Please find the below DSR for {} for your kind reference and action.<br><br>
                 """.format(formatted_date,data)
             )
 
-
-# @frappe.whitelist()
-# def send_mail_to_sams():
-#     from datetime import datetime
-    
-#     posting_date = datetime.now().strftime("%d-%m-%Y")
-#     pro = frappe.get_doc("Project", "PROJ-1784")
-#     tasks = frappe.get_all("Task", {'project': pro.name}, ['*'])
-    
-#     # Generate the HTML table
-#     table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-#     table +='<tr><td colspan="7" style="text-align: center; font-weight: bold;">Territory: {}</td></tr>'.format(pro.territory or '')
-#     table += '<tr style="background-color: #87CEFA"><td style="width: 10%; font-weight: bold; text-align: center;">Positions</td><td style="width: 30%; font-weight: bold; text-align: center;"># Vac </td><td style="width: 60%; font-weight: bold; text-align: center;">Salary</td><td style="width: 60%; font-weight: bold; text-align: center;">Food</td><td style="width: 60%; font-weight: bold; text-align: center;">Accommodation</td><td style="width: 60%; font-weight: bold; text-align: center;">ECR/ECNR</td><td style="width: 60%; font-weight: bold; text-align: center;">Major Key Skills</td></tr>'
-    
-#     for i in tasks:
-#         vac = (i.vac * 3)
-#         table += '<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
-#             i.subject, vac, i.amount, i.food, i.accommodation, i.category, i.custom_major_key_skills
-#         )
-#     table += '</table>'
-#     sams=frappe.get_all("SAMS",{"sa_status": ["!=", "Do Not Contact"]},["email_address","name"])
-#     ind=0
-#     for user in sams:
-#         frappe.sendmail(
-#             recipients=['divya.p@groupteampro.com'],
-#             # recipients=[user.email_address],
-#             subject=f'Position Details {posting_date} - Reg',
-#             message=f"""
-#             <b>Dear Team,</b><br><br>
-#             Please find the below positions for {pro.name} for your kind reference and action.<br><br>
-#             {table}<br><br>
-#             Thanks & Regards,<br>TEAM ERP<br>
-#             <i>This email has been automatically generated. Please do not reply</i>
-#             """
-#         )
-@frappe.whitelist()
-def send_mail_to_sams(name):
-    from datetime import datetime
-    
-    posting_date = datetime.now().strftime("%d-%m-%Y")
-    pro = frappe.get_doc("Project",name)
-    tasks = frappe.get_all("Task", {'project': pro.name}, ['*'])
-    
-    # Generate the HTML table
-    table = '<table text-align="center" border="1" width="100%" style="border-collapse: collapse;text-align: center;">'
-    table +='<tr><td colspan="7" style="text-align: center; font-weight: bold;">Territory: {}</td></tr>'.format(pro.territory or '')
-    table += '<tr style="background-color: #87CEFA"><td style="width: 5%; font-weight: bold; text-align: center;">Positions</td><td style="width: 4%; font-weight: bold; text-align: center;"># Vac </td><td style="width: 10%; font-weight: bold; text-align: center;">Salary</td><td style="width: 5%; font-weight: bold; text-align: center;">Food</td><td style="width: 5%; font-weight: bold; text-align: center;">Accommodation</td><td style="width: 5%; font-weight: bold; text-align: center;">ECR/ECNR</td><td style="width: 10%; font-weight: bold; text-align: center;">Major Key Skills</td></tr>'
-    
-    for i in tasks:
-        vac = (i.vac * 3)
-        table += '<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
-            i.subject, vac, i.amount, i.food, i.accommodation, i.category, i.custom_major_key_skills
-        )
-    table += '</table>'
-    sams=frappe.get_all("SAMS",{"sa_status": ["!=", "Do Not Contact"]},["email_address","name"])
-    ind=0
-    frappe.sendmail(
-        recipients=['sangeetha.a@groupteampro.com'],
-        # recipients=[user.email_address],
-        subject=f'Position Details {posting_date} - Reg',
-        message=f"""
-        <b>Dear Sir/Mam,</b><br><br>
-        Please find the below positions for {pro.name} for your kind reference and action.<br><br>
-        {table}<br><br>
-        Thanks & Regards,<br>TEAM ERP<br>
-        <i>This email has been automatically generated. Please do not reply</i>
-        """
-    )
-
 #  If the “Next Action Date” is Old date, either LUO or NAD is blank give a mail alert.
 from datetime import datetime
 import frappe
@@ -3247,7 +3001,7 @@ def sendmail_luo_nad_alert():
     data += '</table>'
     
     frappe.sendmail(
-        recipients=['dineshbabu.k@groupteampro.com','sangeetha.s@groupteampro.com','sangeetha.a@groupteampro.com','keerthana.k@groupteampro.com','dc@groupteampro.com'],
+        recipients=['dineshbabu.k@groupteampro.com','sangeetha.s@groupteampro.com','sangeetha.a@groupteampro.com','dc@groupteampro.com'],
         # recipients='divya.p@groupteampro.com',
         subject=f'Action Required: Closure with Outdated or Missing Follow-Up Details - {formatted_date}',
         message=f"""
@@ -3346,424 +3100,69 @@ def dnd_dpr():
                         """.format(formatted_date,data)
                     )
 
-# @frappe.whitelist()
-# def update_candidate_status():
-#     frappe.db.set_value("Closure","CL03582","status","Onboarding")
-
-# @frappe.whitelist()
-# def create_item_closure():
-#     item_candidate_id = frappe.db.get_value("Item", {"name": "7462862561"})
-#     item_pp_id = frappe.db.get_value("Item", {"name": "C8825536"})
-#     if item_candidate_id or item_pp_id:
-#         item = frappe.get_doc("Item",item_pp_id)
-#     else:
-#         item = frappe.new_doc("Item")
-#         item.item_code = "C8825536"
-#         item.is_non_gst = "0"
-#         item.item_name = "C8825536" + ":"+"MOHAMMED FARMAN SAFI"
-#         candidate_owner="aruna.g@groupteampro.com"
-#         if candidate_owner:
-#             item.candidate_owner = candidate_owner
-#         item.item_group = "Candidates"
-#         item.stock_uom = "Nos"
-#         item.qty = "1"
-#         item.gst_hsn_code = '998519'
-#         item.is_stock_item = "0"
-#         item.include_item_in_manufacturing = "0"
-#         item.description = "Arabian Castles for General Contracting Co., LLC"
-#         item.append("item_defaults", {
-#             "company": "TeamPRO HR & IT Services Pvt. Ltd."
-#         })
-#         item.append("customer_items", {
-#             "customer_name": "Arabian Castles for General Contracting Co., LLC",
-#             "ref_code": "8248117664"
-#         })
-#         item.insert()
-#         item.save(ignore_permissions=True)
-
-
-
-from datetime import datetime
 @frappe.whitelist()
-def dpr_mail(name,date,service,task_type):
-    formatted_date = datetime.strptime(date, "%Y-%m-%d").strftime("%d-%m-%Y")
-    daily = frappe.db.get_value(
-        "Daily Monitor", 
-        {"service": "IT-SW", "task_type": "CS"}, 
-        ["*"]
-    )
-    
-    task_data = frappe.get_doc("Daily Monitor",name)
-
-    if task_type == "CS":
-        # Table Header
-        task_table = '''
-        <table border="1" width="100%" style="border-collapse: collapse;">
-            <tr style="background-color: #0f1568; text-align:center; color: white;">
-                <td style='width:5%'><b>SI NO</b></td>
-                <td style='width:10%'><b>ID</b></td>
-                <td style='width:15%'><b>Project</b></td>
-                <td style='width:20%'><b>Subject</b></td>
-                <td style='width:5%'><b>CB</b></td>
-                <td style='width:10%'><b>Status</b></td>
-                <td style='width:5%'><b>Revision</b></td>
-                <td style='width:5%'><b>AT</b></td>
-                <td style='width:5%'><b>ET</b></td>
-                <td style='width:5%'><b>RT</b></td>
-                <td style='width:7%'><b>Priority</b></td>
-                <td style='width:13%'><b>Allocated On</b></td>
-            </tr>
-        '''
-
-        count = 1
-        for task in task_data.task_details:
-            task_table += f'''
-            <tr>
-                <td>{count}</td>
-                <td>{task.id or task.issue}</td>
-                <td>{task.project_name or '-'}</td>
-                <td>{task.subject}</td>
-                <td>{task.cb}</td>
-                <td>{task.status}</td>
-                <td>-</td>  
-                <td>-</td>  
-                <td>-</td>  
-                <td>-</td>  
-                <td>{task.priority}</td>
-                <td>{task.allocated_on or ''}</td>
-            </tr>
-            '''
-            count += 1
-
-        task_table += '</table>'  # Closing the Task Table
-
-        # -------------------- ISSUE LOOP --------------------
-        issue_table = '''
-        <table border="1" width="50%" style="border-collapse: collapse; text-align:center;">
-            <tr style="background-color: #0f1568; color: white; text-align:center; font-size: 12px;">
-                <td><b>SPOC</b></td>
-                <td><b>APH</b></td>
-                <td><b>PR[#/hr]</b></td>
-                <td><b>Working [#/hr]</b></td>
-                <td><b>CR[#/hr]</b></td>
-                <td><b>Issue[#/hr]</b></td>
-                <td><b>RT</b></td>
-                <td><b>RT Vs APH %</b></td>
-            </tr>
-        '''
-
-        task_det = frappe.db.get_all(
-            "Task",
-            {
-                "custom_production_date_cs": date,
-                "type": task_type,
-                "service": service,
-                "status": ("in", ["Working", "Pending Review", "Client Review"])
-            },
-            ['*'], 
-            order_by='spoc asc', 
-            group_by='spoc asc'
-        )
-
-        aph_total, pending_total,pr_sum,working_sum,client_sum, working_total, client_review, issue_overall, total,issue_value,working_value,pr_value,client_value,issue_total=0,0,0,0,0,0,0, 0,0, 0, 0, 0, 0, 0
-
-        for k in task_det:
-            emp_cb = frappe.db.get_value('Employee', {'user_id': k.spoc}, ['short_code'])
-            actual_aph = frappe.db.get_value('Employee', {'short_code': emp_cb}, ['custom_aph'])
-
-            pr_time = frappe.db.sql("""
-                SELECT SUM(pr_expected_time) AS pr_time 
-                FROM `tabTask`
-                WHERE spoc=%s AND custom_production_date_cs=%s AND status='Pending Review'
-            """, (k.spoc, date), as_dict=True)
-
-            working_time = frappe.db.sql("""
-                SELECT SUM(pr_expected_time) AS working_time 
-                FROM `tabTask`
-                WHERE spoc=%s AND custom_production_date_cs=%s AND status='Working'
-            """, (k.spoc, date), as_dict=True)
-
-            cr_time = frappe.db.sql("""
-                SELECT SUM(pr_expected_time) AS cr_time 
-                FROM `tabTask`
-                WHERE spoc=%s AND custom_production_date_cs=%s AND status='Client Review'
-            """, (k.spoc, date), as_dict=True)
-
-            sum_rt = frappe.db.sql("""
-                SELECT SUM(pr_expected_time) AS rt 
-                FROM `tabTask`
-                WHERE spoc=%s AND custom_production_date_cs=%s 
-                AND type='CS' AND status!="Client Review"
-                GROUP BY spoc
-            """, (k.spoc, date), as_dict=True)
-
-            pr_count = frappe.db.count("Task", {
-                "custom_production_date_cs": date, 
-                "type": "CS", 
-                "service": "IT-SW", 
-                "spoc": k.spoc, 
-                "status": "Pending Review"
-            })
-
-            working_count = frappe.db.count("Task", {
-                "custom_production_date_cs": date, 
-                "type": "CS", 
-                "service": "IT-SW", 
-                "spoc": k.spoc, 
-                "status": "Working"
-            })
-
-            client_count = frappe.db.count("Task", {
-                "custom_production_date_cs": date, 
-                "type": "CS", 
-                "service": "IT-SW", 
-                "spoc": k.spoc, 
-                "status": "Client Review"
-            })
-
-            issue_data = frappe.db.sql("""
-                SELECT SUM(custom_excepted_time_cs) AS issue_1 
-                FROM `tabIssue`
-                WHERE custom_spoc=%s AND custom_production_date=%s
-            """, (k.spoc, date), as_dict=True)
-            issue_count = frappe.db.count("Issue", {"custom_production_date": date, "custom_spoc": k.spoc})
-
-            issue_value = f"{issue_data[0].issue_1:.1f}" if issue_data and issue_data[0].issue_1 else "0"
-            pr_value= f"{pr_time[0].pr_time:.1f}" if pr_time and pr_time[0].pr_time else "0"
-            working_value= f"{working_time[0].working_time:.1f}" if working_time and working_time[0].working_time else "0"
-            client_value= f"{cr_time[0].cr_time:.1f}" if cr_time and cr_time[0].cr_time else "0"
-            pending_total += pr_count
-            working_total += working_count
-            client_review += client_count
-            issue_overall+=issue_count
-            issue_total+=float(issue_value)
-            pr_sum+=float(pr_value)
-            working_sum+=float(working_value)
-            client_sum+=float(client_value)
-            
-
-            if sum_rt:
-                total += sum_rt[0].rt
-
-            aph_total += float(actual_aph or 0)
-            percent = (float(sum_rt[0].rt) / float(actual_aph)) * 100 if sum_rt and actual_aph else 0
-
-            issue_table += f'''
-            <tr style="font-size: 14px;">
-                <td>{emp_cb}</td>
-                <td>{actual_aph or '8'}</td>
-                <td>{pr_count or '0'} / {pr_value}</td>
-                <td>{working_count or '0'} /{working_value}</td>
-                <td>{client_count or '0'} / {client_value}</td>
-                <td>{issue_count or '0'} / {issue_value}</td>
-                <td>{sum_rt[0].rt if sum_rt else '0'}</td>
-                <td>{round(percent, 2)}</td>
-            </tr>
-            '''
-
-        issue_table += f'''
-        <tr style="font-size: 14px;">
-            <td colspan=1><b>Total</b></td>
-            <td>{aph_total}</td>
-            <td>{pending_total} / {pr_sum if pr_sum else '0'}</td>
-            <td>{working_total} / {working_sum if working_sum else '0'}</td>
-            <td>{client_review} / {client_sum if client_sum else '0'}</td>
-            <td>{issue_overall} / {issue_total if issue_total else '0'}</td>
-            <td>{round(total, 2) if total else '0'}</td>
-            <td>{round((total/aph_total)*100, 2) if aph_total else '0'}</td>
-        </tr>
-        </table>
-        '''  # Closing the Issue Table
-
-        # Sending Email
-        frappe.sendmail(
-            sender='sarath.v@groupteampro.com',
-            recipients="siva.m@groupteampro.com",
-            subject = f'{"IT-SW"} - {"CS"} DPR {formatted_date} -Reg',
-            message="""
-                <b>Dear Team,</b><br><br>
-                Please find the below DPR for {} for your kind reference and action. Ensure all the tasks are allocated on time and as per the requirement.<br><br>
-                {}<br><br>
-                {}<br><br>
-                Thanks & Regards,<br>TEAM ERP<br>
-                <i>This email has been automatically generated. Please do not reply</i>
-            """ .format(formatted_date,issue_table if issue_table else '',task_table if task_table else '')
-        )
-
-        frappe.msgprint("DPR mail has been successfully sent")
-        task_data.dm_status = 'DPR Completed'
-        task_data.dpr_submitted_on = today()
-        task_data.save()
-        frappe.db.commit()
-
-
-from datetime import datetime
+def create_item_closure():
+    item_candidate_id = frappe.db.get_value("Item", {"name": "8668138069"})
+    item_pp_id = frappe.db.get_value("Item", {"name": "V3991643"})
+    if item_candidate_id or item_pp_id:
+        item = frappe.get_doc("Item",item_pp_id)
+    else:
+        item = frappe.new_doc("Item")
+        item.item_code = "V3991643"
+        item.is_non_gst = "0"
+        item.item_name = "V3991643" + ":"+"SHENBAGABALAN.M"
+        candidate_owner="aruna.g@groupteampro.com"
+        if candidate_owner:
+            item.candidate_owner = candidate_owner
+        item.item_group = "Candidates"
+        item.stock_uom = "Nos"
+        item.qty = "1"
+        item.gst_hsn_code = '998519'
+        item.is_stock_item = "0"
+        item.include_item_in_manufacturing = "0"
+        item.description = "Arabian Castles for General Contracting Co., LLC"
+        item.append("item_defaults", {
+            "company": "TeamPRO HR & IT Services Pvt. Ltd."
+        })
+        item.append("customer_items", {
+            "customer_name": "Arabian Castles for General Contracting Co., LLC",
+            "ref_code": "8668138069"
+        })
+        item.insert()
+        item.save(ignore_permissions=True)
+        
+        
 @frappe.whitelist()
-def dsr_mail(name,service,task_type,date):
-    formatted_date = datetime.strptime(date, "%Y-%m-%d").strftime("%d-%m-%Y")
-    task_data=frappe.get_doc("Daily Monitor",name)
-    if task_data.dsr_check==1:
-        if task_type =="CS":
-            sum_et=0
-            table=''
-            count=1
-            aph_totals=0
-            total_at=0
-            data = '<table border="1" width="100%" style="border-collapse: collapse;">'
-            data += '''
-            <tr style="background-color: #0f1568 ;color: white;text-align:center;font-size: 12px;">
-                <td style='width:4%'><b>SI NO</b></td>
-                <td style='width:6%'><b>Task/Issue ID</b></td>
-                <td style='width:12%'><b>Project </b></td>
-                <td style='width:18%'><b>Subject</b></td>
-                <td style='width:4%'><b>CB</b></td>
-                <td style='width:7%'><b>Status</b></td>
-                <td style='width:4%'><b>Revision</b></td>
-                <td style='width:6%'><b>Priority</b></td>
-                <td style='width:8%'><b>Allocated On</b></td>
-                <td style='width:4%'><b>Time Taken</b></td>
-                <td style='width:10%'><b>Remarks</b></td>
-                <td style='width:9%'><b>TL Remarks</b></td>
-            </tr>
-            '''
-            table = '<table border="1" width="70%" style="border-collapse: collapse;text-align:center;">'
-            table += '''
-            <tr style="background-color: #0f1568 ;color: white;text-align:center;font-size: 12px;">
-                <td style='width:1%'><b>SPOC</b></td>
-                <td style='width:1%'><b>APH</b></td>
-                <td style='width:1%'><b>RT</b></td>
-                <td style='width:1%'><b>Actual Time Taken</b></td>
-                <td style='width:1%'><b>RT Vs APH %</b></td>
-                <td style='width:1%'><b>PR[#/hr]</b></td>
-                <td style='width:1%'><b>Working [#/hr]</b></td>
-                <td style='width:1%'><b>CR[#/hr]</b></td>
-                <td style='width:1%'><b>Issue[#/hr]</b></td>
-                <td style='width:1%'><b>OR %</b></td>
-                <td style='width:1%'><b>PR %</b></td>
-            </tr>
-            '''
-            cs_task = frappe.db.get_all("Task", {"custom_production_date":date,"type":task_type,"service":service,"status": ["not in", ["Working", "Open"]]}, ['*'], order_by='spoc asc',group_by='spoc asc')
-            task = frappe.db.get_all("Task", {"custom_production_date":date,"type":task_type,"service":service}, ['*'], order_by='cb asc',group_by='custom_allocated_to asc')
-            
-            sorted_task_details = sorted(task_data.task_details, key=lambda i: i.cb or '')
-            count = 1
-            for i in sorted_task_details:
-                vtaken = float(i.at)
-                value_taken = round(vtaken, 3)
-                if i.at_taken:
-                    t_taken = float(i.at_taken)
-                    today_taken = round(t_taken, 3)
-                else:
-                    t_taken='0'
-                    today_taken='0'
-                remark = '-' if i.remark is None else i.remark
-                tl_remark = '-' if i.tl_remark is None else i.tl_remark
-                if i.id is not None:
-                    id=i.id
-                elif i.issue is not None:
-                    id=i.issue
-                elif i.meeting is not None:
-                    id=i.meeting
-                else:
-                    id='-'
-                data += '<tr style="font-size: 14px;"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>'% (count,id, i.project_name, i.subject, i.cb, i.status, i.revisions,i.priority, i.allocated_on, today_taken, remark, tl_remark)
-                count += 1
-            data += '</table>'
-            pending_count_total=0
-            working_total=0
-            client_total=0
-            issue_overall, total,issue_value,working_value,pr_value,client_value=0,0,0, 0,0, 0
-            for j in cs_task:
-                employee_id=frappe.db.get_value('Employee',{'user_id':j.spoc},['name'])
-                emp_cb=frappe.db.get_value('Employee',{'user_id':j.spoc},['short_code'])
-                timesheet = frappe.db.get_value("Timesheet", {'start_date': date, 'employee':employee_id}, ['total_hours'])  
-                actual_aph=frappe.db.get_value('Employee',{'short_code':emp_cb},['custom_aph'])
-                pending_review_count=frappe.db.count("Task",{"custom_production_date":date,"type":task_type,"service":service,"spoc":j.spoc,"status":"Pending Review"})
-                working_count=frappe.db.count("Task",{"custom_production_date":date,"type":task_type,"service":service,"spoc":j.spoc,"status":"Working"})
-                client_count=frappe.db.count("Task",{"custom_production_date":date,"type":task_type,"service":service,"spoc":j.spoc,"status":"Client Review"})
-                pr_time = frappe.db.sql("""
-                    SELECT SUM(pr_expected_time) AS pr_time 
-                    FROM `tabTask`
-                    WHERE spoc=%s AND custom_production_date_cs=%s AND status='Pending Review'
-                """, (j.spoc, date), as_dict=True)
+def create_item_closure_temp():
+    item_candidate_id = frappe.db.get_value("Item", {"name": "8090989648"})
+    item_pp_id = frappe.db.get_value("Item", {"name": "W7434391"})
+    if item_candidate_id or item_pp_id:
+        item = frappe.get_doc("Item",item_pp_id)
+    else:
+        item = frappe.new_doc("Item")
+        item.item_code = "W7434391"
+        item.is_non_gst = "0"
+        item.item_name = "W7434391" + ":"+"MOHAMMAD TAUKEER"
+        candidate_owner="shraddha.t@groupteampro.com"
+        if candidate_owner:
+            item.candidate_owner = candidate_owner
+        item.item_group = "Candidates"
+        item.stock_uom = "Nos"
+        item.qty = "1"
+        item.gst_hsn_code = '998519'
+        item.is_stock_item = "0"
+        item.include_item_in_manufacturing = "0"
+        item.description = "Al Nab'a Group LLC"
+        item.append("item_defaults", {
+            "company": "TeamPRO HR & IT Services Pvt. Ltd."
+        })
+        item.append("customer_items", {
+            "customer_name": "Al Nab'a Group LLC",
+            "ref_code": "8090989648"
+        })
+        item.insert()
+        item.save(ignore_permissions=True)
 
-                working_time = frappe.db.sql("""
-                    SELECT SUM(pr_expected_time) AS working_time 
-                    FROM `tabTask`
-                    WHERE spoc=%s AND custom_production_date_cs=%s AND status='Working'
-                """, (j.spoc, date), as_dict=True)
-
-                cr_time = frappe.db.sql("""
-                    SELECT SUM(pr_expected_time) AS cr_time 
-                    FROM `tabTask`
-                    WHERE spoc=%s AND custom_production_date_cs=%s AND status='Client Review'
-                """, (j.spoc, date), as_dict=True)
-
-                issue_data = frappe.db.sql("""
-                    SELECT SUM(custom_excepted_time_cs) AS issue_time 
-                    FROM `tabIssue`
-                    WHERE custom_spoc=%s AND custom_production_date=%s
-                """, (j.spoc, date), as_dict=True)
-
-                issue_count = frappe.db.count("Issue", {"custom_production_date": date, "custom_spoc": j.spoc})
-
-                issue_value = f"{issue_data[0].issue_1:.1f}" if issue_data and issue_data[0].issue_1 else "0"
-                pr_value= f"{pr_time[0].pr_time:.1f}" if pr_time and pr_time[0].pr_time else "0"
-                working_value= f"{working_time[0].working_time:.1f}" if working_time and working_time[0].working_time else "0"
-                client_value= f"{cr_time[0].cr_time:.1f}" if cr_time and cr_time[0].cr_time else "0"
-
-                pending_count_total+=float(pending_review_count)
-                working_total+=float(working_count)
-                client_total +=float(client_count)
-                issue_overall+=issue_count
-                for datas in task_data.dm_summary:
-                    if datas.d_cb == emp_cb:
-                        sum_et=datas.d_rt
-                if sum_et:
-                    total+=float(sum_et)
-
-                if actual_aph:
-                    aph_totals+=float(actual_aph)
-                if timesheet is not None:
-                    total_at+=float(timesheet)
-                if actual_aph and timesheet:
-                    percent=(float(sum_et)/float(actual_aph))*100
-                    value=actual_aph
-                    or_count=float(timesheet)/float(value)*100
-                if timesheet and sum_et is not None:
-                    pr_count=float(sum_et)/float(timesheet)*100
-
-                if total_at:
-                    or_total=float(total_at)/float(aph_totals)*100
-                    pr_total=float(total)/float(total_at)*100
-                if aph_totals!=0:
-                    total_count=float(total)/float(aph_totals)*100
-                if percent:
-                    table+='<tr style="font-size: 14px;"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>' %(emp_cb,actual_aph or '8',sum_et if sum_et else '0',round(timesheet,2) if timesheet is not None else '0',round(percent) if timesheet is not None else '0',f"{pending_review_count or '0'}/{pr_value or '0'}",f"{working_count or '0'}/{working_value or '0'}",f"{client_count or '0'}/{client_value or '0'}",f"{issue_count or '0'}/{issue_overall or '0'}",round(or_count) if timesheet is not None else '0',round(pr_count) if timesheet is not None else '0')
-                else:
-                    table+='<tr style="font-size: 14px;"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>' %(emp_cb,actual_aph or '8',sum_et if sum_et else '0',round(timesheet,2) if timesheet is not None else'0','0',f"{pending_review_count or '0'}/{pr_value or '0'}",f"{working_count or '0'}/{working_value or '0'}",f"{client_count or '0'}/{client_value or '0'}",f"{issue_count or '0'}/{issue_overall or '0'}",round(or_count,2) or '0',round(pr_count,2) or '0')
-            table+='<tr style="font-size: 14px;" ><td colspan=1>Total</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>'%(aph_totals,total,round(total_at,2),round(total_count),pending_count_total,working_total,client_total,issue_overall,round(or_total),round(pr_total))
-            table += "</table>"
-            frappe.sendmail(
-                    sender='sarath.v@groupteampro.com',
-                    recipients="siva.m@groupteampro.com",
-                    # recipients=['sarath.v@groupteampro.com','sivarenisha.m@groupteampro.com','jeniba.a@groupteampro.com'],
-                    # cc=['dineshbabu.k@groupteampro.com','anil.p@groupteampro.com','abdulla.pi@groupteampro.com'],
-                    subject = f'{service} - {task_type} DSR {formatted_date} -Reg',
-                    message = """
-                <b>Dear Team,</b><br><br>
-                    Please find the below DSR for {} for your kind reference.<br><br>
-                    {}<br><br>
-                    {}<br><br>
-                    Thanks & Regards,<br>TEAM ERP<br>
-                    <i>This email has been automatically generated. Please do not reply</i>
-                    """.format(formatted_date,table if table else '',data)
-                )
-            frappe.msgprint("DSR mail has been successfully sent.")
-            # task_data.dm_status='Submitted'
-            task_data.dsr_submitted_on=today()
-            task_data.save()
-            frappe.db.commit()
 
 import frappe
 from frappe.utils import getdate, nowdate, date_diff
@@ -3824,56 +3223,11 @@ def check_closure_tat_and_alert():
         """
 
         frappe.sendmail(
-            recipients=["divya.p@groupteampro.com","sangeetha.a@groupteampro.com","keerthana.k@groupteampro.com"],
+            recipients=["sangeetha.a@groupteampro.com"],
             cc=['sangeetha.s@groupteampro.com','dineshbabu.k@groupteampro.com'],
             subject="Closure TAT Alert",
             message=table_html
         )
-
-import frappe
-from frappe import _
-from frappe.utils import today
-from datetime import datetime
-
-@frappe.whitelist()
-def send_proj_creation(name, account_manager=None, customer=None):
-    custom_date = today()
-    date_obj = datetime.strptime(str(custom_date), '%Y-%m-%d')
-    formatted_date = date_obj.strftime('%d/%m/%Y')
-
-    subject = f'New Project Created on {formatted_date} - Reg'
-
-    message = f"""
-    <b>Dear Team,</b><br><br>
-
-    A new project has been created on kick of completion. Please find the project details below:<br><br>
-
-    <table border="1" cellspacing="0" cellpadding="5">
-        <tr><td><b>Project Name</b></td><td>{name}</td></tr>
-        <tr><td><b>Customer</b></td><td>{customer or ''}</td></tr>
-    """
-
-    if account_manager:
-        message += f"<tr><td><b>Account Manager</b></td><td>{account_manager}</td></tr>"
-
-    message += """
-    </table>
-    <br><br>
-    Kindly take the necessary actions.<br><br>
-
-    Thanks & Regards,<br>TEAM ERP<br>
-    <i>This email has been automatically generated. Please do not reply</i>
-    """
-
-    recipients = ['sangeetha.s@groupteampro.com','dineshbabu.k@groupteampro.com','sangeetha.a@groupteampro.com']
-    if account_manager:
-        recipients.append(account_manager)
-
-    frappe.sendmail(
-        recipients=recipients,
-        subject=subject,
-        message=message
-    )
 
 @frappe.whitelist()
 def restrict_leave(doc,method):
@@ -3905,62 +3259,13 @@ def check_holiday(date, emp):
         return False  
 
 # @frappe.whitelist()
-# def update_cl_status():
-#     frappe.db.set_value("Closure","CL03671","onboarded",0)
-#     frappe.db.set_value("Closure","CL03671","status","PSL")
-
-# @frappe.whitelist()
-# def update_closure_payment():
-#     filename='6b690874f457375Closure.csv'
-#     from frappe.utils.file_manager import get_file
-#     filepath = get_file(filename)
-#     pps = read_csv_content(filepath[1])
-#     ind=0
-#     for pp in pps:
-#         if pp[1]=="Candidate":
-#             print(pp[0])
-#             frappe.db.set_value("Closure",pp[0],"client_payment_company_currency",0)
-#             frappe.db.set_value("Closure",pp[0],"client_si",0)
-#             ind+=1
-#         if pp[1]=="Client":
-#             frappe.db.set_value("Closure",pp[0],"candidate_payment_company_currenc",0)
-#             frappe.db.set_value("Closure",pp[0],"candidate_si",0)
-#             print(pp[0])
-#     print(ind)
-
-# @frappe.whitelist()
-# def update_source_closure():
-#     closure=frappe.db.get_all("Closure",{"nationality":"Indian"},["name","candidate"])
-#     ind=1
-#     for i in closure:
-#         source=''
-#         if i.candidate:
-#             source=frappe.db.get_value("Candidate",{"name":i.candidate},["source"])
-#             if source:
-#                 frappe.db.set_value("Closure",i.name,"custom_source",source)
-#                 ind+=1
-#                 print(i.name)
-#                 print(i.candidate)
-#                 print(source)
-#     print(ind)
-
-# @frappe.whitelist()
-# def updatde_vm_status():
-#     frappe.db.set_value("VM Stock Register","VM000002","status","GRN Received")
-
-# @frappe.whitelist()
-# def update_cl_local():
-#     frappe.db.set_value("Closure","CL03859","remark","07/08 : Arrived")
-#     frappe.db.set_value("Closure","CL03859","custom_next_follow_up_on",None)
-
-@frappe.whitelist()
-def update_profile_submission(name=None,date=None,count=None,task=None):
-    task=frappe.get_doc("Task",task)
-    task.append("custom_project_plan_",{
-        "date":date,
-        "count":count
-    })
-    task.save()
+# def update_profile_submission(name=None,date=None,count=None,task=None):
+#     task=frappe.get_doc("Task",task)
+#     task.append("custom_project_plan_",{
+#         "date":date,
+#         "count":count
+#     })
+#     task.save()
 
 @frappe.whitelist()
 def update_st_count_proj(project=None,name=None):
@@ -4006,54 +3311,6 @@ def update_st_count_proj(project=None,name=None):
                     previous_date = current_date
 
             proj.save()
-
-
-
-# @frappe.whitelist()
-# def update_fp_count_proj(doc,method):
-#     if doc.name:
-#         if doc.custom_profile_submission:
-#             task_rows = {}
-#             for i in doc.custom_profile_submission:
-#                 task_rows.setdefault(i.task, []).append(i)
-
-#             for task, rows in task_rows.items():
-#                 rows.sort(key=lambda x: x.date)
-#                 previous_date = None
-#                 for i in rows:
-#                     current_date = i.date
-#                     candidate_count = frappe.db.sql("""
-#                             SELECT COUNT(DISTINCT c.name)
-#                             FROM `tabCandidate` c
-#                             WHERE c.task = %s
-#                             AND c.project = %s
-#                             AND c.pending_for in (%s,%s,%s)
-#                         """, (task, doc.name, "Submit(SPOC)","Submitted(Client)","Interviewed"))
-#                     if previous_date:
-#                         candidate_achieved_count = frappe.db.sql("""
-#                                 SELECT COUNT(DISTINCT c.name)
-#                                 FROM `tabCandidate` c
-#                                 INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
-#                                 WHERE DATE(cs.sourced_date) > %s
-#                                 AND DATE(cs.sourced_date) <= %s
-#                                 AND cs.task = %s
-#                                 AND cs.project = %s
-#                                 AND cs.status = %s
-#                             """, (previous_date, current_date, task, doc.name, "Submit(SPOC)"))
-#                     else:
-#                         candidate_achieved_count = frappe.db.sql("""
-#                                 SELECT COUNT(DISTINCT c.name)
-#                                 FROM `tabCandidate` c
-#                                 INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
-#                                 WHERE DATE(cs.sourced_date) <= %s
-#                                 AND cs.task = %s
-#                                 AND cs.project = %s
-#                                 AND cs.status = %s
-#                             """, (current_date, task, doc.name, "Submit(SPOC)"))
-
-#                     i.fp = candidate_count[0][0] if candidate_count else 0
-#                     i.achieved = candidate_achieved_count[0][0] if candidate_achieved_count else 0
-#                     previous_date = current_date
 
 
 import frappe
@@ -4121,20 +3378,6 @@ def update_fp_count_proj(project_name):
             row.achieved = candidate_achieved_count or 0
             previous_date = current_date
     return f"Project {project_name} FP counts updated"
-
-
-
-# def create_scheduled_event():
-# 	job = frappe.db.exists('Scheduled Job Type', 'update_proj_position_value')
-# 	if not job:
-# 		sjt = frappe.new_doc("Scheduled Job Type")
-# 		sjt.update({
-# 			"method": 'jobpro.custom.update_proj_position_value',
-# 			"frequency": 'Cron',
-# 			"cron_format": '45 23 * * *'
-# 		})
-# 		sjt.save(ignore_permissions=True)
-
 
 
 @frappe.whitelist()
@@ -4213,30 +3456,6 @@ def update_count_proj():
 
     frappe.db.commit()
 
-# @frappe.whitelist()
-# def update_cist_closure():
-#     start="2025-10-08 00:00:00"
-#     end="2025-10-08 23:59:59"
-#     ind=0
-#     closure=frappe.db.get_all("Closure",{"owner":"divya.p@groupteampro.com","creation":("between",[start,end])},"name")
-#     for i in closure:
-#         frappe.db.set_value("Closure",i.name,"customer","Vectrus Global Support Services LLP")
-#         ind+=1
-#     print(ind)
-
-
-# def create_scheduled_event():
-# 	job = frappe.db.exists('Scheduled Job Type', 'update_sla_value')
-# 	if not job:
-# 		sjt = frappe.new_doc("Scheduled Job Type")
-# 		sjt.update({
-# 			"method": 'jobpro.custom.update_sla_value',
-# 			"frequency": 'Cron',
-# 			"cron_format": '50 23 * * *'
-# 		})
-# 		sjt.save(ignore_permissions=True)
-
-
 @frappe.whitelist()
 def update_sla_value():
     frappe.enqueue(
@@ -4252,8 +3471,6 @@ def update_sla_value():
 
 def update_expired_sla():
     docs = frappe.get_all("Customer", fields=["name"])
-    # docs =frappe.db.get_all("Customer",{'name':'Test'},'name')
-    
     for d in docs:
         doc = frappe.get_doc("Customer", d.name)
         updated = False
@@ -4268,3 +3485,20 @@ def update_expired_sla():
         
         if updated:
             doc.save()
+
+@frappe.whitelist()
+def update_wp_template_status(temp_name,name):
+    import requests
+
+    url = "https://graph.facebook.com/v17.0/114380668325008/message_templates"
+
+    headers = {"authorization": "Bearer EAAIsCk6qqtMBPvN2EPkRSJhCUYZAh6vIlkuZCUjBOGuPFiaErPWpWTOZADfI50DjnOPba7XzZCCUh9VMNXq1NrIHh4dS1SkhOXFT0DhWr5nZCJUO7eZCbL0JIxZAkcWGebLBNw4z4Q2U7QZAK5UtPNhr2uFoRqIFZCxjQZCiXtnNGaM3vvpUdiGOTGcxYZAwcb84FPz2h16oJoNBsv6j2sYkqjlCxXHuZCelRfr1evV4dTiV"}
+
+    response = requests.get(url, headers=headers)
+    value = response.json()
+    if "data" in value:
+        for i in value["data"]:
+            if i.get("name")==temp_name:
+                frappe.db.set_value("WhatsApp Templates",name,"status",i.get("status"))
+
+

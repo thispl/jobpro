@@ -26,7 +26,6 @@
                     let html = '';
                     $.each(res, function (i, d) {
                         $.each(d, function (j, k) {
-                            // Generate table rows only
                             html += "<tr style='text-align: center; line-height: 1.5;color:black;'>\
                                 <td style='text-align: left;width: 14%;'>" + k['position'] + "</td>\
                                 <td style='width: 5%;'>" + k['linedup'] + "</td>\
@@ -170,8 +169,20 @@
 <table border="1" width="100%" id="data-table" style="font-size: 25px; line-height: 1.5;">
     <thead>
         <tr>
-            <td style="background-color:rgb(138, 212, 244)" colspan="8"><center>Candidate Status <b>{{ att_data[0]['date'] }}</b></center></td>
+            <td style="background-color:rgb(138, 212, 244)" colspan="8">
+                <center>
+                    Candidate Status
+                    <b>
+                    {% if att_data and att_data|length > 0 %}
+                        {{ att_data[0]['date'] }}
+                    {% else %}
+                        {{ frappe.utils.now_datetime().strftime("%d/%m/%Y %H:%M:%S") }}
+                    {% endif %}
+                    </b>
+                </center>
+            </td>
         </tr>
+       
         <tr style="line-height: 1.5;background-color:rgb(17, 0, 255)">
             <td style="width: 14%;color: white;background-color:rgb(17, 0, 255)"><center><b>Position</b></center></td>
             <td style="width: 5%;color: white;"><center><b>Linedup</b></center></td>
@@ -184,18 +195,29 @@
         </tr>
     </thead>
     <tbody id="table-body">
-        {% for row in att_data %}
-        <tr style="text-align: center; line-height: 1.5;color:rgb(11, 12, 11);">
-            <td  style="text-align: left;width: 14%;">{{ row['position'] }}</td>
-            <td style="width: 5%;">{{ row['linedup'] }}</td>
-            <td style="width: 5%;">{{ row['reported'] }}</td>
-            <td style="width: 5%;">{{ row['attended'] }}</td>
-            <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rp'] }}</td>
-            <td style="width: 5%;color: rgb(17, 0, 255);"><b>{{ row['psl'] }}</b></td>
-            <td style="width: 5%;color: rgb(3, 3, 3);">{{ row['pending'] }}</td>
-            <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rejected'] }}</td>
-        </tr>
-        {% endfor %}
+        {% if att_data and att_data|length > 0 %}
+            {% for row in att_data %}
+            <tr style="text-align: center; line-height: 1.5;color:rgb(11, 12, 11);">
+                <td  style="text-align: left;width: 14%;">{{ row['position'] }}</td>
+                <td style="width: 5%;">{{ row['linedup'] }}</td>
+                <td style="width: 5%;">{{ row['reported'] }}</td>
+                <td style="width: 5%;">{{ row['attended'] }}</td>
+                <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rp'] }}</td>
+                <td style="width: 5%;color: rgb(17, 0, 255);"><b>{{ row['psl'] }}</b></td>
+                <td style="width: 5%;color: rgb(3, 3, 3);">{{ row['pending'] }}</td>
+                <td style="width: 5%;color: rgb(252, 50, 50);">{{ row['rejected'] }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+
+            <tr>
+                <td colspan="8" style="text-align:center; padding:20px; font-weight:bold; color:red;">
+                    No Candidate Found
+                </td>
+            </tr>
+
+        {% endif %}
+
     </tbody>
 </table>
 {% endblock %}

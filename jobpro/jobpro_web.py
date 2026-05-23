@@ -8,14 +8,14 @@ import re
 
 @frappe.whitelist(allow_guest=True)
 def new_user(full_name, email, password, mobile_no, source, reference_source, media_source , countryData ):
-    user = frappe.new_doc("User")
-    user.first_name = full_name
-    user.email = email
-    user.mobile_no = mobile_no
-    user.new_password = password
-    user.role_profile_name = "JOBPRO"
-    user.insert()
-    user.save()
+    # user = frappe.new_doc("User")
+    # user.first_name = full_name
+    # user.email = email
+    # user.mobile_no = mobile_no
+    # user.new_password = password
+    # user.role_profile_name = "JOBPRO"
+    # user.insert()
+    # user.save()
     candidate = new_candidate(full_name, email, password, mobile_no, source, reference_source, media_source, countryData)
     return candidate
 
@@ -50,11 +50,13 @@ def new_candidate(full_name, email, password, mobile_no, source, reference_sourc
 def forgot_password(email):
     user = frappe.get_doc("User", {"email": email})
     if user:
-        reset_link = f"http://139.5.190.19:8080/frontend/reset-password?user={email}"
+        reset_link = f"/reset-password?user={email}"
         message = f"""
             <p style="color: #05264e; font-weight: 700; font-size: 15px;">Dear {user.full_name},</p>
             <p>Please click the link below to reset your password:</p>
-            <button style="border: 0px solid black; border-radius: 8px; color: white; padding: 3px; width: 140px; background-color: #0070cc;"><a href="{reset_link}" target="_blank" style="color: white; text-align: center; text-decoration: none;">Reset Password</a></button>
+            
+            <a href="{reset_link}" target="_blank" style="color: white; text-align: center; text-decoration: none; border: 0px solid black; border-radius: 8px; padding: 3px; width: 140px; background-color: #0070cc;">Reset Password</a>
+            
             <p>If you did not request a password reset, please ignore this email.</p>
             <p style="color: #0070cc;">Best regards,<br>Jobpro Team</p>
         """
@@ -65,6 +67,7 @@ def forgot_password(email):
             reference_doctype="User",
             reference_name=user.name,
             delayed=False,
+            is_html=True
         )
     else:
         frappe.throw("User with this email does not exist.")
@@ -132,7 +135,7 @@ def contact_details(contactData, id):
     candidate = frappe.get_doc("Candidate", id)
     candidate.mobile_number = contactData.get('mobile')
     candidate.whatsapp_number = contactData.get('whatsappNo')
-    candidate.mobile = contactData.get('mobile')
+    candidate.mobile = contactData.get('secMobile')
     candidate.country = contactData.get('country')
     candidate.save(ignore_permissions=True)
 
@@ -825,6 +828,19 @@ def is_purchase_invoice_created(supplier, item):
         return "not ok"
         
         
+@frappe.whitelist(allow_guest=True)
+def get_candidate_by_user(user):
+    candidate_data = frappe.db.sql("""
+        SELECT name FROM `tabCandidate` WHERE mail_id = %s
+    """, (user,), as_dict=True)
+
+    if candidate_data:
+        return {
+            "candidate_found": True,
+            "candidate_id": candidate_data[0].name
+        }
+    else:
+        return {"candidate_found": False}
 
 
     

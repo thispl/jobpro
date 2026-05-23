@@ -48,7 +48,8 @@ def get_data():
             AND cs.status = %s
             AND c.subject = %s
             AND c.task = %s
-        """, (project_name, "Linedup", i.subject, i.name), as_dict=True)[0].status_count
+                        
+        """, (project_name, "Linedup Confirmed", i.subject, i.name), as_dict=True)[0].status_count
         
 
         reported_count = frappe.db.sql("""
@@ -137,7 +138,7 @@ def get_datas():
         INNER JOIN `tabCandidate status` cs ON c.name = cs.parent
         WHERE c.project = %s
         AND cs.status = %s
-    """, (project_name, "Linedup"), as_dict=True)[0].status_count
+    """, (project_name, "Linedup Confirmed"), as_dict=True)[0].status_count
 
     reported_count = frappe.db.sql("""
         SELECT COUNT(DISTINCT c.name) AS status_count

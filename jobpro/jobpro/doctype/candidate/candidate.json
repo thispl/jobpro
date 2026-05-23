@@ -84,6 +84,7 @@
   "religion",
   "jobpro_web_section",
   "badge",
+  "work_status",
   "sam_details_tab",
   "agent_name",
   "contact_number",
@@ -134,10 +135,13 @@
   "other_experience",
   "state",
   "temp_state",
+  "section_break_ptef",
+  "pdf_editor",
   "passport_details_section",
   "applied",
   "candidate_passport_number",
   "passport_expiry_date",
+  "passport_expiry_alert",
   "pp_original_at",
   "ecr_status",
   "column_break_52",
@@ -1444,11 +1448,32 @@
    "fieldname": "expiry_period",
    "fieldtype": "Data",
    "label": "Expiry Period"
+  },
+  {
+   "fieldname": "work_status",
+   "fieldtype": "Select",
+   "label": "Work Status",
+   "options": "Fresher\nExperienced"
+  },
+  {
+   "fieldname": "passport_expiry_alert",
+   "fieldtype": "HTML",
+   "label": "Passport Expiry Alert"
+  },
+  {
+   "fieldname": "section_break_ptef",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pdf_editor",
+   "fieldtype": "HTML",
+   "label": "PDF Editor"
   }
  ],
  "image_field": "candidate_image",
  "links": [],
- "modified": "2025-10-08 19:05:08.526335",
+ "make_attachments_public": 1,
+ "modified": "2026-05-11 14:54:43.647010",
  "modified_by": "Administrator",
  "module": "jobPRO",
  "name": "Candidate",

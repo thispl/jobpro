@@ -223,14 +223,10 @@
                             <div class="relative mb-3 w-full">
                                 <label for="mobile_no" class="text-md font-semibold" style="color: #05264e;">Phone </label>
                                 <span class="text-red-500">*</span><br />
-                                <input type="tel" ref="registerPhoneInput"  v-model="newUser.mobile_no" id="phone" name="mobile_no" placeholder="Enter your mobile number" class="border text-[#05264e] font-medium rounded-lg text-sm p-3 w-full pl-10 mt-2" required />
-                                 <!-- <input type="tel" ref="phoneInput" v-model="newUser.mobile_no" id="phone" name="mobile_no" placeholder="Enter your mobile number"  class="border  text-[#05264e] font-medium rounded-lg text-sm px-[200px] py-3 w-full mt-2" required /> -->
+                                <input type="tel" ref="registerPhoneInput"  v-model="newUser.mobile_no" id="phone" name="mobile_no" placeholder="Enter your mobile number" class="border text-[#05264e] font-medium rounded-lg text-sm py-3  w-full pl-10 mt-2" required />
+                                
                             </div>
-                            <!-- <div class="relative">
-                                <label for="mobile_no" class="text-md font-semibold " style="color: #05264e;">Phone </label><span class="text-red-500">*</span><br />
-                                <input type="tel" v-model="newUser.mobile_no" name="mobile_no" placeholder="Enter your mobile number" pattern="[0-9]{10}" class="border text-[#006fdd] font-medium rounded-lg text-sm p-3 pl-10 mt-2 w-full mb-3 phone-box" required /><br />
-                                <p class="absolute top-[40px] pl-2.5 mt-0.5 text-[#05264e] text-[15px] font-medium">+91</p>
-                            </div> -->
+                           
                             
                             <p v-if="errorField=='mobile'" class="text-red-500 text-sm font-medium">{{ error }}</p>
                             <div v-if="newUser.source">
@@ -435,6 +431,8 @@
         });
       }
     }
+
+
   },
 
 
@@ -499,6 +497,8 @@
                 this.candidateDetails()
                 
             });
+
+          
 
 
             this.addIntersectionObserver();
@@ -592,7 +592,7 @@
                 this.resumeUploadProcess =true
             }
             else if(!this.state.isLoggedIn){
-                console.log("click")
+                
                   this.showLoginPopup = true
             }
             

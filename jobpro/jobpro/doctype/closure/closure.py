@@ -11,6 +11,8 @@ from frappe.utils import now
 from frappe.utils.data import now_datetime
 from erpnext.setup.utils import get_exchange_rate
 from frappe.utils import getdate, nowdate, date_diff
+from datetime import datetime
+from datetime import date
 
 class Closure(Document):
     def before_save(self):
@@ -56,24 +58,46 @@ class Closure(Document):
             self.status = 'Waitlisted'
         else:
             self.validate_psl()
-        if self.client_si:
-            if self.billing_currency == "INR":
+        if self.client_si and (self.payment=="Client" or self.payment=="Both") :
+            if self.custom_client_billing_currency == "INR":
                 self.client_payment_company_currency = self.client_si
             else:
-                conversion = get_exchange_rate(self.billing_currency, "INR")
+                conversion = get_exchange_rate(self.custom_client_billing_currency, "INR")
                 conversion_amt=conversion * self.client_si
                 self.client_payment_company_currency =conversion_amt
-        if self.candidate_si:
+        if self.candidate_si and (self.payment=="Candidate" or self.payment=="Both"):
             if self.billing_currency == "INR":
                 self.candidate_payment_company_currenc = self.candidate_si
             else:
                 conversion = get_exchange_rate(self.billing_currency, "INR")
                 conversion_amt=conversion * self.candidate_si
                 self.candidate_payment_company_currenc =conversion_amt
+        if self.associate_si and self.payment=="Associate":
+            if self.custom_associate_billing_currency == "INR":
+                self.candidate_payment_company_currenc = self.candidate_si
+            else:
+                conversion = get_exchange_rate(self.custom_associate_billing_currency, "INR")
+                conversion_amt=conversion * flt(self.candidate_si or 0)
+                self.candidate_payment_company_currenc =conversion_amt
         # if self.visa_status=="Visa Pending" and self.visa:
         #     self.visa_status="Visa Received"
         # else:
         #     self.visa_status="Visa Pending"
+        if self.so_created:  
+            update_so_for_closure(self.name)
+
+        # if self.date_of_birth:
+        #     today = date.today()
+        #     dob = self.date_of_birth
+
+        #     years = today.year - dob.year
+
+        #     if (today.month, today.day) < (dob.month, dob.day):
+        #         years -= 1
+
+        #     self.custom_age = years
+        # else:
+        #     self.custom_age = 0
     def validate_psl(self):
         if not self.onboarded:
             parent_territory = frappe.get_value(
@@ -100,7 +124,7 @@ class Closure(Document):
                         self.onboarded = 1
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -124,7 +148,7 @@ class Closure(Document):
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
 
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -136,7 +160,7 @@ class Closure(Document):
                     self.status = 'Sales Order'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -144,7 +168,45 @@ class Closure(Document):
                             "status_moved_by": frappe.session.user,
                             "status": self.status
                         })
-
+            elif self.territory=='Ascension Island':
+                if self.irf and self.passport and self.photo:
+                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                    if previous_status != self.status and self.status:
+                        self.append("custom_history", {
+                            "date": frappe.utils.now_datetime(),
+                            "status_moved_by": frappe.session.user,
+                            "status": self.status
+                        })
+                    if self.so_created or self.so_confirmed_date:
+                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                        if previous_status != self.status and self.status:
+                            self.append("custom_history", {
+                                "date":frappe.utils.now_datetime(),
+                                "status_moved_by": frappe.session.user,
+                                "status": self.status
+                            })
+                    else:
+                        self.status = 'Sales Order'
+                        self.status_updated_on = today()
+                        self.custom_status_transition = today()
+                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                        if previous_status != self.status and self.status:
+                            self.append("custom_history", {
+                                "date":frappe.utils.now_datetime(),
+                                "status_moved_by": frappe.session.user,
+                                "status": self.status
+                            })
+                else:
+                    self.status = 'PSL'
+                    self.status_updated_on = today()
+                    self.custom_status_transition = today()
+                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                    if previous_status != self.status and self.status:
+                        self.append("custom_history", {
+                            "date":frappe.utils.now_datetime(),
+                            "status_moved_by": frappe.session.user,
+                            "status": self.status
+                        })  
             elif self.territory == 'Qatar':
                 if self.irf and self.passport and self.photo:
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
@@ -221,19 +283,19 @@ class Closure(Document):
                                                 self.boarded_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                 if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                     # self.status='Concluded'
                                                     self.custom_status_transition = today()
                             
-                                                    self.custom_modified_status= self.status
+                                                    
                                                 else:
                                                     self.status = 'Onboarding'
                                                     self.status_updated_on = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -255,7 +317,7 @@ class Closure(Document):
                                                 self.status_updated_on = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -268,7 +330,7 @@ class Closure(Document):
                                             self.ticket_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -281,14 +343,15 @@ class Closure(Document):
                                         self.emigration_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
+                                            if self.ecr_status == "ECR" or self.emigration_not_applicable == 0:
+                                                self.append("custom_history", {
+                                                    "date":frappe.utils.now_datetime(),
+                                                    "status_moved_by": frappe.session.user,
+                                                    "status": self.status
+                                                })
                                             
                             
                                 else:
@@ -310,7 +373,7 @@ class Closure(Document):
                                             self.visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -325,7 +388,7 @@ class Closure(Document):
                                         self.visa_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -342,14 +405,15 @@ class Closure(Document):
                                 self.pcc_uploaded_date = today() 
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
-                                    self.append("custom_history", {
-                                        "date":frappe.utils.now_datetime(),
-                                        "status_moved_by": frappe.session.user,
-                                        "status": self.status
-                                    })
+                                    if self.pcc_not_applicable == 0:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
                                     # self.validate_status_and_remarks()
 
                         else:
@@ -358,7 +422,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -371,7 +435,7 @@ class Closure(Document):
                         self.status_updated_on = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -383,7 +447,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -424,22 +488,22 @@ class Closure(Document):
                                     "status_moved_by": frappe.session.user,
                                     "status": self.status
                                 })
-                            if self.pcc or self.pcc_not_applicable:        
+                            if self.visa and self.so_created:
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
                                         "date":frappe.utils.now_datetime(),
                                         "status_moved_by": frappe.session.user,
                                         "status": self.status
-                                    })           
-                                if self.visa and self.so_created:
+                                    })        
+                                if self.pcc or self.pcc_not_applicable:        
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
                                         self.append("custom_history", {
                                             "date":frappe.utils.now_datetime(),
                                             "status_moved_by": frappe.session.user,
                                             "status": self.status
-                                        })
+                                        })   
                                     if self.final_medical:
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
@@ -480,7 +544,7 @@ class Closure(Document):
                                 
                                                         self.boarded_date = today()
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -493,13 +557,13 @@ class Closure(Document):
                                                             # self.status='Concluded'
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                         else:
                                                             self.status = 'Onboarding'
                                                             self.status_updated_on = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -521,7 +585,7 @@ class Closure(Document):
                                                         self.status_updated_on = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -534,7 +598,7 @@ class Closure(Document):
                                                     self.ticket_date = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -547,20 +611,21 @@ class Closure(Document):
                                                 self.emigration_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
-                                                    self.append("custom_history", {
-                                                        "date":frappe.utils.now_datetime(),
-                                                        "status_moved_by": frappe.session.user,
-                                                        "status": self.status
-                                                    })
+                                                    if self.ecr_status == 'ECR':
+                                                        self.append("custom_history", {
+                                                            "date":frappe.utils.now_datetime(),
+                                                            "status_moved_by": frappe.session.user,
+                                                            "status": self.status
+                                                        })
                                         else:
                                             self.status = 'Visa Stamping'
                                             self.stamped_visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -573,7 +638,7 @@ class Closure(Document):
                                         self.final_medical_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -587,47 +652,50 @@ class Closure(Document):
                                             self.status = 'Certificate Attestation'
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
-                                                self.append("custom_history", {
-                                                    "date":frappe.utils.now_datetime(),
-                                                    "status_moved_by": frappe.session.user,
-                                                    "status": self.status
-                                                })
+                                                if self.pcc_not_applicable == 0:
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
                                             # self.reload()
                                         else:
-                                            self.status = 'Visa'
-                                            self.visa_date = today()
+                                            self.status = "PCC"
+                                            self.pcc_uploaded_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
+                                                if self.pcc_not_applicable == 0:
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
+                                    else:
+                                        self.status = "PCC"
+                                        self.pcc_uploaded_date = today()
+                
+                                        self.custom_status_transition = today()
+                                        
+                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                        if previous_status != self.status and self.status:
+                                            if self.pcc_not_applicable == 0:
                                                 self.append("custom_history", {
                                                     "date":frappe.utils.now_datetime(),
                                                     "status_moved_by": frappe.session.user,
                                                     "status": self.status
                                                 })
-                                    else:
-                                        self.status = 'Visa'
-                                        self.visa_date = today()
-                
-                                        self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
-                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                        if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
                             else:
-                                self.status = "PCC"
-                                self.pcc_uploaded_date = today()
+                                self.status = 'Visa'
+                                self.visa_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -641,7 +709,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -657,7 +725,7 @@ class Closure(Document):
                         self.col_date = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -669,7 +737,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -702,7 +770,6 @@ class Closure(Document):
                                 "status_moved_by": frappe.session.user,
                                 "status": self.status
                             })
-                        # if self.so_created or self.so_confirmed_date:
                         if self.sol:
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
@@ -711,7 +778,8 @@ class Closure(Document):
                                     "status_moved_by": frappe.session.user,
                                     "status": self.status
                                 })
-                            if self.final_medical:
+                                
+                            if self.visa:
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -727,7 +795,7 @@ class Closure(Document):
                                             "status_moved_by": frappe.session.user,
                                             "status": self.status
                                         })
-                                    if self.visa:
+                                    if self.final_medical or self.final_medical_not_applicable==1:
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -759,7 +827,7 @@ class Closure(Document):
                             
                                                     self.boarded_date = today()
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -772,14 +840,14 @@ class Closure(Document):
                                                             # self.status='Concluded'
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                     else:
                                                         
                                                         self.status = 'Onboarding'
                                                         self.status_updated_on = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -801,7 +869,7 @@ class Closure(Document):
                                                     self.status_updated_on = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -814,7 +882,7 @@ class Closure(Document):
                                                 self.ticket_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -827,74 +895,79 @@ class Closure(Document):
                                             self.emigration_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
-                                                self.append("custom_history", {
-                                                    "date":frappe.utils.now_datetime(),
-                                                    "status_moved_by": frappe.session.user,
-                                                    "status": self.status
-                                                })
+                                                if self.ecr_status == 'ECR':
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
                                     else:
                                         if self.is_required:
                                             if not self.certificate_attestation:
                                                 self.status = 'Certificate Attestation'
                                                 self.custom_status_transition = today()
                         
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
-                                                    self.append("custom_history", {
-                                                        "date":frappe.utils.now_datetime(),
-                                                        "status_moved_by": frappe.session.user,
-                                                        "status": self.status
-                                                    })
+                                                    if self.final_medical_not_applicable == 0:
+                                                        self.append("custom_history", {
+                                                            "date":frappe.utils.now_datetime(),
+                                                            "status_moved_by": frappe.session.user,
+                                                            "status": self.status
+                                                        })
                                                 # self.reload()
                                             else:
-                                                self.status = 'Visa'
-                                                self.visa_date = today()
-                                                self.custom_status_transition = today()
+                                                self.status = 'Final Medical'
+                                                self.premedical_date = today()
                         
-                                                self.custom_modified_status= self.status
+                                                self.custom_status_transition = today()
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
+                                                    if self.final_medical_not_applicable == 0:
+                                                        self.append("custom_history", {
+                                                            "date":frappe.utils.now_datetime(),
+                                                            "status_moved_by": frappe.session.user,
+                                                            "status": self.status
+                                                        })
+                                        else:
+                                            self.status = 'Final Medical'
+                                            self.premedical_date = today()
+                    
+                                            self.custom_status_transition = today()
+                                            
+                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                            if previous_status != self.status and self.status:
+                                                if self.final_medical_not_applicable == 0:
                                                     self.append("custom_history", {
                                                         "date":frappe.utils.now_datetime(),
                                                         "status_moved_by": frappe.session.user,
                                                         "status": self.status
                                                     })
-                                        else:
-                                            self.status = 'Visa'
-                                            self.visa_date = today()
-                    
-                                            self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
-                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                            if previous_status != self.status and self.status:
-                                                self.append("custom_history", {
-                                                    "date":frappe.utils.now_datetime(),
-                                                    "status_moved_by": frappe.session.user,
-                                                    "status": self.status
-                                                })
                                 else:
                                     self.status = "PCC"
                                     self.pcc_uploaded_date
             
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
-                                        self.append("custom_history", {
-                                            "date":frappe.utils.now_datetime(),
-                                            "status_moved_by": frappe.session.user,
-                                            "status": self.status
-                                        })
+                                        if self.pcc_not_applicable == 0:
+                                            self.append("custom_history", {
+                                                "date":frappe.utils.now_datetime(),
+                                                "status_moved_by": frappe.session.user,
+                                                "status": self.status
+                                            })
                             else:
-                                self.status = 'Final Medical'
-                                self.premedical_date = today()
+                                self.status = 'Visa'
+                                self.visa_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -907,7 +980,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -923,7 +996,7 @@ class Closure(Document):
                         self.col_date = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -935,7 +1008,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -1031,19 +1104,19 @@ class Closure(Document):
                                                     self.boarded_date = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                             # self.status='Concluded'
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                     else:
                                                         self.status = 'Onboarding'
                                                         self.status_updated_on = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1065,7 +1138,7 @@ class Closure(Document):
                                                     self.status_updated_on = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -1078,7 +1151,7 @@ class Closure(Document):
                                                 self.ticket_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -1091,21 +1164,22 @@ class Closure(Document):
                                             self.emigration_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
-                                                self.append("custom_history", {
-                                                    "date":frappe.utils.now_datetime(),
-                                                    "status_moved_by": frappe.session.user,
-                                                    "status": self.status
-                                                })
+                                                if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
                                     else:
                                         if self.is_required:
                                             if not self.certificate_attestation:
                                                 frappe.db.set_value(
                                                     "Closure", self.name, "status", "Certificate Attestation")
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -1119,7 +1193,7 @@ class Closure(Document):
                                                 self.visa_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -1132,7 +1206,7 @@ class Closure(Document):
                                             self.visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -1145,7 +1219,7 @@ class Closure(Document):
                                     self.date_of_final_medical = today()
             
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
                                         self.append("custom_history", {
@@ -1158,21 +1232,22 @@ class Closure(Document):
                                 self.pcc_uploaded_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
-                                    self.append("custom_history", {
-                                        "date":frappe.utils.now_datetime(),
-                                        "status_moved_by": frappe.session.user,
-                                        "status": self.status
-                                    })
+                                    if self.pcc_not_applicable == 0:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
                         else:
                             self.status = 'Signed Offer Letter'
                             self.pcc_not_applicable = 1
                             self.sol_uploaded_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -1185,7 +1260,7 @@ class Closure(Document):
                         self.col_date = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -1197,7 +1272,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -1298,12 +1373,37 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            self.status="Arrived"
+                                                            # self.status="Arrived"
+                                                            if self.status == 'Onboarded':
+                                                                self.status = 'Onboarded'
+                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                if previous_status != self.status and self.status:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
+                                                                self.onboarded = 1
+                                                                self.boarded_date = today()
+                                                                self.custom_status_transition = today()
+                                                            else:
+                                                                self.status = 'Onboarding'
+                                                                self.status_updated_on = today()
+                                        
+                                                                self.custom_status_transition = today()
+                                                                
+                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                if previous_status != self.status and self.status:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
                                                         else:
                                                             self.status = 'Visa Stamping'
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             self.date_of_visa = today()    
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
@@ -1313,10 +1413,10 @@ class Closure(Document):
                                                                     "status": self.status
                                                                 })
                                                     else:
-                                                        self.status='Biometric'  
+                                                        self.status='Final Medical'  
                                                         self.custom_status_transition = today()
-                                                        self.biometric_date=today()      
-                                                        self.custom_modified_status= self.status    
+                                                        self.final_medical_date = today()
+                                                            
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1328,7 +1428,7 @@ class Closure(Document):
                                                     self.status = 'Final Medical'
                                                     self.final_medical_date = today()
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -1342,7 +1442,7 @@ class Closure(Document):
                                                         self.status = 'Certificate Attestation'
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1356,7 +1456,7 @@ class Closure(Document):
                                 
                                                         self.visa_date = today()
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1369,7 +1469,7 @@ class Closure(Document):
                             
                                                     self.visa_date = today()
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status        
+                                                            
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -1382,32 +1482,34 @@ class Closure(Document):
                     
                                             self.pcc_uploaded_date = today()    
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
+                                                if self.pcc_not_applicable == 0:
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
+                                    else:
+                                        self.status = 'Premedical'
+                                        self.premedical_date = today()
+                                        self.custom_status_transition = today()
+                                        
+                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                        if previous_status != self.status and self.status:
+                                            if self.premedical_not_applicable == 0 :
                                                 self.append("custom_history", {
                                                     "date":frappe.utils.now_datetime(),
                                                     "status_moved_by": frappe.session.user,
                                                     "status": self.status
                                                 })
-                                    else:
-                                        self.status = 'Premedical'
-                                        self.premedical_date = today()
-                                        self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
-                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                        if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
                                 else:
                                     self.status = 'Signed Offer Letter'
             
                                     self.sol_uploaded_date = today()
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
                                         self.append("custom_history", {
@@ -1420,7 +1522,7 @@ class Closure(Document):
                                 self.status= 'Client Offer Letter'
                                 self.col_date = today()  
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status  
+                                  
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -1432,7 +1534,7 @@ class Closure(Document):
                             self.status = 'PSL'
                             self.status_updated_on = today()
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -1529,7 +1631,7 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -1552,7 +1654,7 @@ class Closure(Document):
                                                                         self.onboarded = 1
                                                                         self.boarded_date = today()
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -1565,7 +1667,7 @@ class Closure(Document):
                                                     
                                                                         #     self.status_updated_on = today()
                                                                         #     self.custom_status_transition = today()
-                                                                        #     self.custom_modified_status= self.status
+                                                                        #     
                                                                     elif self.check==1:
                                                                         self.status = 'Arrived'
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
@@ -1580,7 +1682,7 @@ class Closure(Document):
                                                 
                                                                         self.status_updated_on = today()
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -1593,7 +1695,7 @@ class Closure(Document):
                                             
                                                                     self.ticket_date = today()
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -1606,19 +1708,20 @@ class Closure(Document):
                                         
                                                                 self.emigration_date = today()
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
-                                                                    self.append("custom_history", {
-                                                                        "date":frappe.utils.now_datetime(),
-                                                                        "status_moved_by": frappe.session.user,
-                                                                        "status": self.status
-                                                                    })
+                                                                    if self.ecr_status == "ECR" or self.emigration_not_applicable == 0:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
                                                         else:
                                                             self.status = 'Visa Stamping'
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             self.date_of_visa = today()    
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
@@ -1631,7 +1734,7 @@ class Closure(Document):
                                                         self.status='Final Medical'  
                                                         self.final_medical_date = today()
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1641,7 +1744,7 @@ class Closure(Document):
                                                             })
                                                         # self.custom_status_transition = today()
                                                         # self.biometric_date=today()      
-                                                        # self.custom_modified_status= self.status    
+                                                        #     
                                                         # previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         # if previous_status != self.status and self.status:
                                                         #     self.append("custom_history", {
@@ -1654,7 +1757,7 @@ class Closure(Document):
                             
                                                     self.final_medical_date = today()
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -1668,7 +1771,7 @@ class Closure(Document):
                                                         self.status = 'Certificate Attestation'
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1682,7 +1785,7 @@ class Closure(Document):
                                 
                                                         self.visa_date = today()
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -1695,7 +1798,7 @@ class Closure(Document):
                             
                                                     self.visa_date = today()
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status        
+                                                            
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -1708,28 +1811,32 @@ class Closure(Document):
                     
                                             self.pcc_uploaded_date = today()    
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
-                                                self.append("custom_history", {
-                                                    "date":frappe.utils.now_datetime(),
-                                                    "status_moved_by": frappe.session.user,
-                                                    "status": self.status
-                                                })
+                                                
+                                                if self.pcc_not_applicable == 0:
+                                                
+                                                    self.append("custom_history", {
+                                                        "date":frappe.utils.now_datetime(),
+                                                        "status_moved_by": frappe.session.user,
+                                                        "status": self.status
+                                                    })
                                         
                                     else:
                                         self.status = 'Premedical'
                 
                                         self.premedical_date = today()
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
+                                            if self.premedical_not_applicable == 0:
+                                                self.append("custom_history", {
+                                                    "date":frappe.utils.now_datetime(),
+                                                    "status_moved_by": frappe.session.user,
+                                                    "status": self.status
+                                                })
                                         # else:
                                         #     self.status = 'MOH Approval'
                                         #     self.moh_uploaded_date = today()                                                                  
@@ -1739,7 +1846,7 @@ class Closure(Document):
             
                                     self.sol_uploaded_date = today()
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
                                         self.append("custom_history", {
@@ -1752,7 +1859,7 @@ class Closure(Document):
         
                                 self.col_date = today()  
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status  
+                                  
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -1765,7 +1872,7 @@ class Closure(Document):
 
                             self.status_updated_on = today()
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -1840,124 +1947,15 @@ class Closure(Document):
                                                             "status_moved_by": frappe.session.user,
                                                             "status": self.status
                                                         })
-                                                    if self.custom_closure_status!="Initiated" or self.custom_trade_test_not_applicable==1:
-                                                        if self.visa_stamping:
-                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                            if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
-                                                            if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
-                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                if previous_status != self.status and self.status:
-                                                                    self.append("custom_history", {
-                                                                        "date":frappe.utils.now_datetime(),
-                                                                        "status_moved_by": frappe.session.user,
-                                                                        "status": self.status
-                                                                    })
-                                                                if self.ticket:
-                                                                    if self.status == 'Onboarded':
-                                                                        self.status = 'Onboarded'
-                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                        if previous_status != self.status and self.status:
-                                                                            self.append("custom_history", {
-                                                                                "date":frappe.utils.now_datetime(),
-                                                                                "status_moved_by": frappe.session.user,
-                                                                                "status": self.status
-                                                                            })
-                                                                        self.onboarded = 1
-                                                                        self.boarded_date = today()
-                                                
-                                                                        self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
-                                                                        if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
-                                                                                self.custom_status_transition = today()
-                                                                                self.custom_modified_status= self.status
-                                                                        else:
-                                                                            self.status = 'Onboarding'
-                                                                            self.status_updated_on = today()
-                                                    
-                                                                            self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
-                                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                            if previous_status != self.status and self.status:
-                                                                                self.append("custom_history", {
-                                                                                    "date":frappe.utils.now_datetime(),
-                                                                                    "status_moved_by": frappe.session.user,
-                                                                                    "status": self.status
-                                                                                })
-                                                                    elif self.check==1:
-                                                                        self.status = 'Arrived'
-                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                        if previous_status != self.status and self.status:
-                                                                            self.append("custom_history", {
-                                                                                "date":frappe.utils.now_datetime(),
-                                                                                "status_moved_by": frappe.session.user,
-                                                                                "status": self.status
-                                                                            })
-                                                                    else:
-                                                                        self.status = 'Onboarding'
-                                                                        self.status_updated_on = today()
-                                                
-                                                                        self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
-                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                        if previous_status != self.status and self.status:
-                                                                            self.append("custom_history", {
-                                                                                "date":frappe.utils.now_datetime(),
-                                                                                "status_moved_by": frappe.session.user,
-                                                                                "status": self.status
-                                                                            })
-                                                                else:
-                                                                    self.status = 'Ticket'
-                                                                    self.ticket_date = today()
-                                            
-                                                                    self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
-                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                    if previous_status != self.status and self.status:
-                                                                        self.append("custom_history", {
-                                                                            "date":frappe.utils.now_datetime(),
-                                                                            "status_moved_by": frappe.session.user,
-                                                                            "status": self.status
-                                                                        })
-                                                            else:
-                                                                self.status = 'Emigration'
-                                                                self.emigration_date = today()
-                                        
-                                                                self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
-                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                if previous_status != self.status and self.status:
-                                                                    self.append("custom_history", {
-                                                                        "date":frappe.utils.now_datetime(),
-                                                                        "status_moved_by": frappe.session.user,
-                                                                        "status": self.status
-                                                                    })
-                                                        else:
-                                                            self.status = 'Visa Stamping'
-                                                            self.stamped_visa_date = today()
-                                    
-                                                            self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
-                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                            if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
-                                                    else:
-                                                        if self.custom_closure_status=="Initiated" and self.custom_attachment and self.custom_closure_initiated_date and self.custom_closure_location:
-                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                            if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
+                                                    if self.qvp or self.qvp_not_applicable==1:
+                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                        if previous_status != self.status and self.status:
+                                                            self.append("custom_history", {
+                                                                "date":frappe.utils.now_datetime(),
+                                                                "status_moved_by": frappe.session.user,
+                                                                "status": self.status
+                                                            })
+                                                        if self.custom_closure_status=="Not Applicable" or self.custom_trade_test_not_applicable==1:
                                                             if self.visa_stamping:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
@@ -1966,7 +1964,7 @@ class Closure(Document):
                                                                         "status_moved_by": frappe.session.user,
                                                                         "status": self.status
                                                                     })
-                                                                if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                                if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable:
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -1988,16 +1986,16 @@ class Closure(Document):
                                                                             self.boarded_date = today()
                                                     
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                             if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                                                     self.custom_status_transition = today()
-                                                                                    self.custom_modified_status= self.status
+                                                                                    
                                                                             else:
                                                                                 self.status = 'Onboarding'
                                                                                 self.status_updated_on = today()
                                                         
                                                                                 self.custom_status_transition = today()
-                                                                                self.custom_modified_status= self.status
+                                                                                
                                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                                 if previous_status != self.status and self.status:
                                                                                     self.append("custom_history", {
@@ -2019,7 +2017,7 @@ class Closure(Document):
                                                                             self.status_updated_on = today()
                                                     
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                             if previous_status != self.status and self.status:
                                                                                 self.append("custom_history", {
@@ -2032,7 +2030,7 @@ class Closure(Document):
                                                                         self.ticket_date = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -2045,20 +2043,21 @@ class Closure(Document):
                                                                     self.emigration_date = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
-                                                                        self.append("custom_history", {
-                                                                            "date":frappe.utils.now_datetime(),
-                                                                            "status_moved_by": frappe.session.user,
-                                                                            "status": self.status
-                                                                        })
+                                                                        if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                                            self.append("custom_history", {
+                                                                                "date":frappe.utils.now_datetime(),
+                                                                                "status_moved_by": frappe.session.user,
+                                                                                "status": self.status
+                                                                            })
                                                             else:
                                                                 self.status = 'Visa Stamping'
                                                                 self.stamped_visa_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -2067,18 +2066,148 @@ class Closure(Document):
                                                                         "status": self.status
                                                                     })
                                                         else:
-                                                            self.status = 'Trade Test'
-                                                            self.custom_modified_status= self.status
-                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                            if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
+                                                            if self.custom_closure_status=="Initiated" and self.custom_attachment and self.custom_closure_initiated_date and self.custom_closure_location:
+                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                if previous_status != self.status and self.status:
+                                                                    if self.custom_trade_test_not_applicable == 0:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
+                                                                if self.visa_stamping:
+                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                    if previous_status != self.status and self.status:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
+                                                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                        if previous_status != self.status and self.status:
+                                                                            self.append("custom_history", {
+                                                                                "date":frappe.utils.now_datetime(),
+                                                                                "status_moved_by": frappe.session.user,
+                                                                                "status": self.status
+                                                                            })
+                                                                        if self.ticket:
+                                                                            if self.status == 'Onboarded':
+                                                                                self.status = 'Onboarded'
+                                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                                if previous_status != self.status and self.status:
+                                                                                    self.append("custom_history", {
+                                                                                        "date":frappe.utils.now_datetime(),
+                                                                                        "status_moved_by": frappe.session.user,
+                                                                                        "status": self.status
+                                                                                    })
+                                                                                self.onboarded = 1
+                                                                                self.boarded_date = today()
+                                                        
+                                                                                self.custom_status_transition = today()
+                                                                                
+                                                                                if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
+                                                                                        self.custom_status_transition = today()
+                                                                                        
+                                                                                else:
+                                                                                    self.status = 'Onboarding'
+                                                                                    self.status_updated_on = today()
+                                                            
+                                                                                    self.custom_status_transition = today()
+                                                                                    
+                                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                                    if previous_status != self.status and self.status:
+                                                                                        self.append("custom_history", {
+                                                                                            "date":frappe.utils.now_datetime(),
+                                                                                            "status_moved_by": frappe.session.user,
+                                                                                            "status": self.status
+                                                                                        })
+                                                                            elif self.check==1:
+                                                                                self.status = 'Arrived'
+                                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                                if previous_status != self.status and self.status:
+                                                                                    self.append("custom_history", {
+                                                                                        "date":frappe.utils.now_datetime(),
+                                                                                        "status_moved_by": frappe.session.user,
+                                                                                        "status": self.status
+                                                                                    })
+                                                                            else:
+                                                                                self.status = 'Onboarding'
+                                                                                self.status_updated_on = today()
+                                                        
+                                                                                self.custom_status_transition = today()
+                                                                                
+                                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                                if previous_status != self.status and self.status:
+                                                                                    self.append("custom_history", {
+                                                                                        "date":frappe.utils.now_datetime(),
+                                                                                        "status_moved_by": frappe.session.user,
+                                                                                        "status": self.status
+                                                                                    })
+                                                                        else:
+                                                                            self.status = 'Ticket'
+                                                                            self.ticket_date = today()
+                                                    
+                                                                            self.custom_status_transition = today()
+                                                                            
+                                                                            previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                            if previous_status != self.status and self.status:
+                                                                                self.append("custom_history", {
+                                                                                    "date":frappe.utils.now_datetime(),
+                                                                                    "status_moved_by": frappe.session.user,
+                                                                                    "status": self.status
+                                                                                })
+                                                                    else:
+                                                                        self.status = 'Emigration'
+                                                                        self.emigration_date = today()
+                                                
+                                                                        self.custom_status_transition = today()
+                                                                        
+                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                        if previous_status != self.status and self.status:
+                                                                            if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                                                self.append("custom_history", {
+                                                                                    "date":frappe.utils.now_datetime(),
+                                                                                    "status_moved_by": frappe.session.user,
+                                                                                    "status": self.status
+                                                                                })
+                                                                else:
+                                                                    self.status = 'Visa Stamping'
+                                                                    self.stamped_visa_date = today()
+                                            
+                                                                    self.custom_status_transition = today()
+                                                                    
+                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                    if previous_status != self.status and self.status:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
+                                                            else:
+                                                                self.status = 'Trade Test'
+                                                                
+                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                if previous_status != self.status and self.status:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
+                                                    else:
+                                                        self.status = 'QVP'
+                                                        self.status_updated_on = today()
+                                                        self.custom_status_transition = today()
+                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                        if previous_status != self.status and self.status:
+                                                            self.append("custom_history", {
+                                                                "date":frappe.utils.now_datetime(),
+                                                                "status_moved_by": frappe.session.user,
+                                                                "status": self.status
+                                                            })
                                                     # 
                                                 elif self.custom_skip_biometric==1:
-                                                    if self.custom_closure_status!="Initiated":
+                                                    if self.custom_closure_status=="Not Applicable":
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -2116,16 +2245,16 @@ class Closure(Document):
                                                                         self.boarded_date = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                         else:
                                                                             self.status = 'Onboarding'
                                                                             self.status_updated_on = today()
                                                     
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                             if previous_status != self.status and self.status:
                                                                                 self.append("custom_history", {
@@ -2147,7 +2276,7 @@ class Closure(Document):
                                                                         self.status_updated_on = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -2160,7 +2289,7 @@ class Closure(Document):
                                                                     self.ticket_date = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -2173,20 +2302,21 @@ class Closure(Document):
                                                                 self.emigration_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
-                                                                    self.append("custom_history", {
-                                                                        "date":frappe.utils.now_datetime(),
-                                                                        "status_moved_by": frappe.session.user,
-                                                                        "status": self.status
-                                                                    })
+                                                                    if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
                                                         else:
                                                             self.status = 'Visa Stamping'
                                                             self.stamped_visa_date = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -2233,16 +2363,16 @@ class Closure(Document):
                                                                             self.boarded_date = today()
                                                     
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                             if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                                                 self.custom_status_transition = today()
-                                                                                self.custom_modified_status= self.status
+                                                                                
                                                                             else:
                                                                                 self.status = 'Onboarding'
                                                                                 self.status_updated_on = today()
                                                         
                                                                                 self.custom_status_transition = today()
-                                                                                self.custom_modified_status= self.status
+                                                                                
                                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                                 if previous_status != self.status and self.status:
                                                                                     self.append("custom_history", {
@@ -2264,7 +2394,7 @@ class Closure(Document):
                                                                             self.status_updated_on = today()
                                                     
                                                                             self.custom_status_transition = today()
-                                                                            self.custom_modified_status= self.status
+                                                                            
                                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                             if previous_status != self.status and self.status:
                                                                                 self.append("custom_history", {
@@ -2277,7 +2407,7 @@ class Closure(Document):
                                                                         self.ticket_date = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -2290,20 +2420,21 @@ class Closure(Document):
                                                                     self.emigration_date = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
-                                                                        self.append("custom_history", {
-                                                                            "date":frappe.utils.now_datetime(),
-                                                                            "status_moved_by": frappe.session.user,
-                                                                            "status": self.status
-                                                                        })
+                                                                        if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                                            self.append("custom_history", {
+                                                                                "date":frappe.utils.now_datetime(),
+                                                                                "status_moved_by": frappe.session.user,
+                                                                                "status": self.status
+                                                                            })
                                                             else:
                                                                 self.status = 'Visa Stamping'
                                                                 self.stamped_visa_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -2313,7 +2444,7 @@ class Closure(Document):
                                                                     })
                                                         else:
                                                             self.status = 'Trade Test'
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -2326,7 +2457,7 @@ class Closure(Document):
                                                     self.status = 'Biometric'
                                                     self.custom_status_transition = today()
                             
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -2339,7 +2470,7 @@ class Closure(Document):
                                                 self.status = 'Biometric'
                                                 self.custom_status_transition = today()
                         
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -2352,7 +2483,7 @@ class Closure(Document):
                                             self.final_medical_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -2366,21 +2497,22 @@ class Closure(Document):
                                         self.pcc_uploaded_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
+                                            if self.pcc_not_applicable == 0:
+                                                self.append("custom_history", {
+                                                    "date":frappe.utils.now_datetime(),
+                                                    "status_moved_by": frappe.session.user,
+                                                    "status": self.status
+                                                })
                                 else:
                                     if self.is_required:
                                         if not self.certificate_attestation:
                                             self.status = 'Certificate Attestation'
                                             self.custom_status_transition = today()
                     
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -2394,7 +2526,7 @@ class Closure(Document):
                                             self.visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -2407,7 +2539,7 @@ class Closure(Document):
                                         self.visa_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -2422,7 +2554,7 @@ class Closure(Document):
                                 self.col_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -2435,7 +2567,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
 
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -2447,7 +2579,7 @@ class Closure(Document):
                         self.status = 'PSL'
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -2456,439 +2588,7 @@ class Closure(Document):
                                 "status": self.status
                             })
                 
-                # if self.nationality=="Indian":
-                #     if self.irf and self.passport and self.photo:
-                #         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #         if previous_status != self.status and self.status:
-                #             self.append("custom_history", {
-                #                 "date":frappe.utils.now_datetime(),
-                #                 "status_moved_by": frappe.session.user,
-                #                 "status": self.status
-                #             })
-                #         if self.offer_letter:
-                #             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #             if previous_status != self.status and self.status:
-                #                 self.append("custom_history", {
-                #                     "date":frappe.utils.now_datetime(),
-                #                     "status_moved_by": frappe.session.user,
-                #                     "status": self.status
-                #                 })
-                #             if self.sol:
-                #                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                 if previous_status != self.status and self.status:
-                #                     self.append("custom_history", {
-                #                         "date":frappe.utils.now_datetime(),
-                #                         "status_moved_by": frappe.session.user,
-                #                         "status": self.status
-                #                     })
-                #                 # if self.pcc or self.pcc_not_applicable: 
-                #                 if self.visa and self.so_created:
-                #                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                     if previous_status != self.status and self.status:
-                #                         self.append("custom_history", {
-                #                             "date":frappe.utils.now_datetime(),
-                #                             "status_moved_by": frappe.session.user,
-                #                             "status": self.status
-                #                         })
-                #                     if self.pcc or self.pcc_not_applicable: 
-                #                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                         if previous_status != self.status and self.status:
-                #                             self.append("custom_history", {
-                #                                 "date":frappe.utils.now_datetime(),
-                #                                 "status_moved_by": frappe.session.user,
-                #                                 "status": self.status
-                #                             })
-                #                         if self.custom_medical_proof or self.custom_update_checkbox:
-                #                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                             if previous_status != self.status and self.status:
-                #                                 self.append("custom_history", {
-                #                                     "date":frappe.utils.now_datetime(),
-                #                                     "status_moved_by": frappe.session.user,
-                #                                     "status": self.status
-                #                                 })
-                #                             if self.final_medical:
-                #                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                 if previous_status != self.status and self.status:
-                #                                     self.append("custom_history", {
-                #                                         "date":frappe.utils.now_datetime(),
-                #                                         "status_moved_by": frappe.session.user,
-                #                                         "status": self.status
-                #                                     })
-                #                                 if self.custom_vfs_slip and self.custom_skip_biometric!=1: 
-                #                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                     if previous_status != self.status and self.status:
-                #                                         self.append("custom_history", {
-                #                                             "date":frappe.utils.now_datetime(),
-                #                                             "status_moved_by": frappe.session.user,
-                #                                             "status": self.status
-                #                                         })
-                #                                     if self.visa_stamping:
-                #                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                         if previous_status != self.status and self.status:
-                #                                             self.append("custom_history", {
-                #                                                 "date":frappe.utils.now_datetime(),
-                #                                                 "status_moved_by": frappe.session.user,
-                #                                                 "status": self.status
-                #                                             })
-                #                                         if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
-                #                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                             if previous_status != self.status and self.status:
-                #                                                 self.append("custom_history", {
-                #                                                     "date":frappe.utils.now_datetime(),
-                #                                                     "status_moved_by": frappe.session.user,
-                #                                                     "status": self.status
-                #                                                 })
-                #                                             if self.ticket:
-                #                                                 if self.status == 'Onboarded':
-                #                                                     self.status = 'Onboarded'
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                                 # if self.status == 'Arrived':
-                #                                                 #     self.status = 'Arrived'
-                #                                                     self.onboarded = 1
-                #                                                     self.boarded_date = today()
-                                            
-                #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
-                #                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
-                #                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
-                #                                                             # self.status='Concluded'
-                #                                                             self.custom_status_transition = today()
-                                                    
-                #                                                             self.custom_modified_status= self.status
-                #                                                     else:
-                #                                                         self.status = 'Onboarding'
-                #                                                         self.status_updated_on = today()
-                                                
-                #                                                         self.custom_status_transition = today()
-                #                                                         self.custom_modified_status= self.status
-                #                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                         if previous_status != self.status and self.status:
-                #                                                             self.append("custom_history", {
-                #                                                                 "date":frappe.utils.now_datetime(),
-                #                                                                 "status_moved_by": frappe.session.user,
-                #                                                                 "status": self.status
-                #                                                             })
-                #                                                 elif self.check==1:
-                #                                                     self.status = 'Arrived'
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                                 else:
-                #                                                     self.status = 'Onboarding'
-                #                                                     self.status_updated_on = today()
-                                            
-                #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                             else:
-                #                                                 self.status = 'Ticket'
-                #                                                 self.ticket_date = today()
-                                        
-                #                                                 self.custom_status_transition = today()
-                #                                                 self.custom_modified_status= self.status
-                #                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                 if previous_status != self.status and self.status:
-                #                                                     self.append("custom_history", {
-                #                                                         "date":frappe.utils.now_datetime(),
-                #                                                         "status_moved_by": frappe.session.user,
-                #                                                         "status": self.status
-                #                                                     })
-                #                                         else:
-                #                                             self.status = 'Emigration'
-                #                                             self.emigration_date = today()
-                                    
-                #                                             self.custom_status_transition = today()
-                #                                             self.custom_modified_status= self.status
-                #                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                             if previous_status != self.status and self.status:
-                #                                                 self.append("custom_history", {
-                #                                                     "date":frappe.utils.now_datetime(),
-                #                                                     "status_moved_by": frappe.session.user,
-                #                                                     "status": self.status
-                #                                                 })
-                #                                     else:
-                #                                         self.status = 'Visa Stamping'
-                #                                         self.stamped_visa_date = today()
-                                
-                #                                         self.custom_status_transition = today()
-                #                                         self.custom_modified_status= self.status
-                #                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                         if previous_status != self.status and self.status:
-                #                                             self.append("custom_history", {
-                #                                                 "date":frappe.utils.now_datetime(),
-                #                                                 "status_moved_by": frappe.session.user,
-                #                                                 "status": self.status
-                #                                             })
-                                                
-                #                                 elif self.custom_skip_biometric==1:
-                #                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                     if previous_status != self.status and self.status:
-                #                                         self.append("custom_history", {
-                #                                             "date":frappe.utils.now_datetime(),
-                #                                             "status_moved_by": frappe.session.user,
-                #                                             "status": self.status
-                #                                         })
-                #                                     if self.visa_stamping:
-                #                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                         if previous_status != self.status and self.status:
-                #                                             self.append("custom_history", {
-                #                                                 "date":frappe.utils.now_datetime(),
-                #                                                 "status_moved_by": frappe.session.user,
-                #                                                 "status": self.status
-                #                                             })
-                #                                         if self.ecr_status != 'ECR' or self.emigration or self.emigration_not_applicable and self.candidate_feedback_form:
-                #                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                             if previous_status != self.status and self.status:
-                #                                                 self.append("custom_history", {
-                #                                                     "date":frappe.utils.now_datetime(),
-                #                                                     "status_moved_by": frappe.session.user,
-                #                                                     "status": self.status
-                #                                                 })
-                #                                             if self.ticket:
-                #                                                 if self.status == 'Onboarded':
-                #                                                     self.status = 'Onboarded'
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                                 # if self.status == 'Arrived':
-                #                                                 #     self.status = 'Arrived'
-                #                                                     self.onboarded = 1
-                #                                                     self.boarded_date = today()
-                                            
-                #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
-                #                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
-                #                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
-                #                                                         # self.status='Concluded'
-                                                
-                #                                                         self.custom_status_transition = today()
-                #                                                         self.custom_modified_status= self.status
-                #                                                     else:
-                #                                                         self.status = 'Onboarding'
-                #                                                         self.status_updated_on = today()
-                                                
-                #                                                         self.custom_status_transition = today()
-                #                                                         self.custom_modified_status= self.status
-                #                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                         if previous_status != self.status and self.status:
-                #                                                             self.append("custom_history", {
-                #                                                                 "date":frappe.utils.now_datetime(),
-                #                                                                 "status_moved_by": frappe.session.user,
-                #                                                                 "status": self.status
-                #                                                             })
-                #                                                 elif self.check==1:
-                #                                                     self.status = 'Arrived'
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                                 else:
-                #                                                     self.status = 'Onboarding'
-                #                                                     self.status_updated_on = today()
-                                            
-                #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
-                #                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                     if previous_status != self.status and self.status:
-                #                                                         self.append("custom_history", {
-                #                                                             "date":frappe.utils.now_datetime(),
-                #                                                             "status_moved_by": frappe.session.user,
-                #                                                             "status": self.status
-                #                                                         })
-                #                                             else:
-                #                                                 self.status = 'Ticket'
-                #                                                 self.ticket_date = today()
-                                        
-                #                                                 self.custom_status_transition = today()
-                #                                                 self.custom_modified_status= self.status
-                #                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                                 if previous_status != self.status and self.status:
-                #                                                     self.append("custom_history", {
-                #                                                         "date":frappe.utils.now_datetime(),
-                #                                                         "status_moved_by": frappe.session.user,
-                #                                                         "status": self.status
-                #                                                     })
-                #                                         else:
-                #                                             self.status = 'Emigration'
-                #                                             self.emigration_date = today()
-                                    
-                #                                             self.custom_status_transition = today()
-                #                                             self.custom_modified_status= self.status
-                #                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                             if previous_status != self.status and self.status:
-                #                                                 self.append("custom_history", {
-                #                                                     "date":frappe.utils.now_datetime(),
-                #                                                     "status_moved_by": frappe.session.user,
-                #                                                     "status": self.status
-                #                                                 })
-                #                                     else:
-                #                                         self.status = 'Visa Stamping'
-                #                                         self.stamped_visa_date = today()
-                                
-                #                                         self.custom_status_transition = today()
-                #                                         self.custom_modified_status= self.status
-                #                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                         if previous_status != self.status and self.status:
-                #                                             self.append("custom_history", {
-                #                                                 "date":frappe.utils.now_datetime(),
-                #                                                 "status_moved_by": frappe.session.user,
-                #                                                 "status": self.status
-                #                                             })
-                #                                 else:
-                #                                     self.status = 'Biometric'
-                #                                     self.custom_status_transition = today()
-                            
-                #                                     self.custom_modified_status= self.status
-                #                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                     if previous_status != self.status and self.status:
-                #                                         self.append("custom_history", {
-                #                                             "date":frappe.utils.now_datetime(),
-                #                                             "status_moved_by": frappe.session.user,
-                #                                             "status": self.status
-                #                                         })
-                #                             else:
-                #                                 self.status = 'Biometric'
-                #                                 self.custom_status_transition = today()
-                        
-                #                                 self.custom_modified_status= self.status
-                #                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                                 if previous_status != self.status and self.status:
-                #                                     self.append("custom_history", {
-                #                                         "date":frappe.utils.now_datetime(),
-                #                                         "status_moved_by": frappe.session.user,
-                #                                         "status": self.status
-                #                                     })
-                #                         else:
-                #                             self.status = 'Final Medical'
-                #                             self.final_medical_date = today()
-                    
-                #                             self.custom_status_transition = today()
-                #                             self.custom_modified_status= self.status
-                #                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                             if previous_status != self.status and self.status:
-                #                                 self.append("custom_history", {
-                #                                     "date":frappe.utils.now_datetime(),
-                #                                     "status_moved_by": frappe.session.user,
-                #                                     "status": self.status
-                #                                 })
-                                                
-                #                     else:
-                #                         self.status = "PCC"
-                #                         self.pcc_uploaded_date = today()
-                
-                #                         self.custom_status_transition = today()
-                #                         self.custom_modified_status= self.status
-                #                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                         if previous_status != self.status and self.status:
-                #                             self.append("custom_history", {
-                #                                 "date":frappe.utils.now_datetime(),
-                #                                 "status_moved_by": frappe.session.user,
-                #                                 "status": self.status
-                #                             })
-                #                 else:
-                #                     if self.is_required:
-                #                         if not self.certificate_attestation:
-                #                             self.status = 'Certificate Attestation'
-                #                             self.custom_status_transition = today()
-                    
-                #                             self.custom_modified_status= self.status
-                #                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                             if previous_status != self.status and self.status:
-                #                                 self.append("custom_history", {
-                #                                     "date":frappe.utils.now_datetime(),
-                #                                     "status_moved_by": frappe.session.user,
-                #                                     "status": self.status
-                #                                 })
-                #                             # self.reload()
-                #                         else:
-                #                             self.status = 'Visa'
-                #                             self.visa_date = today()
-                    
-                #                             self.custom_status_transition = today()
-                #                             self.custom_modified_status= self.status
-                #                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                             if previous_status != self.status and self.status:
-                #                                 self.append("custom_history", {
-                #                                     "date":frappe.utils.now_datetime(),
-                #                                     "status_moved_by": frappe.session.user,
-                #                                     "status": self.status
-                #                                 })
-                #                     else:
-                #                         self.status = 'Visa'
-                #                         self.visa_date = today()
-                
-                #                         self.custom_status_transition = today()
-                #                         self.custom_modified_status= self.status
-                #                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                         if previous_status != self.status and self.status:
-                #                             self.append("custom_history", {
-                #                                 "date":frappe.utils.now_datetime(),
-                #                                 "status_moved_by": frappe.session.user,
-                #                                 "status": self.status
-                #                             })
-                                
-
-                #             else:
-                #                 self.status = "Signed Offer Letter"
-                #                 self.col_date = today()
-        
-                #                 self.custom_status_transition = today()
-                #                 self.custom_modified_status= self.status
-                #                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #                 if previous_status != self.status and self.status:
-                #                     self.append("custom_history", {
-                #                         "date":frappe.utils.now_datetime(),
-                #                         "status_moved_by": frappe.session.user,
-                #                         "status": self.status
-                #                     })
-                #         else:
-                #             self.status = 'Client Offer Letter'
-                #             self.offer_letter_date = today()
-
-                #             self.custom_status_transition = today()
-                #             self.custom_modified_status= self.status
-                #             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #             if previous_status != self.status and self.status:
-                #                 self.append("custom_history", {
-                #                     "date":frappe.utils.now_datetime(),
-                #                     "status_moved_by": frappe.session.user,
-                #                     "status": self.status
-                #                 })
-                #     else:
-                #         self.status = 'PSL'
-                #         self.status_updated_on = today()
-                #         self.custom_status_transition = today()
-                #         self.custom_modified_status= self.status
-                #         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                #         if previous_status != self.status and self.status:
-                #             self.append("custom_history", {
-                #                 "date":frappe.utils.now_datetime(),
-                #                 "status_moved_by": frappe.session.user,
-                #                 "status": self.status
-                #             })
+               
                 else:
                     if self.irf and self.passport and self.photo:
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
@@ -2948,7 +2648,7 @@ class Closure(Document):
                                                         "status_moved_by": frappe.session.user,
                                                         "status": self.status
                                                     })
-                                                if self.visa_stamping:
+                                                if self.qvp or self.qvp_not_applicable==1:
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -2956,7 +2656,7 @@ class Closure(Document):
                                                             "status_moved_by": frappe.session.user,
                                                             "status": self.status
                                                         })
-                                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                    if self.visa_stamping:
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -2964,7 +2664,7 @@ class Closure(Document):
                                                                 "status_moved_by": frappe.session.user,
                                                                 "status": self.status
                                                             })
-                                                        if self.ticket:
+                                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable:
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -2972,8 +2672,7 @@ class Closure(Document):
                                                                     "status_moved_by": frappe.session.user,
                                                                     "status": self.status
                                                                 })
-                                                            if self.status == 'Onboarded':
-                                                                self.status = 'Onboarded'
+                                                            if self.ticket:
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -2981,25 +2680,8 @@ class Closure(Document):
                                                                         "status_moved_by": frappe.session.user,
                                                                         "status": self.status
                                                                     })
-                                                            # if self.status == 'Arrived':
-                                                            #     self.status = 'Arrived'
-                                                                self.onboarded = 1
-                                                                self.boarded_date = today()
-                                        
-                                                                self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
-                                                                # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
-                                                                if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:       
-                                                                        # self.status='Concluded'
-                                                                        self.custom_status_transition = today()
-                                                
-                                                                        self.custom_modified_status= self.status
-                                                                else:
-                                                                    self.status = 'Onboarding'
-                                                                    self.status_updated_on = today()
-                                            
-                                                                    self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                if self.status == 'Onboarded':
+                                                                    self.status = 'Onboarded'
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -3007,21 +2689,60 @@ class Closure(Document):
                                                                             "status_moved_by": frappe.session.user,
                                                                             "status": self.status
                                                                         })
-                                                            elif self.check==1:
-                                                                self.status = 'Arrived'
-                                                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                                                if previous_status != self.status and self.status:
-                                                                    self.append("custom_history", {
-                                                                        "date":frappe.utils.now_datetime(),
-                                                                        "status_moved_by": frappe.session.user,
-                                                                        "status": self.status
-                                                                    })
+                                                                # if self.status == 'Arrived':
+                                                                #     self.status = 'Arrived'
+                                                                    self.onboarded = 1
+                                                                    self.boarded_date = today()
+                                            
+                                                                    self.custom_status_transition = today()
+                                                                    
+                                                                    # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
+                                                                    if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:       
+                                                                            # self.status='Concluded'
+                                                                            self.custom_status_transition = today()
+                                                    
+                                                                            
+                                                                    else:
+                                                                        self.status = 'Onboarding'
+                                                                        self.status_updated_on = today()
+                                                
+                                                                        self.custom_status_transition = today()
+                                                                        
+                                                                        previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                        if previous_status != self.status and self.status:
+                                                                            self.append("custom_history", {
+                                                                                "date":frappe.utils.now_datetime(),
+                                                                                "status_moved_by": frappe.session.user,
+                                                                                "status": self.status
+                                                                            })
+                                                                elif self.check==1:
+                                                                    self.status = 'Arrived'
+                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                    if previous_status != self.status and self.status:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
+                                                                else:
+                                                                    self.status = 'Onboarding'
+                                                                    self.status_updated_on = today()
+                                            
+                                                                    self.custom_status_transition = today()
+                                                                    
+                                                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                                                    if previous_status != self.status and self.status:
+                                                                        self.append("custom_history", {
+                                                                            "date":frappe.utils.now_datetime(),
+                                                                            "status_moved_by": frappe.session.user,
+                                                                            "status": self.status
+                                                                        })
                                                             else:
-                                                                self.status = 'Onboarding'
-                                                                self.status_updated_on = today()
+                                                                self.status = 'Ticket'
+                                                                self.ticket_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -3030,24 +2751,25 @@ class Closure(Document):
                                                                         "status": self.status
                                                                     })
                                                         else:
-                                                            self.status = 'Ticket'
-                                                            self.ticket_date = today()
+                                                            self.status = 'Emigration'
+                                                            self.emigration_date = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
+                                                                if self.ecr_status == 'ECR' or self.emigration_not_applicable ==0:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
                                                     else:
-                                                        self.status = 'Emigration'
-                                                        self.emigration_date = today()
+                                                        self.status = 'Visa Stamping'
+                                                        self.stamped_visa_date = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -3056,11 +2778,9 @@ class Closure(Document):
                                                                 "status": self.status
                                                             })
                                                 else:
-                                                    self.status = 'Visa Stamping'
+                                                    self.status = 'QVP'
                                                     self.stamped_visa_date = today()
-                            
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -3116,19 +2836,19 @@ class Closure(Document):
                                                                     self.boarded_date = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:    
                                                                         # self.status='Concluded'
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                     else:
                                                                         self.status = 'Onboarding'
                                                                         self.status_updated_on = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -3150,7 +2870,7 @@ class Closure(Document):
                                                                     self.status_updated_on = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -3163,7 +2883,7 @@ class Closure(Document):
                                                                 self.ticket_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -3176,20 +2896,21 @@ class Closure(Document):
                                                             self.emigration_date = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
+                                                                if self.ecr_status == 'ECR' or self.emigration_not_applicable ==0:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
                                                     else:
                                                         self.status = 'Visa Stamping'
                                                         self.stamped_visa_date = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -3201,7 +2922,7 @@ class Closure(Document):
                                                     self.status = 'Biometric'
                                                     self.custom_status_transition = today()
                             
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -3214,7 +2935,7 @@ class Closure(Document):
                                             self.final_medical_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -3227,21 +2948,22 @@ class Closure(Document):
                                         self.pcc_uploaded_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
+                                            if self.pcc_not_applicable ==0:
+                                                self.append("custom_history", {
+                                                    "date":frappe.utils.now_datetime(),
+                                                    "status_moved_by": frappe.session.user,
+                                                    "status": self.status
+                                                })
                                 else:
                                     if self.is_required:
                                         if not self.certificate_attestation:
                                             self.status = 'Certificate Attestation'
                                             self.custom_status_transition = today()
                     
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -3255,7 +2977,7 @@ class Closure(Document):
                                             self.visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -3268,7 +2990,7 @@ class Closure(Document):
                                         self.visa_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -3283,7 +3005,7 @@ class Closure(Document):
                                 self.col_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -3296,7 +3018,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
 
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -3308,7 +3030,7 @@ class Closure(Document):
                         self.status = 'PSL'
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -3422,19 +3144,19 @@ class Closure(Document):
                                                                 self.boarded_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                                 if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                                         # self.status='Concluded'
                                                                         self.custom_status_transition = today()
                                                 
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                 else:
                                                                     self.status = 'Onboarding'
                                                                     self.status_updated_on = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -3456,7 +3178,7 @@ class Closure(Document):
                                                                 self.status_updated_on = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -3469,7 +3191,7 @@ class Closure(Document):
                                                             self.ticket_date = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -3482,20 +3204,21 @@ class Closure(Document):
                                                         self.emigration_date = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
-                                                            self.append("custom_history", {
-                                                                "date":frappe.utils.now_datetime(),
-                                                                "status_moved_by": frappe.session.user,
-                                                                "status": self.status
-                                                            })
+                                                            if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                                self.append("custom_history", {
+                                                                    "date":frappe.utils.now_datetime(),
+                                                                    "status_moved_by": frappe.session.user,
+                                                                    "status": self.status
+                                                                })
                                                 else:
                                                     self.status = 'Visa Stamping'
                                                     self.stamped_visa_date = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -3521,7 +3244,7 @@ class Closure(Document):
                                                                 "status_moved_by": frappe.session.user,
                                                                 "status": self.status
                                                             })
-                                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable and self.candidate_feedback_form:
+                                                        if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable:
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
                                                                 self.append("custom_history", {
@@ -3552,19 +3275,19 @@ class Closure(Document):
                                                                     self.boarded_date = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                                         # self.status='Concluded'
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                     else:
                                                                         self.status = 'Onboarding'
                                                                         self.status_updated_on = today()
                                                 
                                                                         self.custom_status_transition = today()
-                                                                        self.custom_modified_status= self.status
+                                                                        
                                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                         if previous_status != self.status and self.status:
                                                                             self.append("custom_history", {
@@ -3586,7 +3309,7 @@ class Closure(Document):
                                                                     self.status_updated_on = today()
                                             
                                                                     self.custom_status_transition = today()
-                                                                    self.custom_modified_status= self.status
+                                                                    
                                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                     if previous_status != self.status and self.status:
                                                                         self.append("custom_history", {
@@ -3599,7 +3322,7 @@ class Closure(Document):
                                                                 self.ticket_date = today()
                                         
                                                                 self.custom_status_transition = today()
-                                                                self.custom_modified_status= self.status
+                                                                
                                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                                 if previous_status != self.status and self.status:
                                                                     self.append("custom_history", {
@@ -3612,20 +3335,21 @@ class Closure(Document):
                                                             self.emigration_date = today()
                                     
                                                             self.custom_status_transition = today()
-                                                            self.custom_modified_status= self.status
+                                                            
                                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                             if previous_status != self.status and self.status:
-                                                                self.append("custom_history", {
-                                                                    "date":frappe.utils.now_datetime(),
-                                                                    "status_moved_by": frappe.session.user,
-                                                                    "status": self.status
-                                                                })
+                                                                if self.ecr_status == 'ECR' or self.emigration_not_applicable ==0:
+                                                                    self.append("custom_history", {
+                                                                        "date":frappe.utils.now_datetime(),
+                                                                        "status_moved_by": frappe.session.user,
+                                                                        "status": self.status
+                                                                    })
                                                     else:
                                                         self.status = 'Visa Stamping'
                                                         self.stamped_visa_date = today()
                                 
                                                         self.custom_status_transition = today()
-                                                        self.custom_modified_status= self.status
+                                                        
                                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                         if previous_status != self.status and self.status:
                                                             self.append("custom_history", {
@@ -3638,7 +3362,7 @@ class Closure(Document):
                                             self.status = 'Biometric'
                                             self.custom_status_transition = today()
                     
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -3651,7 +3375,7 @@ class Closure(Document):
                                         self.final_medical_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -3665,21 +3389,22 @@ class Closure(Document):
                                     self.pcc_uploaded_date = today()
             
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
-                                        self.append("custom_history", {
-                                            "date":frappe.utils.now_datetime(),
-                                            "status_moved_by": frappe.session.user,
-                                            "status": self.status
-                                        })
+                                        if self.pcc_not_applicable == 0:
+                                            self.append("custom_history", {
+                                                "date":frappe.utils.now_datetime(),
+                                                "status_moved_by": frappe.session.user,
+                                                "status": self.status
+                                            })
                             else:
                                 if self.is_required:
                                     if not self.certificate_attestation:
                                         self.status = 'Certificate Attestation'
                                         self.custom_status_transition = today()
                 
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -3693,7 +3418,7 @@ class Closure(Document):
                                         self.visa_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -3706,7 +3431,7 @@ class Closure(Document):
                                     self.visa_date = today()
             
                                     self.custom_status_transition = today()
-                                    self.custom_modified_status= self.status
+                                    
                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                     if previous_status != self.status and self.status:
                                         self.append("custom_history", {
@@ -3721,7 +3446,7 @@ class Closure(Document):
                             self.col_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -3734,7 +3459,7 @@ class Closure(Document):
                         self.offer_letter_date = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -3746,7 +3471,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -3775,19 +3500,19 @@ class Closure(Document):
                 #                                                 self.boarded_date = today()
                                         
                 #                                                 self.custom_status_transition = today()
-                #                                                 self.custom_modified_status= self.status
+                #                                                 
                 #                                                 # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                 #                                                 if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:       
                 #                                                         # self.status='Concluded'
                 #                                                         self.custom_status_transition = today()
                                                 
-                #                                                         self.custom_modified_status= self.status
+                #                                                         
                 #                                                 else:
                 #                                                     self.status = 'Onboarding'
                 #                                                     self.status_updated_on = today()
                                             
                 #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
+                #                                                     
                 #                                             elif self.check==1:
                 #                                                 self.status = 'Arrived'
                 #                                             else:
@@ -3795,25 +3520,25 @@ class Closure(Document):
                 #                                                 self.status_updated_on = today()
                                         
                 #                                                 self.custom_status_transition = today()
-                #                                                 self.custom_modified_status= self.status
+                #                                                 
                 #                                         else:
                 #                                             self.status = 'Ticket'
                 #                                             self.ticket_date = today()
                                     
                 #                                             self.custom_status_transition = today()
-                #                                             self.custom_modified_status= self.status
+                #                                             
                 #                                     else:
                 #                                         self.status = 'Emigration'
                 #                                         self.emigration_date = today()
                                 
                 #                                         self.custom_status_transition = today()
-                #                                         self.custom_modified_status= self.status
+                #                                         
                 #                                 else:
                 #                                     self.status = 'Visa Stamping'
                 #                                     self.stamped_visa_date = today()
                             
                 #                                     self.custom_status_transition = today()
-                #                                     self.custom_modified_status= self.status
+                #                                     
                 #                             else:
                 #                                 if self.custom_skip_biometric==1:
                 #                                     if self.visa_stamping:
@@ -3827,19 +3552,19 @@ class Closure(Document):
                 #                                                     self.boarded_date = today()
                                             
                 #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
+                #                                                     
                 #                                                     # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                 #                                                     if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:    
                 #                                                         # self.status='Concluded'
                                                 
                 #                                                         self.custom_status_transition = today()
-                #                                                         self.custom_modified_status= self.status
+                #                                                         
                 #                                                     else:
                 #                                                         self.status = 'Onboarding'
                 #                                                         self.status_updated_on = today()
                                                 
                 #                                                         self.custom_status_transition = today()
-                #                                                         self.custom_modified_status= self.status
+                #                                                         
                 #                                                 elif self.check==1:
                 #                                                     self.status = 'Arrived'
                 #                                                 else:
@@ -3847,62 +3572,62 @@ class Closure(Document):
                 #                                                     self.status_updated_on = today()
                                             
                 #                                                     self.custom_status_transition = today()
-                #                                                     self.custom_modified_status= self.status
+                #                                                     
                 #                                             else:
                 #                                                 self.status = 'Ticket'
                 #                                                 self.ticket_date = today()
                                         
                 #                                                 self.custom_status_transition = today()
-                #                                                 self.custom_modified_status= self.status
+                #                                                 
                 #                                         else:
                 #                                             self.status = 'Emigration'
                 #                                             self.emigration_date = today()
                                     
                 #                                             self.custom_status_transition = today()
-                #                                             self.custom_modified_status= self.status
+                #                                             
                 #                                     else:
                 #                                         self.status = 'Visa Stamping'
                 #                                         self.stamped_visa_date = today()
                                 
                 #                                         self.custom_status_transition = today()
-                #                                         self.custom_modified_status= self.status
+                #                                         
                 #                                 else:
                 #                                     self.status = 'Biometric'
                 #                                     self.custom_status_transition = today()
                             
-                #                                     self.custom_modified_status= self.status
+                #                                     
                 #                         else:
                 #                             self.status = 'Final Medical'
                 #                             self.final_medical_date = today()
                     
                 #                             self.custom_status_transition = today()
-                #                             self.custom_modified_status= self.status
+                #                             
                 #                     else:
                 #                         self.status = "PCC"
                 #                         self.pcc_uploaded_date = today()
                 
                 #                         self.custom_status_transition = today()
-                #                         self.custom_modified_status= self.status
+                #                         
                 #                 else:
                 #                     if self.is_required:
                 #                         if not self.certificate_attestation:
                 #                             self.status = 'Certificate Attestation'
                 #                             self.custom_status_transition = today()
                     
-                #                             self.custom_modified_status= self.status
+                #                             
                 #                             # self.reload()
                 #                         else:
                 #                             self.status = 'Visa'
                 #                             self.visa_date = today()
                     
                 #                             self.custom_status_transition = today()
-                #                             self.custom_modified_status= self.status
+                #                             
                 #                     else:
                 #                         self.status = 'Visa'
                 #                         self.visa_date = today()
                 
                 #                         self.custom_status_transition = today()
-                #                         self.custom_modified_status= self.status
+                #                         
                                 
 
                 #             else:
@@ -3910,21 +3635,22 @@ class Closure(Document):
                 #                 self.col_date = today()
         
                 #                 self.custom_status_transition = today()
-                #                 self.custom_modified_status= self.status
+                #                 
                 #         else:
                 #             self.status = 'Client Offer Letter'
                 #             self.offer_letter_date = today()
 
                 #             self.custom_status_transition = today()
-                #             self.custom_modified_status= self.status
+                #             
                 #     else:
                 #         self.status = 'PSL'
                 #         self.status_updated_on = today()
                 #         self.custom_status_transition = today()
-                #         self.custom_modified_status= self.status
+                #         
             elif self.territory=='Iraq':
                 customer_so=frappe.db.get_value("Customer",{"name":self.customer},["custom_so_not_needed"])
                 # 
+                
                 if customer_so==1:
                     self.so_created=1
                     if self.irf and self.passport and self.photo:
@@ -3944,19 +3670,44 @@ class Closure(Document):
                                     "status": self.status
                                 })
                             if self.emigration and self.attach_insurance and self.employment_contract and self.candidate_feedback_form:
-                                self.status = 'Arrived'
-                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                if previous_status != self.status and self.status:
-                                    self.append("custom_history", {
-                                        "date":frappe.utils.now_datetime(),
-                                        "status_moved_by": frappe.session.user,
-                                        "status": self.status
-                                    })
+                                if self.status == 'Onboarded':
+                                    self.status = 'Onboarded'
+                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                    if previous_status != self.status and self.status:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
+                                    self.onboarded = 1
+                                    self.boarded_date = today()
+                                    self.custom_status_transition = today()
+                                else:
+                                    self.status = 'Onboarding'
+                                    self.status_updated_on = today()
+            
+                                    self.custom_status_transition = today()
+                                    
+                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                    if previous_status != self.status and self.status:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
+                            # self.status = 'Arrived'
+                                # previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                # if previous_status != self.status and self.status:
+                                #     self.append("custom_history", {
+                                #         "date":frappe.utils.now_datetime(),
+                                #         "status_moved_by": frappe.session.user,
+                                #         "status": self.status
+                                #     })
                             else:
                                 self.status = 'Emigration'
                                 self.emigration_date = today()
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -3968,7 +3719,7 @@ class Closure(Document):
                             self.status = 'Visa'
                             self.visa_date = today()
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -3978,10 +3729,11 @@ class Closure(Document):
                                 })
                                 
                     else:
+                        
                         self.status = 'PSL'
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -3991,6 +3743,7 @@ class Closure(Document):
                             })
                 else:
                     if self.irf and self.passport and self.photo:
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -4007,19 +3760,44 @@ class Closure(Document):
                                     "status": self.status
                                 })
                             if self.emigration and self.attach_insurance and self.employment_contract and self.candidate_feedback_form:
-                                self.status = 'Arrived'
-                                previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
-                                if previous_status != self.status and self.status:
-                                    self.append("custom_history", {
-                                        "date":frappe.utils.now_datetime(),
-                                        "status_moved_by": frappe.session.user,
-                                        "status": self.status
-                                    })
+                                # self.status = 'Arrived'
+                                # previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                # if previous_status != self.status and self.status:
+                                #     self.append("custom_history", {
+                                #         "date":frappe.utils.now_datetime(),
+                                #         "status_moved_by": frappe.session.user,
+                                #         "status": self.status
+                                #     })
+                                if self.status == 'Onboarded':
+                                    self.status = 'Onboarded'
+                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                    if previous_status != self.status and self.status:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
+                                    self.onboarded = 1
+                                    self.boarded_date = today()
+                                    self.custom_status_transition = today()
+                                else:
+                                    self.status = 'Onboarding'
+                                    self.status_updated_on = today()
+            
+                                    self.custom_status_transition = today()
+                                    
+                                    previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
+                                    if previous_status != self.status and self.status:
+                                        self.append("custom_history", {
+                                            "date":frappe.utils.now_datetime(),
+                                            "status_moved_by": frappe.session.user,
+                                            "status": self.status
+                                        })
                             else:
                                 self.status = 'Emigration'
                                 self.emigration_date = today()
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -4032,7 +3810,7 @@ class Closure(Document):
                             self.visa_date = today()
 
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -4041,10 +3819,11 @@ class Closure(Document):
                                     "status": self.status
                                 })
                     else:
+                        
                         self.status = 'PSL'
                         self.status_updated_on = today()
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -4095,7 +3874,7 @@ class Closure(Document):
                                             "status_moved_by": frappe.session.user,
                                             "status": self.status
                                         })
-                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1 and self.candidate_feedback_form:
+                                    if self.ecr_status != 'ECR' or (self.emigration and self.declaration and self.attach_insurance and self.employment_contract) or self.emigration_not_applicable == 1:
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -4126,19 +3905,19 @@ class Closure(Document):
                                                 self.boarded_date = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 # if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                                                 if self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india:
                                                     # self.status='Concluded'
                                                     self.custom_status_transition = today()
                             
-                                                    self.custom_modified_status= self.status
+                                                    
                                                 else:
                                                     self.status = 'Onboarding'
                                                     self.status_updated_on = today()
                             
                                                     self.custom_status_transition = today()
-                                                    self.custom_modified_status= self.status
+                                                    
                                                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                     if previous_status != self.status and self.status:
                                                         self.append("custom_history", {
@@ -4149,7 +3928,7 @@ class Closure(Document):
                                             elif self.status == 'Dropped':
                                                 self.status = 'Dropped'
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -4171,7 +3950,7 @@ class Closure(Document):
                                                 self.status_updated_on = today()
                         
                                                 self.custom_status_transition = today()
-                                                self.custom_modified_status= self.status
+                                                
                                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                                 if previous_status != self.status and self.status:
                                                     self.append("custom_history", {
@@ -4184,7 +3963,7 @@ class Closure(Document):
                                             self.ticket_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -4197,21 +3976,22 @@ class Closure(Document):
                                         self.emigration_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
-                                            self.append("custom_history", {
-                                                "date":frappe.utils.now_datetime(),
-                                                "status_moved_by": frappe.session.user,
-                                                "status": self.status
-                                            })
+                                            if self.ecr_status == 'ECR' or self.emigration_not_applicable == 0:
+                                                self.append("custom_history", {
+                                                    "date":frappe.utils.now_datetime(),
+                                                    "status_moved_by": frappe.session.user,
+                                                    "status": self.status
+                                                })
                                 else:
                                     if self.is_required:
                                         if not self.certificate_attestation:
                                             self.status = 'Certificate Attestation'
                                             self.custom_status_transition = today()
                     
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -4225,7 +4005,7 @@ class Closure(Document):
                                             self.visa_date = today()
                     
                                             self.custom_status_transition = today()
-                                            self.custom_modified_status= self.status
+                                            
                                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                             if previous_status != self.status and self.status:
                                                 self.append("custom_history", {
@@ -4238,7 +4018,7 @@ class Closure(Document):
                                         self.visa_date = today()
                 
                                         self.custom_status_transition = today()
-                                        self.custom_modified_status= self.status
+                                        
                                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                         if previous_status != self.status and self.status:
                                             self.append("custom_history", {
@@ -4251,7 +4031,7 @@ class Closure(Document):
                                 self.premedical_date = today()
         
                                 self.custom_status_transition = today()
-                                self.custom_modified_status= self.status
+                                
                                 previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                                 if previous_status != self.status and self.status:
                                     self.append("custom_history", {
@@ -4265,7 +4045,7 @@ class Closure(Document):
                             self.offer_letter_date = today()
     
                             self.custom_status_transition = today()
-                            self.custom_modified_status= self.status
+                            
                             previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                             if previous_status != self.status and self.status:
                                 self.append("custom_history", {
@@ -4281,7 +4061,7 @@ class Closure(Document):
                         self.col_date = today()
 
                         self.custom_status_transition = today()
-                        self.custom_modified_status= self.status
+                        
                         previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                         if previous_status != self.status and self.status:
                             self.append("custom_history", {
@@ -4293,7 +4073,7 @@ class Closure(Document):
                     self.status = 'PSL'
                     self.status_updated_on = today()
                     self.custom_status_transition = today()
-                    self.custom_modified_status= self.status
+                    
                     previous_status = self.get_doc_before_save().status if self.get_doc_before_save() else None
                     if previous_status != self.status and self.status:
                         self.append("custom_history", {
@@ -4306,7 +4086,7 @@ class Closure(Document):
             # if self.status == 'Onboarded' and self.candidate_feedback_form and self.candidate_google_review and self.custom__emergency_contact_number_in_india and self.custom_local_mobile_number:
                 # self.status='Concluded'
                 self.custom_status_transition = today()
-                self.custom_modified_status= self.status
+                
 @frappe.whitelist()
 def get_status(status,so_created,visa_status,offer_letter,sol,final_medical,pcc,pcc_not,visa_stamping):
     data = ''
@@ -4336,51 +4116,109 @@ def get_status(status,so_created,visa_status,offer_letter,sol,final_medical,pcc,
     else:
         data += '<td style = "color:orange"><b>Yet to be Processed</b></td>'
     return data
+@frappe.whitelist()
+def create_customer_sale_order(closure, project, customer, task, candidate_name, contact, payment,client_sc,candidate_owner,sa_id,candidate_sc,billing_currency, territory, associate,passport_no, expected_doj, delivery_manager, account_manager,service,supplier,associate_si,client_si,candidate_si):
+    if payment == "Candidate":
+        new_existing=candidate_name + '-' + passport_no
+        if not frappe.db.exists("Existing Customer",new_existing):
+            existing_customer=frappe.new_doc("Existing Customer")
+            existing_customer.customer_id=candidate_name + '-' + passport_no
+            existing_customer.insert()
+            existing_customer.save(ignore_permissions=True)
+            frappe.db.commit()
+        candidate_customer = frappe.new_doc("Customer")
+        candidate_customer.customer_name = candidate_name + '-' + passport_no
+        candidate_customer.customer_type = "Individual"
+        candidate_customer.customer_group = "Individual"
+        candidate_customer.territory = territory
+        candidate_customer.account_manager=account_manager
+        candidate_customer.insert()
+        candidate_customer.save(ignore_permissions=True)
+        frappe.db.commit()
 
 @frappe.whitelist()
-def create_sale_order(closure, project, customer, task, candidate_name, contact, payment,client_sc,candidate_owner,sa_id,candidate_sc,billing_currency, territory, associate,passport_no, expected_doj, delivery_manager, account_manager,service,supplier,associate_si,client_si,candidate_si):
+def create_sale_order(closure=None, project=None,domestic=None, customer=None, task=None, candidate_name=None, contact=None, payment=None,client_sc=None,candidate_owner=None,sa_id=None,candidate_sc=None,billing_currency=None, territory=None,client_cur=None,associate_cur=None, associate=None,passport_no=None, expected_doj=None, delivery_manager=None, account_manager=None,service=None,supplier=None,associate_si=None,client_si=None,candidate_si=None):
     # cg = frappe.db.get_value("Customer", customer, "customer_group")
     so_value=frappe.db.get_value("Customer",customer,"custom_so_not_needed")
     parent_territory = frappe.get_value(
         'Territory', territory, 'parent_territory')
     if payment:
-        item_candidate_id = frappe.db.get_value("Item", {"name": contact})
-        item_pp_id = frappe.db.get_value("Item", {"name": passport_no})
-        if item_candidate_id or item_pp_id:
-            item = frappe.get_doc("Item",item_pp_id)
-        else:
-            item = frappe.new_doc("Item")
-            if parent_territory == 'India':
-                item.item_code = candidate_name
-                item.append("taxes", {
-                            "item_tax_template": "T - GST @ 18% - THIS",
-                            "tax_category": "Professional Service - GST",
-                            "valid_from": today()
-                            })
+        if not domestic:
+            item_candidate_id = frappe.db.get_value("Item", {"name": contact})
+            item_pp_id = frappe.db.get_value("Item", {"name": passport_no})
+            if item_candidate_id or item_pp_id:
+                item = frappe.get_doc("Item",item_pp_id)
             else:
-                item.item_code = passport_no
-                item.is_non_gst = "0"
-            item.item_name = passport_no + ":"+candidate_name
-            if candidate_owner:
-                item.candidate_owner = candidate_owner
-            if sa_id:
-                item.sa_id = sa_id
-            item.item_group = "Candidates"
-            item.stock_uom = "Nos"
-            item.qty = "1"
-            item.gst_hsn_code = '998519'
-            item.is_stock_item = "0"
-            item.include_item_in_manufacturing = "0"
-            item.description = customer
-            item.append("item_defaults", {
-                "company": "TeamPRO HR & IT Services Pvt. Ltd."
-            })
-            item.append("customer_items", {
-                "customer_name": customer,
-                "ref_code": contact
-            })
-            item.insert()
-            item.save(ignore_permissions=True)
+                item = frappe.new_doc("Item")
+                if parent_territory == 'India':
+                    item.item_code = candidate_name
+                    item.append("taxes", {
+                                "item_tax_template": "T - GST @ 18% - THIS",
+                                "tax_category": "Professional Service - GST",
+                                "valid_from": today()
+                                })
+                else:
+                    item.item_code = passport_no
+                    item.is_non_gst = "0"
+                item.item_name = passport_no + ":"+candidate_name
+                if candidate_owner:
+                    item.candidate_owner = candidate_owner
+                if sa_id:
+                    item.sa_id = sa_id
+                item.item_group = "Candidates"
+                item.stock_uom = "Nos"
+                item.qty = "1"
+                item.gst_hsn_code = '998519'
+                item.is_stock_item = "0"
+                item.include_item_in_manufacturing = "0"
+                item.description = customer
+                item.append("item_defaults", {
+                    "company": "TeamPRO HR & IT Services Pvt. Ltd."
+                })
+                item.append("customer_items", {
+                    "customer_name": customer,
+                    "ref_code": contact
+                })
+                item.insert()
+                item.save(ignore_permissions=True)
+        else:
+            item_candidate_id = frappe.db.get_value("Item", {"name": contact})
+            item_pp_id = frappe.db.get_value("Item", {"name":closure })
+            if item_candidate_id or item_pp_id:
+                item = frappe.get_doc("Item",item_pp_id)
+            else:
+                item = frappe.new_doc("Item")
+                if parent_territory == 'India':
+                    item.item_code = candidate_name
+                    item.append("taxes", {
+                                "item_tax_template": "T - GST @ 18% - THIS",
+                                "tax_category": "Professional Service - GST",
+                                "valid_from": today()
+                                })
+                else:
+                    item.item_code =f"{closure}-Domestic"
+                    item.is_non_gst = "0"
+                item.item_name = closure + ":"+candidate_name
+                if candidate_owner:
+                    item.candidate_owner = candidate_owner
+                if sa_id:
+                    item.sa_id = sa_id
+                item.item_group = "Candidates"
+                item.stock_uom = "Nos"
+                item.qty = "1"
+                item.gst_hsn_code = '998519'
+                item.is_stock_item = "0"
+                item.include_item_in_manufacturing = "0"
+                item.description = customer
+                item.append("item_defaults", {
+                    "company": "TeamPRO HR & IT Services Pvt. Ltd."
+                })
+                item.append("customer_items", {
+                    "customer_name": customer,
+                    "ref_code": contact
+                })
+                item.insert()
+                item.save(ignore_permissions=True)
 
         if territory != 'India' or parent_territory != 'India':
             if so_value==0:
@@ -4392,7 +4230,7 @@ def create_sale_order(closure, project, customer, task, candidate_name, contact,
                     so.account_manager = account_manager
                     so.delivery_manager = delivery_manager
                     so.closure_project = project
-                    so.currency = billing_currency
+                    so.currency = client_cur
                     so.supplier = supplier
                     so.service = service
                     so.company_address = "TEAMPRO HR & IT Services Pvt. Ltd."
@@ -4445,12 +4283,13 @@ def create_sale_order(closure, project, customer, task, candidate_name, contact,
                     so = frappe.new_doc("Sales Order")
                     so.customer = candidate_name + '-' + passport_no
                     so.reference_customer_ = customer
+                    # so.transaction_date="2025-10-27"
                     so.customer_group = "Individual"
                     so.passport_number = passport_no
                     so.account_manager = account_manager
                     so.delivery_manager = delivery_manager
                     so.service = service
-                    so.currency = "INR"
+                    so.currency = billing_currency
                     so.company_address = "TEAMPRO HR & IT Services Pvt. Ltd."
                     # so.total_original_dec = candidate_dec
                     so.append("items", {
@@ -4485,7 +4324,7 @@ def create_sale_order(closure, project, customer, task, candidate_name, contact,
                     so.passport_number = passport_no
                     # so.account_manager = account_manager
                     # so.delivery_manager = delivery_manager
-                    so.currency = billing_currency
+                    so.currency = associate_cur
                     so.service = service
                     so.company_address = "TEAMPRO HR & IT Services Pvt. Ltd."
                     # so.total_orginal_dec = dec
@@ -5146,3 +4985,92 @@ def send_mail_closure(pp_original_at, email_id, docname=None):
         )
 
         return "Email sent successfully!"
+
+
+
+
+# @frappe.whitelist()
+# def change_so():
+#     frappe.db.set_value("Closure","CL04378","so_created",0)
+    
+
+
+@frappe.whitelist()
+def update_so_for_closure(closure_name):
+    closure = frappe.get_doc("Closure", closure_name)
+
+    if not closure.so_created:
+        return "SO not created for this closure, skipping"
+
+    closure_id = closure.name
+    passport_no = closure.passport_no
+    closure_status = closure.status  
+
+    sos = frappe.get_all(
+        "Sales Order",
+        filters={"passport_number": passport_no, "docstatus": ["!=", 2]},
+        fields=["name", "custom_closure_status"]
+    )
+
+    if sos:
+        for so in sos:
+            if so.custom_closure_status != closure_status:
+                frappe.db.set_value("Sales Order", so.name, "custom_closure_status", closure_status)
+    else:
+        items = frappe.get_all(
+            "Sales Order Item",
+            filters={"item_code": ["in", [closure_id, passport_no]]},
+            fields=["parent"]
+        )
+
+        for item in items:
+            so_doc = frappe.get_value("Sales Order", item["parent"], ["custom_closure_status"], as_dict=True)
+
+            if so_doc and so_doc.custom_closure_status != closure_status:
+                frappe.db.set_value(
+                    "Sales Order",
+                    item["parent"],
+                    "custom_closure_status",
+                    closure_status
+                )
+
+    frappe.db.commit()
+    return f"Updated SO(s) for Closure {closure_name}"
+
+
+
+@frappe.whitelist()
+def get_so_for_closure_button(closure_name):
+    closure = frappe.get_doc("Closure", closure_name)
+    if not closure.so_created:
+        return None
+
+    closure_id = closure.name
+    passport_no = closure.passport_no
+
+    sos = frappe.get_all(
+        "Sales Order",
+        filters={
+            "passport_number": passport_no,
+            "docstatus": ["!=", 2]
+        },
+        fields=["name"]
+    )
+
+    if sos:
+        return sos[0].name
+
+    else:
+        items = frappe.get_all(
+            "Sales Order Item",
+            filters={
+                "item_code": ["in", [closure_id, passport_no]]
+            },
+            fields=["parent"]
+        )
+
+        if items:
+            return items[0].parent
+        else:
+            return None
+
